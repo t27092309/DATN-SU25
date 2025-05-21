@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,59 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        // User::factory(10)->create();
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
-       $this->call([
-        // Bảng độc lập trước
-        RoleSeeder::class,
-        UserSeeder::class,
-        CategorySeeder::class,
-        BrandSeeder::class,
-        ScentGroupSeeder::class,
-        
-        
-        ShippingMethodSeeder::class,
-        WarehouseSeeder::class,
-        CouponSeeder::class,
-
-        // Bảng phụ thuộc bảng trên
-        RoleUserSeeder::class,
-        UserAddressSeeder::class,
-        
-
-        ProductSeeder::class,
-        ProductImageSeeder::class,
-
-        
-        ProductVariantSeeder::class,
-
-        
-        ProductUsageProfileSeeder::class,
-        ProductScentProfileSeeder::class,
-
-        ReviewSeeder::class,
-        WishlistSeeder::class,
-
-        CartSeeder::class,
-        CartItemSeeder::class,
-
-        OrderSeeder::class,
-
-        
-        OrderItemSeeder::class,
-        PaymentSeeder::class,
-
-        ShippingTrackingSeeder::class,
-        OrderReturnSeeder::class,
-
-        WarehouseStockSeeder::class,
-        InventoryLogSeeder::class,
-    ]);
-        
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
     }
 }
