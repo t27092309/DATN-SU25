@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('winter_percent')->default(0);
             $table->integer('suitable_day')->default(0);
             $table->integer('suitable_night')->default(0);
-            $table->decimal('longevity_hours', 2, 1);
+            $table->decimal('longevity_hours', 3, 1);
             $table->string('sillage_range_m');
             $table->timestamps();
         });
