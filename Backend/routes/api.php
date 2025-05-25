@@ -1,14 +1,18 @@
 <?php
 
+use App\Http\Controllers\Api\CouponController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProductVariantController;
 
 
 Route::middleware([CorsMiddleware::class])->group(function () {
-    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::apiResource('categories', CategoryController::class);
+
+    Route::apiResource('coupons', CouponController::class);
+
 
     Route::get('/hello', function () {
         return response()->json([
