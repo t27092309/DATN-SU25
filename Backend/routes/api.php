@@ -4,7 +4,8 @@ use App\Http\Controllers\Api\CouponController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Middleware\CorsMiddleware;
-
+use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\ProductVariantController;
 
 
 Route::middleware([CorsMiddleware::class])->group(function () {
@@ -27,4 +28,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 //         'message' => 'Hello from Laravel with manual CORS!',
 //     ]);
 // });
+
+Route::apiResource('products', ProductController::class);
+Route::get('product-variants/trashed', [ProductVariantController::class, 'trashed']);
+Route::put('product-variants/restore/{id}', [ProductVariantController::class, 'restore']);
+Route::apiResource('product-variants', ProductVariantController::class);
 
