@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CouponController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
@@ -12,6 +13,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::apiResource('categories', CategoryController::class);
 
     Route::apiResource('coupons', CouponController::class);
+
+    Route::apiResource('brands', BrandController::class);
 
 
     Route::get('/hello', function () {
