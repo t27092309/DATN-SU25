@@ -49,7 +49,7 @@ class CategoryController extends Controller
     }
 
     //DELETE // http://localhost:8000/api/categories/{id}
-    public function destroy(string $id) 
+    public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
         $category->delete();
