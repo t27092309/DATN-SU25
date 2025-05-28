@@ -19,6 +19,8 @@ class ProductFactory extends Factory
             'gender' => fake()->randomElement(['male', 'female', 'unisex']),
             'category_id' => 1, // cập nhật sau bằng ID thực tế hoặc random
             'brand_id' => 1,    // cập nhật sau bằng ID thực tế hoặc random
+            'views' => $this->faker->numberBetween(0, 100000), // Random views between 0 and 100000
+
         ];
     }
 }
