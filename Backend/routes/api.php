@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\ScentGroupController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Middleware\CorsMiddleware;
@@ -18,6 +19,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('product-variants/trashed', [ProductVariantController::class, 'trashed']);
     Route::put('product-variants/restore/{id}', [ProductVariantController::class, 'restore']);
     Route::apiResource('product-variants', ProductVariantController::class);
+    Route::apiResource('scent-groups', ScentGroupController::class);
 
     Route::get('/hello', function () {
         return response()->json([
