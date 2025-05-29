@@ -1,18 +1,27 @@
+import ClientLayout from '@/layouts/ClientLayout.vue'
+import Home from '@/views/client/Home.vue'
+import NuocHoaPage from '@/views/client/NuocHoaPage.vue'
+import NuocHoaNamPage from '@/views/client/NuocHoaNamPage.vue'
 export default [
   {
     path: '/',
-    component: () => import('@/layouts/ClientLayout.vue'),
+    component: ClientLayout,
     children: [
       {
         path: '',
         name: 'Home',
-        component: () => import('@/pages/client/HomeView.vue'),
+        component: Home,
       },
       {
-        path: 'about',
-        name: 'About',
-        component: () => import('@/pages/client/AboutView.vue'),
-      }
+        path: 'nuoc-hoa',
+        name: 'NuocHoa',
+        component: NuocHoaPage,
+      },
+      {
+        path: 'nuoc-hoa-nam',
+        name: 'NuocHoaNam',
+        component: NuocHoaNamPage,
+      },
     ]
   }
 ]
