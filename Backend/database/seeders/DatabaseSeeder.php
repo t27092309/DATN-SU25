@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
        $this->call([
-        // Bảng độc lập trước
+        //Bảng độc lập trước
         RoleSeeder::class,
         UserSeeder::class,
         CategorySeeder::class,
