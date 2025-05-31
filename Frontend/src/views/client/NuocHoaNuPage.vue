@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto p-4">
-    <p class="font-bold text-3xl text-black">Nước Hoa Nam</p>
+    <p class="font-bold text-3xl text-black">Nước Hoa Nữ</p>
     <nav class="text-sm breadcrumbs mb-6 ">
       <ul class="flex items-center space-x-2">
         <li><router-link to="/" class="text-2xl"><span class="text-base text-gray-500">Trang chủ</span></router-link>
@@ -9,7 +9,7 @@
         <li class="ml-2"><router-link to="/nuoc-hoa"><span class="text-base text-gray-500">Nước Hoa</span></router-link>
         </li>
         <span class="text-gray-500 text-base">/</span>
-        <li class="text-gray-900 font-bold text-base">Nước Hoa Nam</li>
+        <li class="text-gray-900 font-bold text-base">Nước Hoa Nữ</li>
       </ul>
     </nav>
     <div class=" flex flex-col md:flex-row gap-8 mt-5">

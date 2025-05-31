@@ -3,7 +3,7 @@
     <div class="content">
       <h1>404</h1>
       <p>Trang bạn tìm không tồn tại.</p>
-      <router-link to="/admin" class="home-link">Quay về trang chủ</router-link>
+      <router-link to="/" class="home-link">Quay về trang chủ</router-link>
     </div>
   </div>
 </template>
