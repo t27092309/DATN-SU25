@@ -58,7 +58,8 @@
                             </router-link>
 
                             <div class="relative group inline-block z-50">
-                                <router-link to="/nuoc-hoa" class="cursor-pointer text-sm font-semibold  hover:text-red-600 text-gray-900 flex items-center py-2">
+                                <router-link to="/nuoc-hoa"
+                                    class="cursor-pointer text-sm font-semibold  hover:text-red-600 text-gray-900 flex items-center py-2">
                                     Nước Hoa
                                     <svg class="w-4 h-4 ml-1 transform group-hover:rotate-180 transition-transform duration-200"
                                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -183,35 +184,27 @@
                                 </div>
                             </div>
 
-                            <router-link to="/nuoc-hoa-nam" class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước Hoa Nam</router-link>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Nước Hoa Nam
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Nước Hoa Nữ
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Thương Hiệu
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Nước hoa mini
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Nước hoa chiết
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Unisex
-                            </a>
-                            <a href="#"
-                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
-                                Niche
-                            </a>
+                            <router-link to="/nuoc-hoa-nam"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Nam</router-link>
+                            <router-link to="/nuoc-hoa-nu"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Nữ</router-link>
+                            <router-link to="/thuong-hieu"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Thương
+                                hiệu</router-link>
+                            <router-link to="/nuoc-hoa-mini"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Mini</router-link>
+                            <router-link to="/nuoc-hoa-chiet"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Chiết</router-link>
+                            <router-link to="/nuoc-hoa-unisex"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Unisex</router-link>
+                            <router-link to="/nuoc-hoa-niche"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">Nước
+                                Hoa Niche</router-link>
                             <a href="#"
                                 class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
                                 Kiến Thức
@@ -289,7 +282,7 @@
                     </div>
 
                     <div>
-                        <h3 class="text-white text-lg font-semibold mb-4">div CARE & MỸ PHẨM</h3>
+                        <h3 class="text-white text-lg font-semibold mb-4">BODY CARE & MỸ PHẨM</h3>
                         <ul class="text-sm space-y-2">
                             <li><a href="#" class="hover:underline">Son môi</a></li>
                             <li><a href="#" class="hover:underline">Makeup</a></li>
