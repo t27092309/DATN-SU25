@@ -1,5 +1,4 @@
 <template>
-
   <body>
     <div class="wrapper">
       <!-- Sidebar -->
@@ -7,9 +6,14 @@
         <div class="sidebar-logo">
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
-            <router-link to="/admin" class="home-link">
-              <img :src="logoUrl" alt="navbar brand" class="navbar-brand" height="20" />
-            </router-link>
+            <a href="index.html" class="logo">
+              <img
+                :src="logoUrl"
+                alt="navbar brand"
+                class="navbar-brand"
+                height="20"
+              />
+            </a>
             <div class="nav-toggle">
               <button class="btn btn-toggle toggle-sidebar">
                 <i class="gg-menu-right"></i>
@@ -28,7 +32,12 @@
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a data-bs-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+                <a
+                  data-bs-toggle="collapse"
+                  href="#dashboard"
+                  class="collapsed"
+                  aria-expanded="false"
+                >
                   <i class="fas fa-home"></i>
                   <p>Dashboard</p>
                   <span class="caret"></span>
@@ -47,6 +56,7 @@
                 <span class="sidebar-mini-icon">
                   <i class="fa fa-ellipsis-h"></i>
                 </span>
+                <h4 class="text-section">Components</h4>
               </li>
               <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#base">
@@ -165,20 +175,35 @@
               <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#maps">
                   <i class="fas fa-map-marker-alt"></i>
-                  <p>Maps</p>
+                  <p>Sản phẩm</p>
                   <span class="caret"></span>
                 </a>
                 <div class="collapse" id="maps">
                   <ul class="nav nav-collapse">
                     <li>
                       <a href="maps/googlemaps.html">
-                        <span class="sub-item">Google Maps</span>
+                        <span class="sub-item">Sản phẩm </span>
                       </a>
                     </li>
                     <li>
                       <a href="maps/jsvectormap.html">
-                        <span class="sub-item">Jsvectormap</span>
+                        <span class="sub-item">Add product</span>
                       </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span class="sub-item">Danh mục</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span class="sub-item">Từ khóa</span>
+                      </a>
+                    </li>
+                    <li>
+                      <router-link to="/admin/attribute">
+                        <span class="sub-item">Các thuộc tính</span>
+                      </router-link>
                     </li>
                   </ul>
                 </div>
@@ -186,7 +211,7 @@
               <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#charts">
                   <i class="far fa-chart-bar"></i>
-                  <p>Charts</p>
+                  <p>Banner</p>
                   <span class="caret"></span>
                 </a>
                 <div class="collapse" id="charts">
@@ -281,7 +306,12 @@
             <!-- Logo Header -->
             <div class="logo-header" data-background-color="dark">
               <a href="index.html" class="logo">
-                <img :src="logoUrl" alt="navbar brand" class="navbar-brand" height="20" />
+                <img
+                  :src="logoUrl"
+                  alt="navbar brand"
+                  class="navbar-brand"
+                  height="20"
+                />
               </a>
               <div class="nav-toggle">
                 <button class="btn btn-toggle toggle-sidebar">
@@ -298,41 +328,73 @@
             <!-- End Logo Header -->
           </div>
           <!-- Navbar Header -->
-          <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
+          <nav
+            class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom"
+          >
             <div class="container-fluid">
-              <nav class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
+              <nav
+                class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex"
+              >
                 <div class="input-group">
                   <div class="input-group-prepend">
                     <button type="submit" class="btn btn-search pe-1">
                       <i class="fa fa-search search-icon"></i>
                     </button>
                   </div>
-                  <input type="text" placeholder="Search ..." class="form-control" />
+                  <input
+                    type="text"
+                    placeholder="Search ..."
+                    class="form-control"
+                  />
                 </div>
               </nav>
 
               <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
-                <li class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none">
-                  <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
-                    aria-expanded="false" aria-haspopup="true">
+                <li
+                  class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none"
+                >
+                  <a
+                    class="nav-link dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    role="button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
                     <i class="fa fa-search"></i>
                   </a>
                   <ul class="dropdown-menu dropdown-search animated fadeIn">
                     <form class="navbar-left navbar-form nav-search">
                       <div class="input-group">
-                        <input type="text" placeholder="Search ..." class="form-control" />
+                        <input
+                          type="text"
+                          placeholder="Search ..."
+                          class="form-control"
+                        />
                       </div>
                     </form>
                   </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                  <a class="nav-link dropdown-toggle" href="#" id="messageDropdown" role="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="messageDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
                     <i class="fa fa-envelope"></i>
                   </a>
-                  <ul class="dropdown-menu messages-notif-box animated fadeIn" aria-labelledby="messageDropdown">
+                  <ul
+                    class="dropdown-menu messages-notif-box animated fadeIn"
+                    aria-labelledby="messageDropdown"
+                  >
                     <li>
-                      <div class="dropdown-title d-flex justify-content-between align-items-center">
+                      <div
+                        class="dropdown-title d-flex justify-content-between align-items-center"
+                      >
                         Messages
                         <a href="#" class="small">Mark all as read</a>
                       </div>
@@ -386,18 +448,29 @@
                       </div>
                     </li>
                     <li>
-                      <a class="see-all" href="javascript:void(0);">See all messages<i class="fa fa-angle-right"></i>
+                      <a class="see-all" href="javascript:void(0);"
+                        >See all messages<i class="fa fa-angle-right"></i>
                       </a>
                     </li>
                   </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                  <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="notifDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
                     <i class="fa fa-bell"></i>
                     <span class="notification">4</span>
                   </a>
-                  <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
+                  <ul
+                    class="dropdown-menu notif-box animated fadeIn"
+                    aria-labelledby="notifDropdown"
+                  >
                     <li>
                       <div class="dropdown-title">
                         You have 4 new notification
@@ -450,14 +523,19 @@
                       </div>
                     </li>
                     <li>
-                      <a class="see-all" href="javascript:void(0);">See all notifications<i
-                          class="fa fa-angle-right"></i>
+                      <a class="see-all" href="javascript:void(0);"
+                        >See all notifications<i class="fa fa-angle-right"></i>
                       </a>
                     </li>
                   </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                  <a class="nav-link" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                  <a
+                    class="nav-link"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
                     <i class="fas fa-layer-group"></i>
                   </a>
                   <div class="dropdown-menu quick-actions animated fadeIn">
@@ -478,7 +556,9 @@
                           </a>
                           <a class="col-6 col-md-4 p-0" href="#">
                             <div class="quick-actions-item">
-                              <div class="avatar-item bg-warning rounded-circle">
+                              <div
+                                class="avatar-item bg-warning rounded-circle"
+                              >
                                 <i class="fas fa-map"></i>
                               </div>
                               <span class="text">Maps</span>
@@ -494,7 +574,9 @@
                           </a>
                           <a class="col-6 col-md-4 p-0" href="#">
                             <div class="quick-actions-item">
-                              <div class="avatar-item bg-success rounded-circle">
+                              <div
+                                class="avatar-item bg-success rounded-circle"
+                              >
                                 <i class="fas fa-envelope"></i>
                               </div>
                               <span class="text">Emails</span>
@@ -502,7 +584,9 @@
                           </a>
                           <a class="col-6 col-md-4 p-0" href="#">
                             <div class="quick-actions-item">
-                              <div class="avatar-item bg-primary rounded-circle">
+                              <div
+                                class="avatar-item bg-primary rounded-circle"
+                              >
                                 <i class="fas fa-file-invoice-dollar"></i>
                               </div>
                               <span class="text">Invoice</span>
@@ -510,7 +594,9 @@
                           </a>
                           <a class="col-6 col-md-4 p-0" href="#">
                             <div class="quick-actions-item">
-                              <div class="avatar-item bg-secondary rounded-circle">
+                              <div
+                                class="avatar-item bg-secondary rounded-circle"
+                              >
                                 <i class="fas fa-credit-card"></i>
                               </div>
                               <span class="text">Payments</span>
@@ -523,9 +609,18 @@
                 </li>
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
-                  <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                  <a
+                    class="dropdown-toggle profile-pic"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
                     <div class="avatar-sm">
-                      <img :src="profile" alt="..." class="avatar-img rounded-circle" />
+                      <img
+                        :src="profile"
+                        alt="..."
+                        class="avatar-img rounded-circle"
+                      />
                     </div>
                     <span class="profile-username">
                       <span class="op-7">Hi,</span>
@@ -537,12 +632,20 @@
                       <li>
                         <div class="user-box">
                           <div class="avatar-lg">
-                            <img :src="profile" alt="image profile" class="avatar-img rounded" />
+                            <img
+                              :src="profile"
+                              alt="image profile"
+                              class="avatar-img rounded"
+                            />
                           </div>
                           <div class="u-text">
                             <h4>Hizrian</h4>
                             <p class="text-muted">hello@example.com</p>
-                            <a href="profile.html" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                            <a
+                              href="profile.html"
+                              class="btn btn-xs btn-secondary btn-sm"
+                              >View Profile</a
+                            >
                           </div>
                         </div>
                       </li>
@@ -604,51 +707,183 @@
             <div class="switch-block">
               <h4>Logo Header</h4>
               <div class="btnSwitch">
-                <button type="button" class="selected changeLogoHeaderColor" data-color="dark"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="blue"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="purple"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="light-blue"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="green"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="orange"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="red"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="white"></button>
+                <button
+                  type="button"
+                  class="selected changeLogoHeaderColor"
+                  data-color="dark"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="blue"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="purple"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="light-blue"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="green"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="orange"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="red"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="white"
+                ></button>
                 <br />
-                <button type="button" class="changeLogoHeaderColor" data-color="dark2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="blue2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="purple2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="light-blue2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="green2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="orange2"></button>
-                <button type="button" class="changeLogoHeaderColor" data-color="red2"></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="dark2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="blue2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="purple2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="light-blue2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="green2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="orange2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeLogoHeaderColor"
+                  data-color="red2"
+                ></button>
               </div>
             </div>
             <div class="switch-block">
               <h4>Navbar Header</h4>
               <div class="btnSwitch">
-                <button type="button" class="changeTopBarColor" data-color="dark"></button>
-                <button type="button" class="changeTopBarColor" data-color="blue"></button>
-                <button type="button" class="changeTopBarColor" data-color="purple"></button>
-                <button type="button" class="changeTopBarColor" data-color="light-blue"></button>
-                <button type="button" class="changeTopBarColor" data-color="green"></button>
-                <button type="button" class="changeTopBarColor" data-color="orange"></button>
-                <button type="button" class="changeTopBarColor" data-color="red"></button>
-                <button type="button" class="selected changeTopBarColor" data-color="white"></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="dark"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="blue"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="purple"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="light-blue"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="green"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="orange"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="red"
+                ></button>
+                <button
+                  type="button"
+                  class="selected changeTopBarColor"
+                  data-color="white"
+                ></button>
                 <br />
-                <button type="button" class="changeTopBarColor" data-color="dark2"></button>
-                <button type="button" class="changeTopBarColor" data-color="blue2"></button>
-                <button type="button" class="changeTopBarColor" data-color="purple2"></button>
-                <button type="button" class="changeTopBarColor" data-color="light-blue2"></button>
-                <button type="button" class="changeTopBarColor" data-color="green2"></button>
-                <button type="button" class="changeTopBarColor" data-color="orange2"></button>
-                <button type="button" class="changeTopBarColor" data-color="red2"></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="dark2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="blue2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="purple2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="light-blue2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="green2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="orange2"
+                ></button>
+                <button
+                  type="button"
+                  class="changeTopBarColor"
+                  data-color="red2"
+                ></button>
               </div>
             </div>
             <div class="switch-block">
               <h4>Sidebar</h4>
               <div class="btnSwitch">
-                <button type="button" class="changeSideBarColor" data-color="white"></button>
-                <button type="button" class="selected changeSideBarColor" data-color="dark"></button>
-                <button type="button" class="changeSideBarColor" data-color="dark2"></button>
+                <button
+                  type="button"
+                  class="changeSideBarColor"
+                  data-color="white"
+                ></button>
+                <button
+                  type="button"
+                  class="selected changeSideBarColor"
+                  data-color="dark"
+                ></button>
+                <button
+                  type="button"
+                  class="changeSideBarColor"
+                  data-color="dark2"
+                ></button>
               </div>
             </div>
           </div>
@@ -663,38 +898,37 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted } from "vue";
 
 import logo from "@/assets/img/kaiadmin/logo_light.svg";
 const logoUrl = logo;
 
-import profileImg from '@/assets/img/jm_denis.jpg';
-import chadengle from '@/assets/img/chadengle.jpg';
+import profileImg from "@/assets/img/jm_denis.jpg";
+import chadengle from "@/assets/img/chadengle.jpg";
 import mlane from "@/assets/img/mlane.jpg";
 import talha from "@/assets/img/talha.jpg";
 import profile2 from "@/assets/img/profile2.jpg";
 import profile from "@/assets/img/profile.jpg";
 
-
 onMounted(() => {
   const scripts = [
-    'https://code.jquery.com/jquery-3.7.1.min.js',
-    'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js',
-    'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/jquery-sparkline/2.1.2/jquery.sparkline.min.js',
-    '/assets/js/kaiadmin.min.js'
+    "https://code.jquery.com/jquery-3.7.1.min.js",
+    "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js",
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/jquery-sparkline/2.1.2/jquery.sparkline.min.js",
+    "/assets/js/kaiadmin.min.js",
   ];
 
-  scripts.forEach(src => {
-    const script = document.createElement('script');
+  scripts.forEach((src) => {
+    const script = document.createElement("script");
     script.src = src;
     script.async = true;
     document.head.appendChild(script);
   });
 
   // Khởi tạo Sparkline và Chart.js
-  const jqueryScript = document.createElement('script');
-  jqueryScript.src = 'https://code.jquery.com/jquery-3.7.1.min.js';
+  const jqueryScript = document.createElement("script");
+  jqueryScript.src = "https://code.jquery.com/jquery-3.7.1.min.js";
   jqueryScript.onload = () => {
     // Sparkline
     $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
@@ -727,52 +961,59 @@ onMounted(() => {
   document.head.appendChild(jqueryScript);
 
   // Khởi tạo Chart.js
-  const chartScript = document.createElement('script');
-  chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js';
+  const chartScript = document.createElement("script");
+  chartScript.src =
+    "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js";
   chartScript.onload = () => {
-    const ctxStats = document.getElementById('statisticsChart').getContext('2d');
+    const ctxStats = document
+      .getElementById("statisticsChart")
+      .getContext("2d");
     new Chart(ctxStats, {
-      type: 'line',
+      type: "line",
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
         datasets: [
           {
-            label: 'Visitors',
+            label: "Visitors",
             data: [1200, 1500, 1700, 1300, 1600, 1800],
-            borderColor: '#177dff',
+            borderColor: "#177dff",
             fill: true,
-            backgroundColor: 'rgba(23, 125, 255, 0.14)',
+            backgroundColor: "rgba(23, 125, 255, 0.14)",
           },
           {
-            label: 'Sales',
+            label: "Sales",
             data: [300, 500, 400, 600, 700, 800],
-            borderColor: '#ffa534',
+            borderColor: "#ffa534",
             fill: true,
-            backgroundColor: 'rgba(255, 165, 52, 0.14)',
-          }
-        ]
+            backgroundColor: "rgba(255, 165, 52, 0.14)",
+          },
+        ],
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
-      }
+        maintainAspectRatio: false,
+      },
     });
 
-    const ctxDaily = document.getElementById('dailySalesChart').getContext('2d');
+    const ctxDaily = document
+      .getElementById("dailySalesChart")
+      .getContext("2d");
     new Chart(ctxDaily, {
-      type: 'bar',
+      type: "bar",
       data: {
-        labels: ['Mar 25', 'Mar 26', 'Mar 27', 'Mar 28', 'Mar 29'],
-        datasets: [{
-          label: 'Sales',
-          data: [500, 700, 600, 800, 900],
-          backgroundColor: '#177dff'
-        }]
+        labels: ["Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29"],
+        datasets: [
+          {
+            label: "Sales",
+            data: [500, 700, 600, 800, 900],
+            backgroundColor: "#177dff",
+          },
+        ],
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
-      }
+        maintainAspectRatio: false,
+      },
     });
   };
   document.head.appendChild(chartScript);
@@ -780,10 +1021,10 @@ onMounted(() => {
 </script>
 
 <style>
-@import 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
-@import 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
+@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css";
+@import "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
 /* @import '/assets/css/bootstrap.min.css'; */
-@import '/assets/css/kaiadmin.min.css';
+@import "/assets/css/kaiadmin.min.css";
 
 .chart-container,
 .pull-in {
@@ -791,13 +1032,11 @@ onMounted(() => {
   width: 100%;
   height: 375px;
 }
-
 canvas {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
 }
-
 .navbar-brand {
   display: block !important;
   width: auto;
