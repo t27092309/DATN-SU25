@@ -747,4 +747,8 @@ import cateNuocHoaNu from '@/assets/images/categories/category-nuoc-hoa-nu-600x7
 import cateNuocHoaUnisex from '@/assets/images/categories/category-nuoc-hoa-unisex-600x720.webp'
 import cateNuocHoaNiche from '@/assets/images/categories/category-nuoc-hoa-niche-600x720.webp'
 import cateNuocHoaMini from '@/assets/images/categories/category-nuoc-hoa-mini-600x720.webp'
+
 </script>
+<style scoped>
+@import '@/assets/tailwind.css';
+</style>

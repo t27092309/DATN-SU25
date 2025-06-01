@@ -341,7 +341,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import logormbg from '@/assets/images/categories/Logo-removebg.png'
-
-
 </script>
-<style></style>
+<style scoped>
+@import '@/assets/tailwind.css';
+</style>
