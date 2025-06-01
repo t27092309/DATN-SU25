@@ -26,8 +26,7 @@
                             <div
                                 class="flex flex-col items-center group cursor-pointer border rounded-lg hover:shadow-lg transition-all duration-300 overflow-hidden">
                                 <div class="relative w-full h-64 overflow-hidden">
-                                    <img :src="cateNuocHoaNam"
-                                        alt="Men's Perfume"
+                                    <img :src="cateNuocHoaNam" alt="Men's Perfume"
                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition duration-300" />
                                 </div>
                             </div>
@@ -35,8 +34,7 @@
                             <div
                                 class="flex flex-col items-center group cursor-pointer border rounded-lg hover:shadow-lg transition-all duration-300 overflow-hidden">
                                 <div class="relative w-full h-64 overflow-hidden">
-                                    <img :src="cateNuocHoaNu"
-                                        alt="Women's Perfume"
+                                    <img :src="cateNuocHoaNu" alt="Women's Perfume"
                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition duration-300" />
                                 </div>
                             </div>
@@ -44,8 +42,7 @@
                             <div
                                 class="flex flex-col items-center group cursor-pointer border rounded-lg hover:shadow-lg transition-all duration-300 overflow-hidden">
                                 <div class="relative w-full h-64 overflow-hidden">
-                                    <img :src="cateNuocHoaUnisex"
-                                        alt="Unisex Perfume"
+                                    <img :src="cateNuocHoaUnisex" alt="Unisex Perfume"
                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition duration-300" />
                                 </div>
                             </div>
@@ -53,8 +50,7 @@
                             <div
                                 class="flex flex-col items-center group cursor-pointer border rounded-lg hover:shadow-lg transition-all duration-300 overflow-hidden">
                                 <div class="relative w-full h-64 overflow-hidden">
-                                    <img :src="cateNuocHoaNiche"
-                                        alt="Niche Perfume"
+                                    <img :src="cateNuocHoaNiche" alt="Niche Perfume"
                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition duration-300" />
                                 </div>
                             </div>
@@ -62,8 +58,7 @@
                             <div
                                 class="flex flex-col items-center group cursor-pointer border rounded-lg hover:shadow-lg transition-all duration-300 overflow-hidden">
                                 <div class="relative w-full h-64 overflow-hidden">
-                                    <img :src="cateNuocHoaMini"
-                                        alt="Mini Perfume"
+                                    <img :src="cateNuocHoaMini" alt="Mini Perfume"
                                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition duration-300" />
                                 </div>
                             </div>
@@ -130,6 +125,7 @@
                 </div>
             </div>
         </div>
+        <ProductsByCategory />
 
         <div class="box-products-1 mx-auto max-w-[1200px] px-4">
             <div class=" py-4 px-4 flex justify-between items-center">
@@ -155,7 +151,7 @@
                     <p class="text-xs text-gray-400 line-through mt-2">3.650.000 ₫</p>
                     <p class="text-md font-bold text-red-600">2.080.000 ₫</p>
                 </div>
-
+                <!-- 
                 <div
                     class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center bg-white relative hover:shadow-md transition-shadow duration-300">
                     <span
@@ -271,7 +267,7 @@
                     <p class="text-xs font-medium mb-1 truncate w-full">Donna Born in Roma EDP</p>
                     <p class="text-xs text-gray-400 line-through mt-2">3.560.000 ₫</p>
                     <p class="text-md font-bold text-red-600">2.580.000 ₫</p>
-                </div>
+                </div> -->
 
             </div>
         </div>
@@ -714,6 +710,37 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import ProductsByCategory from '@/components/ProductsByCategory.vue';
+
+const categoriesData = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+const fetchMostViewedProducts = async () => {
+    try {
+        const response = await axios.get('http://localhost:8000/api/most-viewed-products-by-categories'); // Thay thế bằng URL API thực tế của bạn
+        categoriesData.value = response.data;
+    } catch (err) {
+        error.value = 'Không thể tải dữ liệu sản phẩm. Vui lòng thử lại sau.';
+        console.error('Lỗi khi fetch API:', err);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+    }).format(value);
+};
+
+onMounted(() => {
+    fetchMostViewedProducts();
+});
+
 import banner from '@/assets/images/banners/banner-happy-birthday-orchard-21st_desktop.webp'
 import cateNuocHoaNam from '@/assets/images/categories/category-nuoc-hoa-nam.webp'
 import cateNuocHoaNu from '@/assets/images/categories/category-nuoc-hoa-nu-600x720.webp'

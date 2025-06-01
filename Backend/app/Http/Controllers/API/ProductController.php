@@ -104,7 +104,7 @@ class ProductController extends Controller
     public function getMostViewedProductsByCategories(): JsonResponse
     {
         // Lấy 4 danh mục bất kỳ từ cơ sở dữ liệu.
-        $categories = Category::inRandomOrder()->limit(4)->get();
+        $categories = Category::inRandomOrder()->limit(5)->get();
 
         $data = []; // Mảng để lưu trữ dữ liệu trả về
 
