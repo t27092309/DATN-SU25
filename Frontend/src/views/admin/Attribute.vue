@@ -137,8 +137,7 @@
               </div>
             </div>
             <div class="card-action">
-              <button class="btn btn-success">Submit</button>
-              <button class="btn btn-danger">Cancel</button>
+              <button class="btn btn-primary">Add attribute</button>
             </div>
           </div>
         </div>
