@@ -1,3 +1,6 @@
+<style scoped>
+@import '@/assets/tailwind.css';
+</style>
 <template>
   <div class="container mx-auto p-4">
     <p class="font-bold text-3xl text-black">Nước hoa Mini</p>
@@ -126,5 +129,5 @@ export default {
 </script>
 
 <style scoped>
-    @import '@/assets/tailwind.css'; 
+/* You don't need scrollbar-hide here for MainLayout */
 </style>

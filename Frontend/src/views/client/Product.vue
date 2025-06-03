@@ -1,3 +1,6 @@
+<style scoped>
+@import '@/assets/tailwind.css';
+</style>
 <template>
     <div class="container mx-auto p-4 max-w-[1230px]">
         <div class="flex flex-col lg:flex-row justify-between gap-8">
