@@ -1,16 +1,16 @@
 // import './assets/main.css'
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-// import './assets/tailwind.css'
-import '@splidejs/splide/dist/css/splide.min.css'; // CSS của Splide
-import { Splide, SplideSlide } from '@splidejs/vue-splide';
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "./router";
 
-const app = createApp(App)
+import "@splidejs/splide/dist/css/splide.min.css"; // CSS của Splide
+import { Splide, SplideSlide } from "@splidejs/vue-splide";
 
-app.component('Splide', Splide);
-app.component('SplideSlide', SplideSlide);
+const app = createApp(App);
 
-app.use(router)
+app.component("Splide", Splide);
+app.component("SplideSlide", SplideSlide);
 
-app.mount('#app')
+app.use(router);
+
+app.mount("#app");

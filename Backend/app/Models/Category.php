@@ -29,8 +29,4 @@ class Category extends Model
     {
         return 'slug'; // Dùng slug thay vì id làm khóa route
     }
-    public function products()
-    {
-        return $this->hasMany(Product::class);
-    }
 }

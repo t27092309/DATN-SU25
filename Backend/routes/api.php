@@ -26,8 +26,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             'message' => 'Hello from Laravel with manual CORS!',
         ]);
     });
-
-    Route::get('most-viewed-products-by-categories', [ProductController::class, 'getMostViewedProductsByCategories']);
 });
 
 // use Illuminate\Support\Facades\Route;
