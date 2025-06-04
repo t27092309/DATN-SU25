@@ -1,5 +1,4 @@
 <template>
-
         <div class="container">
           <div class="page-inner">
             <div class="page-header">

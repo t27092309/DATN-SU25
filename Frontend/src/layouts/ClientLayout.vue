@@ -1,6 +1,5 @@
 <template>
-
-    <div>
+    <div class="client-root">
         <div class="header">
             <div class="upper-header">
                 <nav class="dark:bg-red-500 w-full border-b">
@@ -339,9 +338,10 @@
     </div>
 </template>
 <script setup>
-import { onMounted } from 'vue';
-import logormbg from '@/assets/images/categories/Logo-removebg.png'
+    import { onMounted } from 'vue';
+    import logormbg from '@/assets/images/categories/Logo-removebg.png'
+
 </script>
 <style scoped>
-@import '@/assets/tailwind.css';
+    @import '@/assets/tailwind.css'; 
 </style>
