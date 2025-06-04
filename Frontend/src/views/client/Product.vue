@@ -254,12 +254,16 @@
             </div>
         </div>
         <ProductDescription/>
+        <ProductReview/>
+        <RelatedProduct/>
     </div>
 </template>
 
 <script setup>
+import ProductReview from '@/components/ProductReview.vue'
 import ProductDescription from '@/components/ProductDescription.vue';
 import ProductCarousel from '@/components/ProductCarousel.vue';
+import RelatedProduct from '@/components/RelatedProduct.vue';
 import { ref } from 'vue';
 const props = defineProps({
     productImages: {
