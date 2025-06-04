@@ -38,6 +38,7 @@
 </template>
 
 <script setup>
+
 import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
@@ -83,6 +84,7 @@ const prevImage = () => {
 </script>
 
 <style scoped>
+@import '@/assets/tailwind.css';
 /*
   .product-carousel không cần position: relative nữa nếu các nút nằm trong .main-image-wrapper
   .main-image-wrapper cần position: relative để các nút absolute bên trong nó hoạt động đúng

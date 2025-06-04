@@ -74,5 +74,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import '@/assets/tailwind.css';
 /* Bạn có thể thêm các style tùy chỉnh nếu cần, nhưng Tailwind CSS đã xử lý phần lớn */
 </style>
