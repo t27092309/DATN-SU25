@@ -2,7 +2,7 @@
     <div class="client-root">
         <div class="header">
             <div class="upper-header">
-                <nav class="dark:bg-red-500 w-full border-b">
+                <nav class="bg-red-500 w-full border-b">
                     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto py-2 px-4">
                         <p class="text-white font-semibold text-xs">NƯỚC HOA & MỸ PHẨM CHÍNH HÃNG TỪ 2004</p>
 
@@ -339,10 +339,10 @@
     </div>
 </template>
 <script setup>
-    import { onMounted } from 'vue';
-    import logormbg from '@/assets/images/categories/Logo-removebg.png'
-    import cart from '@/assets/images/icons/cart.webp'
+import { onMounted } from 'vue';
+import logormbg from '@/assets/images/categories/Logo-removebg.png'
+import cart from '@/assets/images/icons/cart.webp'
 </script>
 <style scoped>
-    @import '@/assets/tailwind.css'; 
+@import '@/assets/tailwind.css';
 </style>
