@@ -124,38 +124,30 @@ class ProductController extends Controller
     // trang danh muc
     // GET // http://localhost:8000/api/category-page-products
     public function getCategoryPageProducts(Request $request): JsonResponse
-    {
-        // Lấy tham số phân trang, mặc định 4 danh mục mỗi trang
-        $perPage = $request->query('per_page', 4);
+{
+    // Lấy tất cả danh mục thay vì phân trang
+    $categories = Category::all();
+    $data = [];
 
-        // Lấy danh mục với phân trang
-        $categories = Category::paginate($perPage);
-        $data = [];
+    foreach ($categories as $category) {
+        // Lấy 10 sản phẩm có nhiều lượt xem nhất
+        $products = $category->products()
+            ->with(['brand', 'images', 'variants', 'category'])
+            ->orderByDesc('views')
+            ->limit(10)
+            ->get();
 
-        foreach ($categories as $category) {
-            // Lấy 10 sản phẩm có nhiều lượt xem nhất, tải quan hệ
-            $products = $category->products()
-                ->with(['brand', 'images', 'variants', 'category'])
-                ->orderByDesc('views')
-                ->limit(10)
-                ->get();
-
-            $data[] = [
-                'category_name' => $category->name,
-                'category_slug' => $category->slug,
-                'products' => ProductResource::collection($products),
-            ];
-        }
-
-        return response()->json([
-            'data' => $data,
-            'pagination' => [
-                'current_page' => $categories->currentPage(),
-                'last_page' => $categories->lastPage(),
-                'per_page' => $categories->perPage(),
-                'total' => $categories->total(),
-            ],
-        ]);
+        $data[] = [
+            'category_name' => $category->name,
+            'category_slug' => $category->slug,
+            'products' => ProductResource::collection($products),
+        ];
     }
+
+    return response()->json([
+        'data' => $data
+    ]);
+}
+
     }
 
