@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\BrandController as AdminBrandController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\ScentGroupController;
@@ -12,14 +18,14 @@ use App\Http\Controllers\API\ProductVariantController;
 
 Route::middleware([CorsMiddleware::class])->group(function () {
     // route admin
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('coupons', CouponController::class);
-    Route::apiResource('brands', BrandController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::get('product-variants/trashed', [ProductVariantController::class, 'trashed']);
-    Route::put('product-variants/restore/{id}', [ProductVariantController::class, 'restore']);
-    Route::apiResource('product-variants', ProductVariantController::class);
-    Route::apiResource('scent-groups', ScentGroupController::class);
+    Route::apiResource('categories', AdminCategoryController::class);
+    Route::apiResource('coupons', AdminCouponController::class);
+    Route::apiResource('brands', AdminBrandController::class);
+    Route::apiResource('products', AdminProductController::class);
+    Route::get('product-variants/trashed', [AdminProductVariantController::class, 'trashed']);
+    Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
+    Route::apiResource('product-variants', AdminProductVariantController::class);
+    Route::apiResource('scent-groups', AdminScentGroupController::class);
 
     Route::get('/hello', function () {
         return response()->json([
@@ -27,7 +33,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         ]);
     });
 
-    Route::get('most-viewed-products-by-categories', [ProductController::class, 'getMostViewedProductsByCategories']);
+    Route::get('most-viewed-products-by-categories', [AdminProductController::class, 'getMostViewedProductsByCategories']);
 });
 
 // use Illuminate\Support\Facades\Route;
