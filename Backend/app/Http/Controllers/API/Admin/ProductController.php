@@ -11,17 +11,16 @@ use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // GET // http://localhost:8000/api/products
+
     public function index()
     {
         return Product::with(['images', 'variants'])->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+   // POST // http://localhost:8000/api/products
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -44,17 +43,17 @@ class ProductController extends Controller
 
         return response()->json($product, 201);
     }
-    /**
-     * Display the specified resource.
-     */
+
+     // GET // http://localhost:8000/api/products/{id}
+
+
     public function show(string $id)
     {
         return Product::with(['images', 'variants'])->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+     // PUT // http://localhost:8000/api/products/{id}
+
     public function update(Request $request, string $id)
     {
         $product = Product::findOrFail($id);
@@ -80,9 +79,8 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // DELETE // http://localhost:8000/api/products/{id}
+
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
@@ -101,11 +99,12 @@ class ProductController extends Controller
      *
      * @return JsonResponse
      */
-    public function getMostViewedProductsByCategories(): JsonResponse
+    // trang chu
+    // GET //  http://localhost:8000/api/most-viewed-products-by-categories
+   public function getMostViewedProductsByCategories(): JsonResponse
     {
         // Lấy 4 danh mục bất kỳ từ cơ sở dữ liệu.
-        $categories = Category::inRandomOrder()->limit(5)->get();
-
+        $categories = Category::inRandomOrder()->limit(4)->get();
         $data = []; // Mảng để lưu trữ dữ liệu trả về
 
         foreach ($categories as $category) {
@@ -124,9 +123,38 @@ class ProductController extends Controller
                 'products' => ProductResource::collection($products),
             ];
         }
-
         // Trả về dữ liệu dưới dạng JSON response
         return response()->json($data);
     }
+
+
+    // trang danh muc
+    // GET // http://localhost:8000/api/category-page-products
+    public function getCategoryPageProducts(Request $request): JsonResponse
+{
+    // Lấy tất cả danh mục thay vì phân trang
+    $categories = Category::all();
+    $data = [];
+
+    foreach ($categories as $category) {
+        // Lấy 10 sản phẩm có nhiều lượt xem nhất
+        $products = $category->products()
+            ->with(['brand', 'images', 'variants', 'category'])
+            ->orderByDesc('views')
+            ->limit(10)
+            ->get();
+
+        $data[] = [
+            'category_name' => $category->name,
+            'category_slug' => $category->slug,
+            'products' => ProductResource::collection($products),
+        ];
+    }
+
+    return response()->json([
+        'data' => $data
+    ]);
+}
+
     }
 
