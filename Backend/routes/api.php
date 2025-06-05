@@ -6,14 +6,9 @@ use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
-use App\Http\Controllers\Api\BrandController;
-use App\Http\Controllers\Api\CouponController;
-use App\Http\Controllers\Api\ScentGroupController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
-use App\Http\Controllers\API\ProductController;
-use App\Http\Controllers\API\ProductVariantController;
 
 
 Route::middleware([CorsMiddleware::class])->group(function () {
@@ -33,8 +28,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         ]);
     });
 
-    Route::get('most-viewed-products-by-categories', [AdminProductController::class, 'getMostViewedProductsByCategories']);
-    Route::get('category-page-products', [ProductController::class, 'getCategoryPageProducts']);
+    // route client
+    Route::get('most-viewed-products-by-categories', [ClientProductController::class, 'getMostViewedProductsByCategories']);
+    Route::get('category-page-products', [ClientProductController::class, 'getCategoryPageProducts']);
 
 });
 
