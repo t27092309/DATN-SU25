@@ -12,12 +12,14 @@ use Illuminate\Http\JsonResponse;
 class ProductController extends Controller
 {
     // GET // http://localhost:8000/api/products
+
     public function index()
     {
         return Product::with(['images', 'variants'])->get();
     }
 
    // POST // http://localhost:8000/api/products
+
 
     public function store(Request $request)
     {
@@ -44,12 +46,14 @@ class ProductController extends Controller
 
      // GET // http://localhost:8000/api/products/{id}
 
+
     public function show(string $id)
     {
         return Product::with(['images', 'variants'])->findOrFail($id);
     }
 
      // PUT // http://localhost:8000/api/products/{id}
+
     public function update(Request $request, string $id)
     {
         $product = Product::findOrFail($id);
@@ -76,6 +80,7 @@ class ProductController extends Controller
     }
 
     // DELETE // http://localhost:8000/api/products/{id}
+
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
@@ -101,6 +106,7 @@ class ProductController extends Controller
         // Lấy 4 danh mục bất kỳ từ cơ sở dữ liệu.
         $categories = Category::inRandomOrder()->limit(4)->get();
         $data = []; // Mảng để lưu trữ dữ liệu trả về
+
         foreach ($categories as $category) {
             // Lấy 10 sản phẩm có nhiều lượt xem nhất thuộc danh mục hiện tại.
             // Eager load 'brand', 'images', và 'variants' để resource có thể sử dụng chúng.
@@ -109,6 +115,7 @@ class ProductController extends Controller
                                  ->orderByDesc('views')
                                  ->limit(10)
                                  ->get();
+
             $data[] = [
                 'category_name' => $category->name,
                 'category_slug' => $category->slug,
@@ -150,3 +157,4 @@ class ProductController extends Controller
 }
 
     }
+

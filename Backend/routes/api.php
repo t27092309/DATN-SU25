@@ -35,6 +35,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
     Route::get('most-viewed-products-by-categories', [AdminProductController::class, 'getMostViewedProductsByCategories']);
     Route::get('category-page-products', [ProductController::class, 'getCategoryPageProducts']);
+
 });
 
 // use Illuminate\Support\Facades\Route;
