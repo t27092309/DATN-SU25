@@ -191,9 +191,9 @@
                       </a>
                     </li>
                     <li>
-                      <a href="#">
+                      <router-link to="/admin/danh-muc">
                         <span class="sub-item">Danh mục</span>
-                      </a>
+                      </router-link>
                     </li>
                     <li>
                       <a href="#">
@@ -201,7 +201,7 @@
                       </a>
                     </li>
                     <li>
-                      <router-link to="/admin/attribute">
+                      <router-link to="/admin/cac-thuoc-tinh">
                         <span class="sub-item">Các thuộc tính</span>
                       </router-link>
                     </li>
