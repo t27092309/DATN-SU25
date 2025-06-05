@@ -9,6 +9,15 @@ class ProductResource extends JsonResource
 {
   public function toArray(Request $request): array
     {
+            //     return [
+            // 'id' => $this->id,
+            // 'name' => $this->name,
+            // 'slug' => $this->slug,
+            // 'price' => $this->price,
+            // 'views' => $this->views,
+            // 'image' => $this->image,
+            // 'brand' => $this->whenLoaded('brand', fn () => $this->brand->name),
+            // // thêm trường tùy theo nhu cầu
         $data = [
             'name' => $this->name, // Tên sản phẩm
             'category_name' => $this->whenLoaded('category', fn () => $this->category->name ?? 'No Category'), // Danh mục
