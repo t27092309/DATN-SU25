@@ -10,10 +10,12 @@ use Illuminate\Http\Request;
 class CouponController extends Controller
 {
     // GET // http://localhost:8000/api/coupons
-    public function index()
-    {
-        return response()->json(Coupon::all(), 200);
-    }
+   public function index()
+{
+    $coupons = Coupon::orderBy('id', 'desc')->paginate(15);
+    return response()->json($coupons, 200);
+}
+
 
 
     // POST // http://localhost:8000/api/coupons
