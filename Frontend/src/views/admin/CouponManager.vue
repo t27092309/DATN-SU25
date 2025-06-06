@@ -2,7 +2,7 @@
   <div class="container">
     <div class="page-inner">
       <div class="page-header">
-        <h3 class="fw-bold mb-3">Các danh mục sản phẩm</h3>
+        <h3 class="fw-bold mb-3">Các mã giảm giá</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home">
             <a href="#"><i class="icon-home"></i></a>
@@ -16,70 +16,100 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Quản lý danh mục</div>
+              <div class="card-title">Quản lý mã giảm giá</div>
             </div>
             <div class="card-body">
               <div class="row">
-                <!-- Form thêm danh mục -->
+                <!-- Form thêm coupon -->
                 <div class="col-md-6 col-lg-4">
-                  <form @submit.prevent="addCategory" class="mb-5">
+                  <form @submit.prevent="addCoupon" class="mb-5">
                     <div class="form-group">
-                      <h5 class="card-title">Thêm mới danh mục sản phẩm</h5>
+                      <h5 class="card-title">Thêm mới mã giảm giá</h5>
                     </div>
                     <div class="form-group">
-                      <label for="name">Tên</label>
+                      <label for="code">Mã giảm giá</label>
                       <input
                         type="text"
-                        v-model="category.name"
+                        v-model="coupon.code"
                         class="form-control"
-                        id="name"
-                        placeholder="Nhập tên danh mục"
+                        id="code"
+                        placeholder="Nhập mã giảm giá"
                         required
                       />
-                      <small id="emailHelp2" class="form-text text-muted"
-                        >Tên thuộc tính (được hiển thị ngoài frontend)</small
+                      <small class="form-text text-muted"
+                        >Mã giảm giá (ví dụ: SALE2025)</small
                       >
                     </div>
                     <div class="form-group">
-                      <label for="slug">Đường dẫn tĩnh</label>
-                      <input
-                        type="text"
-                        v-model="category.slug"
+                      <label for="discount_type">Loại giảm giá</label>
+                      <select
+                        v-model="coupon.discount_type"
                         class="form-control"
-                        id="slug"
-                        placeholder="Nhập đường dẫn tĩnh"
+                        id="discount_type"
+                        required
+                      >
+                        <option value="" disabled>Chọn loại giảm giá</option>
+                        <option value="percent ">Phần trăm (%)</option>
+                        <option value="fixed">Cố định (VNĐ)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="discount_value">Giá trị giảm</label>
+                      <input
+                        type="number"
+                        v-model="coupon.discount_value"
+                        class="form-control"
+                        id="discount_value"
+                        placeholder="Nhập giá trị giảm"
+                        required
+                      />
+                      <small class="form-text text-muted"
+                        >Ví dụ: 20 (cho 20%) hoặc 100000 (cho 100,000 VNĐ)</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="expires_at">Ngày hết hạn</label>
+                      <input
+                        type="datetime-local"
+                        v-model="coupon.expires_at"
+                        class="form-control"
+                        id="expires_at"
                       />
                     </div>
                     <div class="card-action">
-                      <button type="submit" class="btn btn-primary">Thêm danh mục</button>
+                      <button type="submit" class="btn btn-primary">Thêm mã giảm giá</button>
                     </div>
                     <p v-if="addMessage" :class="addMessageClass">{{ addMessage }}</p>
                   </form>
                 </div>
 
-                <!-- Bảng hiển thị danh mục -->
+                <!-- Bảng hiển thị coupons -->
                 <div class="col-md-6 col-lg-8">
                   <div class="table-responsive">
                     <table id="add-row" class="display table table-bordered">
                       <thead>
                         <tr>
-                          <th>Tên</th>
-                          <th>Đường dẫn tĩnh</th>
+                          <th>Mã</th>
+                          <th>Loại giảm giá</th>
+                          <th>Giá trị</th>
+                          <th>Ngày hết hạn</th>
                           <th style="width: 10%">Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="category in categories" :key="category.id">
-                          <td>{{ category.name }}</td>
-                          <td>{{ category.slug }}</td>
+                        <tr v-for="coupon in coupons" :key="coupon.id">
+                          <td>{{ coupon.code }}</td>
+                          <td>{{ coupon.discount_type === 'percent' ? 'Phần trăm' : 'Cố định' }}</td>
+                          <td>{{ coupon.discount_value }} {{ coupon.discount === 'percentage' ? '%' : 'VNĐ' }}</td>
+                          <td>{{ coupon.expires_at ? new Date(coupon.expires_at).toLocaleString() : 'Không có' }}</td>
                           <td>
                             <div class="form-button-action">
                               <button
                                 type="button"
                                 data-bs-toggle="tooltip"
-                                title="Edit Task"
+                                title="Edit Coupon"
                                 class="btn btn-link btn-primary btn-lg"
-                                @click="editCategory(category.id)"
+                                @click="editCoupon(coupon.id)"
                               >
                                 <i class="fa fa-edit"></i>
                               </button>
@@ -88,7 +118,7 @@
                                 data-bs-toggle="tooltip"
                                 title="Remove"
                                 class="btn btn-link btn-danger"
-                                @click="openDeleteModal(category.id)"
+                                @click="openDeleteModal(coupon.id)"
                               >
                                 <i class="fa fa-times"></i>
                               </button>
@@ -116,7 +146,7 @@
             <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
           </div>
           <div class="modal-body">
-            <p>Bạn có chắc muốn xóa danh mục này?</p>
+            <p>Bạn có chắc muốn xóa mã giảm giá này?</p>
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="showDeleteModal = false">Hủy</button>
@@ -133,15 +163,16 @@ import axios from 'axios';
 import slugify from 'slugify';
 
 export default {
-  name: 'CategoryManager',
+  name: 'CouponManager',
   data() {
     return {
-      category: {
-        name: '',
-        slug: '',
-        description: '',
+      coupon: {
+        code: '',
+        discount_type: 'percent',
+        discount_value: '',
+        expires_at: '',
       },
-      categories: [],
+      coupons: [],
       addMessage: '',
       addMessageClass: '',
       listMessage: '',
@@ -151,8 +182,8 @@ export default {
     };
   },
   watch: {
-    'category.name'(newName) {
-      this.category.slug = slugify(newName, {
+    'coupon.code'(newCode) {
+      this.coupon.code = slugify(newCode, {
         lower: true,
         strict: true,
         locale: 'vi',
@@ -160,48 +191,57 @@ export default {
     },
   },
   mounted() {
-    this.fetchCategories();
+    this.fetchCoupons();
   },
   methods: {
-    async fetchCategories() {
+    async fetchCoupons() {
       try {
-        const response = await axios.get('http://localhost:8000/api/categories');
-        this.categories = response.data;
+        const response = await axios.get('http://localhost:8000/api/coupons');
+        this.coupons = response.data;
       } catch (error) {
-        this.listMessage = error.response?.data?.message || 'Có lỗi khi tải danh sách danh mục!';
+        this.listMessage = error.response?.data?.message || 'Có lỗi khi tải danh sách mã giảm giá!';
         this.listMessageClass = 'text-danger';
       }
     },
-    async addCategory() {
-      if (!this.category.name || !this.category.slug) {
-        this.addMessage = 'Vui lòng nhập tên và đường dẫn tĩnh!';
+    async addCoupon() {
+      if (!this.coupon.code || !this.coupon.discount_type || !this.coupon.discount_value) {
+        this.addMessage = 'Vui lòng nhập mã, loại giảm giá và giá trị giảm giá!';
         this.addMessageClass = 'text-danger';
         return;
       }
+      console.log('Payload:', {
+        code: this.coupon.code,
+        discount_type: this.coupon.discount_type,
+        discount_value: this.coupon.discount_value,
+        expires_at: this.coupon.expires_at || null,
+      });
       try {
-        const response = await axios.post('http://localhost:8000/api/categories', {
-          name: this.category.name,
-          slug: this.category.slug,
-          description: this.category.description,
+        const response = await axios.post('http://localhost:8000/api/coupons', {
+          code: this.coupon.code,
+          discount_type: this.coupon.discount_type,
+          discount_value: this.coupon.discount_value,
+          expires_at: this.coupon.expires_at || null,
         });
-        this.categories.push(response.data.category);
+        this.coupons.push(response.data.coupon);
         this.addMessage = response.data.message;
         this.addMessageClass = 'text-success';
-        this.category.name = '';
-        this.category.slug = '';
-        this.category.description = '';
+        this.coupon.code = '';
+        this.coupon.discount_type = 'percent';
+        this.coupon.discount_value = '';
+        this.coupon.expires_at = '';
       } catch (error) {
+        console.error('Error:', error.response);
         const errors = error.response?.data?.errors;
         if (errors) {
           this.addMessage = Object.values(errors).flat().join(' ');
         } else {
-          this.addMessage = error.response?.data?.message || 'Có lỗi xảy ra khi thêm danh mục!';
+          this.addMessage = error.response?.data?.message || 'Có lỗi khi thêm mã giảm giá!';
         }
         this.addMessageClass = 'text-danger';
       }
     },
-    editCategory(id) {
-      this.$router.push(`/categories/edit/${id}`);
+    editCoupon(id) {
+      this.$router.push(`/coupons/edit/${id}`);
     },
     openDeleteModal(id) {
       this.deleteId = id;
@@ -209,14 +249,14 @@ export default {
     },
     async confirmDelete() {
       try {
-        const response = await axios.delete(`http://localhost:8000/api/categories/${this.deleteId}`);
-        this.categories = this.categories.filter(category => category.id !== this.deleteId);
+        const response = await axios.delete(`http://localhost:8000/api/coupons/${this.deleteId}`);
+        this.coupons = this.coupons.filter(coupon => coupon.id !== this.deleteId);
         this.listMessage = response.data.message;
         this.listMessageClass = 'text-success';
         this.showDeleteModal = false;
         this.deleteId = null;
       } catch (error) {
-        this.listMessage = error.response?.data?.message || 'Có lỗi khi xóa danh mục!';
+        this.listMessage = error.response?.data?.message || 'Có lỗi khi xóa mã giảm giá!';
         this.listMessageClass = 'text-danger';
         this.showDeleteModal = false;
       }

@@ -138,15 +138,15 @@
               <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#forms">
                   <i class="fas fa-pen-square"></i>
-                  <p>Forms</p>
+                  <p>Mã giảm giá</p>
                   <span class="caret"></span>
                 </a>
                 <div class="collapse" id="forms">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="forms/forms.html">
-                        <span class="sub-item">Basic Form</span>
-                      </a>
+                        <router-link to="/admin/ma-giam-gia">
+                        <span class="sub-item">Quản lý mã giảm giá</span>
+                        </router-link>
                     </li>
                   </ul>
                 </div>
