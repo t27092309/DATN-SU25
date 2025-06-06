@@ -2,11 +2,11 @@
 @import '@/assets/tailwind.css';
 </style>
 <template>
-  <div class="container mx-auto p-4">
+  <div class="container mx-auto p-4 max-w-[1200px]">
     <p class="font-bold text-3xl text-black">Nước Hoa Niche</p>
     <nav class="text-sm breadcrumbs mb-6 ">
       <ul class="flex items-center space-x-2">
-        <li><router-link to="/" class="text-2xl"><span class="text-base text-gray-500">Trang chủ</span></router-link>
+        <li><router-link to="/" class="ml-2"><span class="text-base text-gray-500">Trang chủ</span></router-link>
         </li>
         <span class="text-gray-500 text-base">/</span>
         <li class="ml-2"><router-link to="/nuoc-hoa"><span class="text-base text-gray-500">Nước Hoa</span></router-link>

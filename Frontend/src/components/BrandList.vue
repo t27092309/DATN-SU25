@@ -40,6 +40,8 @@ export default {
 </script>
 
 <style scoped>
+@import '@/assets/tailwind.css';
+
 /* Ẩn thanh cuộn mặc định của trình duyệt */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;

@@ -208,6 +208,7 @@
                                 class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
                                 Kiến Thức
                             </a>
+                            <!-- <cart/> -->
                         </div>
                     </div>
                 </nav>
@@ -340,7 +341,7 @@
 <script setup>
     import { onMounted } from 'vue';
     import logormbg from '@/assets/images/categories/Logo-removebg.png'
-
+    import cart from '@/assets/images/icons/cart.webp'
 </script>
 <style scoped>
     @import '@/assets/tailwind.css'; 
