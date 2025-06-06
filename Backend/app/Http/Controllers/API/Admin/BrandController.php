@@ -12,9 +12,12 @@ class BrandController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        return response()->json(Brand::all(), 200);
-    }
+{
+    $brands = Brand::orderBy('id', 'desc')->paginate(15);
+
+    return response()->json($brands, 200);
+}
+
 
     /**
      * Store a newly created resource in storage.
