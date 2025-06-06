@@ -13,29 +13,42 @@ class ProductVariantController extends Controller
      */
     public function index()
     {
-        return ProductVariant::with('product')->get();
+        return ProductVariant::with('product')
+            ->orderByDesc('id')
+            ->paginate(15);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'sku' => 'required|unique:product_variants,sku',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'status' => 'in:available,out_of_stock,discontinued',
-            'barcode' => 'nullable|string',
-            'description' => 'nullable|string',
-        ]);
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'sku' => 'required|unique:product_variants,sku',
+        'price' => 'required|numeric',
+        'stock' => 'required|integer',
+        'status' => 'in:available,out_of_stock,discontinued',
+        'barcode' => 'nullable|string',
+        'description' => 'nullable|string',
+    ], [
+        'product_id.required' => 'ID sản phẩm là bắt buộc.',
+        'product_id.exists' => 'Sản phẩm không tồn tại.',
+        'sku.required' => 'SKU là bắt buộc.',
+        'sku.unique' => 'SKU đã tồn tại, vui lòng chọn SKU khác.',
+        'price.required' => 'Giá là bắt buộc.',
+        'price.numeric' => 'Giá phải là một số.',
+        'stock.required' => 'Số lượng tồn kho là bắt buộc.',
+        'stock.integer' => 'Số lượng tồn kho phải là số nguyên.',
+        'status.in' => 'Trạng thái phải là một trong các giá trị: available, out_of_stock, discontinued.',
+        'barcode.string' => 'Mã vạch phải là chuỗi ký tự.',
+        'description.string' => 'Mô tả phải là chuỗi ký tự.',
+    ]);
 
-        $variant = ProductVariant::create($validated);
+    $variant = ProductVariant::create($validated);
 
-        return response()->json($variant, 201);
-    }
-
+    return response()->json($variant, 201);
+}
     /**
      * Display the specified resource.
      */
@@ -47,23 +60,30 @@ class ProductVariantController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $variant = ProductVariant::findOrFail($id);
+   public function update(Request $request, string $id)
+{
+    $variant = ProductVariant::findOrFail($id);
 
-        $validated = $request->validate([
-            'sku' => 'sometimes|unique:product_variants,sku,' . $variant->id,
-            'price' => 'sometimes|numeric',
-            'stock' => 'sometimes|integer',
-            'status' => 'in:available,out_of_stock,discontinued',
-            'barcode' => 'nullable|string',
-            'description' => 'nullable|string',
-        ]);
+    $validated = $request->validate([
+        'sku' => 'sometimes|unique:product_variants,sku,' . $variant->id,
+        'price' => 'sometimes|numeric',
+        'stock' => 'sometimes|integer',
+        'status' => 'in:available,out_of_stock,discontinued',
+        'barcode' => 'nullable|string',
+        'description' => 'nullable|string',
+    ], [
+        'sku.unique' => 'SKU đã tồn tại, vui lòng chọn SKU khác.',
+        'price.numeric' => 'Giá phải là một số.',
+        'stock.integer' => 'Số lượng tồn kho phải là số nguyên.',
+        'status.in' => 'Trạng thái phải là một trong các giá trị: available, out_of_stock, discontinued.',
+        'barcode.string' => 'Mã vạch phải là chuỗi ký tự.',
+        'description.string' => 'Mô tả phải là chuỗi ký tự.',
+    ]);
 
-        $variant->update($validated);
+    $variant->update($validated);
 
-        return response()->json($variant);
-    }
+    return response()->json($variant);
+}
 
     /**
      * Remove the specified resource from storage.
@@ -88,7 +108,10 @@ class ProductVariantController extends Controller
 
     public function trashed()
     {
-        $trashed = ProductVariant::onlyTrashed()->with('product')->get();
+        $trashed = ProductVariant::onlyTrashed()
+            ->with('product')
+            ->orderByDesc('id')
+            ->get();
 
         return response()->json($trashed);
     }
