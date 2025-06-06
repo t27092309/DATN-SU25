@@ -13,7 +13,8 @@ class ScentGroupController extends Controller
     // GET //  http://localhost:8000/api/scent-groups
     public function index()
     {
-        return response()->json(ScentGroup::all(), 200);
+        $scentGroups = ScentGroup::orderBy('id', 'desc')->paginate(15);
+        return response()->json($scentGroups, 200);
     }
 
 
