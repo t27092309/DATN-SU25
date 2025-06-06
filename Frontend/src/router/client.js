@@ -8,6 +8,7 @@ import NuocHoaMiniPage from '@/views/client/NuocHoaMiniPage.vue'
 import NuocHoaChietPage from '@/views/client/NuocHoaChietPage.vue'
 import NuocHoaNichePage from '@/views/client/NuocHoaNichePage.vue'
 import NuocHoaUnisexPage from '@/views/client/NuocHoaUnisexPage.vue'
+import Cart from '@/views/client/Cart.vue'
 import Product from '@/views/client/Product.vue'
 
 export default [
@@ -59,6 +60,11 @@ export default [
         path: 'nuoc-hoa-niche',
         name: 'NuocHoaNiche',
         component: NuocHoaNichePage,
+      },
+      {
+        path: 'gio-hang',
+        name: 'GioHang',
+        component: Cart,
       },
       {
         path: 'san-pham',

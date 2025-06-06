@@ -208,7 +208,10 @@
                                 class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
                                 Kiến Thức
                             </a>
-                            <!-- <cart/> -->
+                            <router-link to="/gio-hang"
+                                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
+                                <font-awesome-icon icon="shopping-cart" />
+                            </router-link>
                         </div>
                     </div>
                 </nav>
