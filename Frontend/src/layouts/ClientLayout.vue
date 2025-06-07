@@ -220,6 +220,18 @@
 
         <router-view></router-view>
 
+        <button ref="chatButtonRef" @click.stop="toggleChatWindow"
+            class="fixed bottom-4 right-4 bg-red-500 text-white rounded-full p-3 shadow-lg flex items-center space-x-2 z-40">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                </path>
+            </svg>
+            <span>Chat</span>
+        </button>
+
+        <ChatWindow v-if="showChatWindow" ref="chatWindowRef" @close="showChatWindow = false" @click.stop />
         <footer class="bg-gray-800 text-gray-300 py-10">
             <div class="container mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -342,9 +354,44 @@
     </div>
 </template>
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'; // Import onMounted và onUnmounted
 import logormbg from '@/assets/images/categories/Logo-removebg.png'
 import cart from '@/assets/images/icons/cart.webp'
+import ChatWindow from '@/components/ChatWindow.vue';
+
+const showChatWindow = ref(false);
+const chatButtonRef = ref(null); // Ref cho nút chat
+const chatWindowRef = ref(null); // Ref cho cửa sổ chat
+
+// Hàm để đóng cửa sổ chat khi click ra ngoài
+const handleClickOutside = (event) => {
+    // Nếu cửa sổ chat đang mở
+    if (showChatWindow.value) {
+        // Kiểm tra xem click có phải là trên nút chat HOẶC bên trong cửa sổ chat không
+        const clickedOnButton = chatButtonRef.value && chatButtonRef.value.contains(event.target);
+        const clickedInsideChat = chatWindowRef.value && chatWindowRef.value.$el.contains(event.target);
+
+        // Nếu KHÔNG phải là trên nút chat và KHÔNG phải là bên trong cửa sổ chat
+        if (!clickedOnButton && !clickedInsideChat) {
+            showChatWindow.value = false; // Đóng cửa sổ chat
+        }
+    }
+};
+
+// Hàm để bật/tắt cửa sổ chat khi nhấn vào nút chat
+const toggleChatWindow = () => {
+    showChatWindow.value = !showChatWindow.value;
+};
+
+// Đăng ký lắng nghe sự kiện click khi component được mount
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+// Hủy đăng ký lắng nghe sự kiện click khi component bị unmount để tránh rò rỉ bộ nhớ
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 <style scoped>
 @import '@/assets/tailwind.css';
