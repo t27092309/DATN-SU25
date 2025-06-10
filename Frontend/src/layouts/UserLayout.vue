@@ -79,7 +79,7 @@
                 activeMenuItem === 'shopee-coins' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
               <i class="fas fa-coins w-5 mr-3"
                 :class="activeMenuItem === 'shopee-coins' ? 'text-red-600' : 'text-orange-500'"></i>
-              Shopee Xu
+              Xu của tôi
             </a>
           </li>
         </ul>

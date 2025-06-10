@@ -68,7 +68,7 @@
                 </button>
             </div>
             <div class="text-center text-sm text-gray-600 mb-6">
-                Bằng việc đăng kí, bạn đã đồng ý với Shopee về Điều khoản dịch vụ & Chính sách bảo mật
+                Bằng việc đăng kí, bạn đã đồng ý với Florea về Điều khoản dịch vụ & Chính sách bảo mật
             </div>
 
             <div class="text-center text-sm text-gray-600">

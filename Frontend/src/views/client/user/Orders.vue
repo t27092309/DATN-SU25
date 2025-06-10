@@ -1,154 +1,111 @@
 <template>
-  <div class="user-orders">
-    <h2 class="text-xl font-semibold mb-6">Đơn Mua Của Tôi</h2>
+  <div class="user-orders p-6 bg-gray-50 min-h-screen">
+    <h2 class="text-3xl font-bold mb-8 text-gray-800">Đơn Mua Của Tôi</h2>
 
-    <div class="flex border-b border-gray-200 mb-6">
+    <div class="flex border-b border-gray-200 mb-6 bg-white rounded-t-lg shadow-sm overflow-x-auto whitespace-nowrap">
       <button v-for="tab in orderTabs" :key="tab.value" @click="activeTab = tab.value"
-        :class="['px-6 py-3 text-sm font-medium border-b-2 transition-colors duration-200',
-          activeTab === tab.value ? 'border-red-500 text-red-500' : 'border-transparent text-gray-700 hover:text-red-500 hover:border-red-50']">
-        {{ tab.label }}
-        <span v-if="tab.count > 0" class="ml-1 text-xs px-2 py-1 rounded-full bg-red-500 text-white">{{ tab.count
+        :class="['flex-shrink-0 px-3 sm:px-6 py-3 text-base font-medium border-b-2 transition-colors duration-200 flex items-center justify-center',
+          activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
+        <span>{{ tab.label }}</span>
+        <span v-if="tab.count > 0" class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count
           }}</span>
       </button>
     </div>
 
     <div class="relative mb-6">
-      <input type="text" placeholder="Bạn có thể tìm kiếm tên Shop, ID đơn hàng hoặc Tên Sản phẩm"
-        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500" />
+      <input type="text" placeholder="Bạn có thể tìm kiếm Tên sản phẩm hoặc ID đơn hàng"
+        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm" />
       <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
     </div>
 
-    <div class="order-list space-y-4">
-      <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-
-        <div class="flex justify-between items-center mb-4 text-sm">
-          <p class="text-gray-600">
-            [Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]
-            <i class="fas fa-question-circle ml-1 text-gray-400"></i>
-          </p>
-          <p class="text-red-500 font-semibold">CHỜ GIAO HÀNG</p>
-        </div>
-
-        <div class="flex items-center border-t border-b border-gray-100 py-4 mb-4">
-          <img src="https://via.placeholder.com/80" alt="Product Image"
-            class="w-20 h-20 object-cover border border-gray-200 rounded-sm mr-4" />
-          <div class="flex-1">
-            <p class="font-medium text-gray-800 mb-1">Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo
-              Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa</p>
-            <p class="text-sm text-gray-600">Phân loại hàng: Đen, Vivo IQOO Z9</p>
-            <p class="text-sm text-gray-600">x1</p>
-          </div>
-          <div class="text-right flex items-center">
-            <span class="text-gray-400 line-through mr-2">₫74.978</span>
-            <span class="text-red-500 font-semibold">₫56.233</span>
-          </div>
-        </div>
-
-        <div class="text-right mb-4">
-          <span class="text-gray-700 mr-2">Thành tiền:</span>
-          <span class="text-red-500 text-xl font-semibold">₫56.233</span>
-        </div>
-
-        <div class="flex justify-end items-center">
-          <p class="text-sm text-gray-500 mr-4">
-            Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề
-            nào.
-          </p>
-          <button class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md mr-2 hover:bg-gray-300">
-            Đã Nhận Hàng
-          </button>
-          <button class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-            Liên Hệ Người Bán
-          </button>
-        </div>
+    <div class="order-list space-y-6">
+      <div v-if="orders.length === 0"
+        class="text-center py-10 text-gray-500 text-lg bg-white rounded-lg shadow-sm">
+        Không có đơn hàng nào trong mục này.
       </div>
 
-            <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+      <div v-for="order in orders" :key="order.id"
+        class="border border-gray-200 rounded-lg p-5 bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
 
         <div class="flex justify-between items-center mb-4 text-sm">
           <p class="text-gray-600">
-            [Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]
-            <i class="fas fa-question-circle ml-1 text-gray-400"></i>
+            {{ order.shippingInfo }}
+            <i class="fas fa-question-circle ml-1 text-gray-400 cursor-pointer hover:text-gray-600"
+              title="Thông tin vận chuyển"></i>
           </p>
-          <p class="text-red-500 font-semibold">CHỜ GIAO HÀNG</p>
+          <p :class="['font-bold text-base', order.statusColor || 'text-red-600']">{{ order.status }}</p>
         </div>
 
         <div class="flex items-center border-t border-b border-gray-100 py-4 mb-4">
-          <img src="https://via.placeholder.com/80" alt="Product Image"
-            class="w-20 h-20 object-cover border border-gray-200 rounded-sm mr-4" />
+          <img :src="order.product.imageUrl" :alt="order.product.name"
+            class="w-24 h-24 object-cover border border-gray-200 rounded-md mr-4 flex-shrink-0" />
           <div class="flex-1">
-            <p class="font-medium text-gray-800 mb-1">Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo
-              Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa</p>
-            <p class="text-sm text-gray-600">Phân loại hàng: Đen, Vivo IQOO Z9</p>
-            <p class="text-sm text-gray-600">x1</p>
+            <p class="font-semibold text-gray-800 mb-1 text-base">{{ order.product.name }}</p>
+            <p class="text-sm text-gray-600">Phân loại hàng: {{ order.product.variant }}</p>
+            <p class="text-sm text-gray-600">x{{ order.product.quantity }}</p>
           </div>
-          <div class="text-right flex items-center">
-            <span class="text-gray-400 line-through mr-2">₫74.978</span>
-            <span class="text-red-500 font-semibold">₫56.233</span>
+          <div class="text-right flex flex-col items-end min-w-[120px]">
+            <span v-if="order.product.originalPrice" class="text-gray-400 line-through text-sm">
+              ₫{{ order.product.originalPrice.toLocaleString('vi-VN') }}
+            </span>
+            <span class="text-red-600 font-bold text-lg">
+              ₫{{ order.product.currentPrice.toLocaleString('vi-VN') }}
+            </span>
           </div>
         </div>
 
         <div class="text-right mb-4">
-          <span class="text-gray-700 mr-2">Thành tiền:</span>
-          <span class="text-red-500 text-xl font-semibold">₫56.233</span>
+          <span class="text-gray-700 mr-2 text-base">Thành tiền:</span>
+          <span class="text-red-600 text-2xl font-bold">
+            ₫{{ order.totalAmount.toLocaleString('vi-VN') }}
+          </span>
         </div>
 
-        <div class="flex justify-end items-center">
-          <p class="text-sm text-gray-500 mr-4">
-            Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề
-            nào.
+        <div class="flex flex-col sm:flex-row justify-end items-end sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+          <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+            {{ order.note }}
           </p>
-          <button class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md mr-2 hover:bg-gray-300">
-            Đã Nhận Hàng
-          </button>
-          <button class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-            Liên Hệ Người Bán
-          </button>
-        </div>
-      </div>
-
-            <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-
-        <div class="flex justify-between items-center mb-4 text-sm">
-          <p class="text-gray-600">
-            [Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]
-            <i class="fas fa-question-circle ml-1 text-gray-400"></i>
-          </p>
-          <p class="text-red-500 font-semibold">CHỜ GIAO HÀNG</p>
-        </div>
-
-        <div class="flex items-center border-t border-b border-gray-100 py-4 mb-4">
-          <img src="https://via.placeholder.com/80" alt="Product Image"
-            class="w-20 h-20 object-cover border border-gray-200 rounded-sm mr-4" />
-          <div class="flex-1">
-            <p class="font-medium text-gray-800 mb-1">Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo
-              Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa</p>
-            <p class="text-sm text-gray-600">Phân loại hàng: Đen, Vivo IQOO Z9</p>
-            <p class="text-sm text-gray-600">x1</p>
+          <template v-if="order.status === 'CHỜ GIAO HÀNG'">
+            <button @click="markAsReceived(order.id)"
+              class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 shadow-sm">
+              Đã Nhận Hàng
+            </button>
+            <button @click="contactSeller(order.shopName)"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Liên Hệ Người Bán
+            </button>
+          </template>
+          <template v-else-if="order.status === 'HOÀN THÀNH'">
+            <button
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Mua Lại
+            </button>
+            <button
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Xem Chi Tiết
+            </button>
+          </template>
+          <template v-else-if="order.status === 'ĐÃ HỦY'">
+            <button
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Đặt Lại
+            </button>
+            <button
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Xem Lý Do Hủy
+            </button>
+          </template>
+          <template v-else-if="order.status === 'CHỜ THANH TOÁN'">
+            <button
+              class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 shadow-sm">
+              Thanh Toán Ngay
+            </button>
+            <button
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
+              Hủy Đơn Hàng
+            </button>
+          </template>
           </div>
-          <div class="text-right flex items-center">
-            <span class="text-gray-400 line-through mr-2">₫74.978</span>
-            <span class="text-red-500 font-semibold">₫56.233</span>
-          </div>
-        </div>
-
-        <div class="text-right mb-4">
-          <span class="text-gray-700 mr-2">Thành tiền:</span>
-          <span class="text-red-500 text-xl font-semibold">₫56.233</span>
-        </div>
-
-        <div class="flex justify-end items-center">
-          <p class="text-sm text-gray-500 mr-4">
-            Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề
-            nào.
-          </p>
-          <button class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md mr-2 hover:bg-gray-300">
-            Đã Nhận Hàng
-          </button>
-          <button class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-            Liên Hệ Người Bán
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -157,24 +114,20 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 
-// Trạng thái tab hiện tại
-const activeTab = ref('all'); // Mặc định là 'all'
+const activeTab = ref('all');
 
-// Danh sách các tab và số lượng đơn hàng (có thể động từ API)
 const orderTabs = ref([
-  { label: 'Tất cả', value: 'all', count: 0 },
-  { label: 'Chờ thanh toán', value: 'pending_payment', count: 0 },
+  { label: 'Tất cả', value: 'all', count: 2 }, // Cập nhật số lượng ví dụ
+  { label: 'Chờ thanh toán', value: 'pending_payment', count: 1 },
   { label: 'Vận chuyển', value: 'shipping', count: 0 },
-  { label: 'Chờ giao hàng', value: 'pending_delivery', count: 1 }, // Có 1 đơn hàng chờ giao
-  { label: 'Hoàn thành', value: 'completed', count: 0 },
-  { label: 'Đã hủy', value: 'cancelled', count: 0 },
+  { label: 'Chờ giao hàng', value: 'pending_delivery', count: 1 },
+  { label: 'Hoàn thành', value: 'completed', count: 1 },
+  { label: 'Đã hủy', value: 'cancelled', count: 1 },
   { label: 'Trả hàng/Hoàn tiền', value: 'return_refund', count: 0 },
 ]);
 
-// Danh sách đơn hàng (dữ liệu giả định)
 const orders = ref([]);
 
-// Hàm để tải đơn hàng dựa trên activeTab
 const fetchOrders = async (status) => {
   console.log(`Đang tải đơn hàng với trạng thái: ${status}`);
   // Trong thực tế, bạn sẽ gọi API ở đây để fetch dữ liệu đơn hàng
@@ -189,49 +142,204 @@ const fetchOrders = async (status) => {
   // }
 
   // Dữ liệu giả định cho mục đích hiển thị
-  if (status === 'pending_delivery') {
-    orders.value = [
-      {
-        id: 'ORDER12345',
-        shopName: 'yangxinyil.cn',
-        isPreferred: true,
-        status: 'CHỜ GIAO HÀNG',
-        shippingInfo: '[Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]',
-        product: {
-          name: 'Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa',
-          variant: 'Đen, Vivo IQOO Z9',
-          quantity: 1,
-          imageUrl: 'https://via.placeholder.com/80',
-          originalPrice: 74978,
-          currentPrice: 56233,
+  switch (status) {
+    case 'all':
+      orders.value = [
+        {
+          id: 'ORDER12345',
+          shopName: 'yangxinyil.cn',
+          isPreferred: true,
+          status: 'CHỜ GIAO HÀNG',
+          statusColor: 'text-orange-500', // Thêm màu sắc cho trạng thái
+          shippingInfo: '[Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]',
+          product: {
+            name: 'Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa',
+            variant: 'Đen, Vivo IQOO Z9',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP1',
+            originalPrice: 74978,
+            currentPrice: 56233,
+          },
+          totalAmount: 56233,
+          note: 'Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề nào.',
         },
-        totalAmount: 56233,
-        note: 'Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề nào.',
-      },
-      // Thêm các đơn hàng khác nếu có
-    ];
-  } else {
-    orders.value = []; // Giả định không có đơn hàng cho các tab khác
+        {
+          id: 'ORDER12346',
+          shopName: 'mobile-accessories.vn',
+          isPreferred: false,
+          status: 'CHỜ THANH TOÁN',
+          statusColor: 'text-blue-500',
+          shippingInfo: '[Nội Địa Đơn hàng chưa thanh toán]',
+          product: {
+            name: 'Tai nghe Bluetooth không dây chất lượng cao, âm thanh sống động, pin trâu',
+            variant: 'Trắng, Phiên bản 2024',
+            quantity: 2,
+            imageUrl: 'https://via.placeholder.com/80?text=SP2',
+            originalPrice: 150000,
+            currentPrice: 120000,
+          },
+          totalAmount: 240000,
+          note: 'Vui lòng thanh toán để đơn hàng được xử lý.',
+        },
+        {
+          id: 'ORDER12347',
+          shopName: 'thoitrangnu.com',
+          isPreferred: false,
+          status: 'HOÀN THÀNH',
+          statusColor: 'text-green-600',
+          shippingInfo: '[Đã Giao Hàng Thành Công]',
+          product: {
+            name: 'Áo thun nữ cotton basic, màu sắc thời trang, dễ phối đồ',
+            variant: 'Đen, Size M',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP3',
+            originalPrice: 199000,
+            currentPrice: 99000,
+          },
+          totalAmount: 99000,
+          note: 'Cảm ơn bạn đã mua hàng!',
+        },
+        {
+          id: 'ORDER12348',
+          shopName: 'sachonline.vn',
+          isPreferred: false,
+          status: 'ĐÃ HỦY',
+          statusColor: 'text-gray-500',
+          shippingInfo: '[Đơn hàng đã được hủy]',
+          product: {
+            name: 'Sách "Đắc Nhân Tâm" - Tái bản 2023',
+            variant: 'Bản bìa cứng',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP4',
+            originalPrice: 120000,
+            currentPrice: 120000,
+          },
+          totalAmount: 120000,
+          note: 'Đơn hàng đã bị hủy theo yêu cầu của bạn.',
+        },
+      ];
+      break;
+    case 'pending_payment':
+      orders.value = [
+        {
+          id: 'ORDER12346',
+          shopName: 'mobile-accessories.vn',
+          isPreferred: false,
+          status: 'CHỜ THANH TOÁN',
+          statusColor: 'text-blue-500',
+          shippingInfo: '[Nội Địa Đơn hàng chưa thanh toán]',
+          product: {
+            name: 'Tai nghe Bluetooth không dây chất lượng cao, âm thanh sống động, pin trâu',
+            variant: 'Trắng, Phiên bản 2024',
+            quantity: 2,
+            imageUrl: 'https://via.placeholder.com/80?text=SP2',
+            originalPrice: 150000,
+            currentPrice: 120000,
+          },
+          totalAmount: 240000,
+          note: 'Vui lòng thanh toán để đơn hàng được xử lý.',
+        },
+      ];
+      break;
+    case 'shipping':
+      orders.value = [
+        // Thêm dữ liệu giả định cho trạng thái 'Vận chuyển'
+        // { ... }
+      ];
+      break;
+    case 'pending_delivery':
+      orders.value = [
+        {
+          id: 'ORDER12345',
+          shopName: 'yangxinyil.cn',
+          isPreferred: true,
+          status: 'CHỜ GIAO HÀNG',
+          statusColor: 'text-orange-500',
+          shippingInfo: '[Quốc Tế Đơn hàng đã nhập kho quốc tế: Thâm Quyến]',
+          product: {
+            name: 'Ốp Điện Thoại Trong Suốt Làm Mắt Graphene Cho Vivo IQOO Z9 Turbo Plus Z9X Neo 9 8 9S Pro Plus Pro + 5G Vỏ Tản Nhiệt TPU Chống Sốc Vỏ Capa',
+            variant: 'Đen, Vivo IQOO Z9',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP1',
+            originalPrice: 74978,
+            currentPrice: 56233,
+          },
+          totalAmount: 56233,
+          note: 'Vui lòng chỉ nhấn "Đã Nhận Hàng" khi đơn hàng đã được giao đến bạn và sản phẩm nhận được không có vấn đề nào.',
+        },
+      ];
+      break;
+    case 'completed':
+      orders.value = [
+        {
+          id: 'ORDER12347',
+          shopName: 'thoitrangnu.com',
+          isPreferred: false,
+          status: 'HOÀN THÀNH',
+          statusColor: 'text-green-600',
+          shippingInfo: '[Đã Giao Hàng Thành Công]',
+          product: {
+            name: 'Áo thun nữ cotton basic, màu sắc thời trang, dễ phối đồ',
+            variant: 'Đen, Size M',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP3',
+            originalPrice: 199000,
+            currentPrice: 99000,
+          },
+          totalAmount: 99000,
+          note: 'Cảm ơn bạn đã mua hàng!',
+        },
+      ];
+      break;
+    case 'cancelled':
+      orders.value = [
+        {
+          id: 'ORDER12348',
+          shopName: 'sachonline.vn',
+          isPreferred: false,
+          status: 'ĐÃ HỦY',
+          statusColor: 'text-gray-500',
+          shippingInfo: '[Đơn hàng đã được hủy]',
+          product: {
+            name: 'Sách "Đắc Nhân Tâm" - Tái bản 2023',
+            variant: 'Bản bìa cứng',
+            quantity: 1,
+            imageUrl: 'https://via.placeholder.com/80?text=SP4',
+            originalPrice: 120000,
+            currentPrice: 120000,
+          },
+          totalAmount: 120000,
+          note: 'Đơn hàng đã bị hủy theo yêu cầu của bạn.',
+        },
+      ];
+      break;
+    case 'return_refund':
+      orders.value = [
+        // Thêm dữ liệu giả định cho trạng thái 'Trả hàng/Hoàn tiền'
+        // { ... }
+      ];
+      break;
+    default:
+      orders.value = [];
   }
 };
 
-// Theo dõi sự thay đổi của activeTab để tải lại đơn hàng
 watch(activeTab, (newTab) => {
   fetchOrders(newTab);
 });
 
-// Tải đơn hàng lần đầu khi component được mount
 onMounted(() => {
   fetchOrders(activeTab.value);
 });
 
-// Các hàm xử lý hành động trên đơn hàng
 const markAsReceived = (orderId) => {
+  alert(`Đã nhận hàng cho đơn: ${orderId}. (Logic cập nhật trạng thái sẽ được gọi ở đây)`);
   console.log(`Đã nhận hàng cho đơn: ${orderId}`);
   // Gọi API để cập nhật trạng thái đơn hàng
 };
 
 const contactSeller = (shopName) => {
+  alert(`Đang liên hệ với người bán: ${shopName}. (Logic chuyển hướng/chat sẽ được gọi ở đây)`);
   console.log(`Liên hệ người bán: ${shopName}`);
   // Logic để mở cửa sổ chat hoặc chuyển đến trang chat
 };

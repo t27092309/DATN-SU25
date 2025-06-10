@@ -81,7 +81,7 @@
             </div>
 
             <div class="text-center text-sm text-gray-600">
-                Bạn mới biết đến Shopee?
+                Bạn mới biết đến Florea?
                 <router-link to="/dang-ky" class="text-red-500 hover:underline font-semibold">Đăng ký</router-link>
             </div>
         </div>
