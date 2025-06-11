@@ -6,7 +6,6 @@
                     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto py-2 px-4">
                         <p class="text-white font-semibold text-xs">NƯỚC HOA & MỸ PHẨM CHÍNH HÃNG TỪ 2004</p>
 
-                        <!-- Ô tìm kiếm -->
                         <form class="max-w-md mx-auto flex-grow px-4">
                             <label for="default-search" class="sr-only">Search</label>
                             <div class="relative">
@@ -14,7 +13,7 @@
                                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" fill="none"
                                         viewBox="0 0 20 20">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                            stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 Sand 0 1 14 0Z" />
                                     </svg>
                                 </div>
                                 <input type="search" id="default-search"
@@ -27,23 +26,18 @@
                             </div>
                         </form>
 
-                        <!-- Các nút bên phải -->
                         <div class="flex items-center space-x-2">
                             <a href="">
                                 <span class="text-white font-semibold text-xs">Giới thiệu về chúng tôi</span>
                             </a>
                             <a href="">
-                                <span class="text-white font-semibold text-xs ml-10">Tra cứu lịch sử mua hàng</span>
+                                <span class="text-white font-semibold text-xs ml-10 mr-24">Tra cứu lịch sử mua
+                                    hàng</span>
                             </a>
-                            <button type="button"
-                                class="inline-flex items-center p-2 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
-                                aria-controls="navbar-sticky" aria-expanded="false">
-                                <span class="sr-only">Open main menu</span>
-                                <svg class="w-5 h-5" fill="none" viewBox="0 0 17 14">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="M1 1h15M1 7h15M1 13h15" />
-                                </svg>
-                            </button>
+                            <router-link to="/tai-khoan"
+                                class="text-sm font-semibold text-white hover:text-red-600 transition duration-200 ml-auto">
+                                <font-awesome-icon icon="user" />
+                            </router-link>
                         </div>
                     </div>
                 </nav>
