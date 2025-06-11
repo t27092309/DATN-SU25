@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupContro
 use App\Http\Controllers\API\Admin\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
+use App\Http\Controllers\API\Admin\UserController as UserController;
 use App\Http\Middleware\CorsMiddleware;
 
 
@@ -30,7 +31,12 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('product-variants', AdminProductVariantController::class);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
         });
+
+        //Route Admin thay đổi role của tài khoản khác 
+        Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->middleware('can:admin');
     });
+
+    
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
