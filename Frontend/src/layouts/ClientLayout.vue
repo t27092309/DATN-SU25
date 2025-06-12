@@ -38,6 +38,7 @@
                                 class="text-sm font-semibold text-white hover:text-red-600 transition duration-200 ml-auto">
                                 <font-awesome-icon icon="user" />
                             </router-link>
+                            <UserDisplay></UserDisplay>
                         </div>
                     </div>
                 </nav>
@@ -349,9 +350,11 @@
 </template>
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'; // Import onMounted và onUnmounted
+import { useAuthStore } from '@/stores/auth'; // Import auth store
 import logormbg from '@/assets/images/categories/Logo-removebg.png'
 import cart from '@/assets/images/icons/cart.webp'
 import ChatWindow from '@/components/ChatWindow.vue';
+import UserDisplay from '@/components/user/UserDisplay.vue';
 
 const showChatWindow = ref(false);
 const chatButtonRef = ref(null); // Ref cho nút chat
@@ -385,6 +388,14 @@ onMounted(() => {
 // Hủy đăng ký lắng nghe sự kiện click khi component bị unmount để tránh rò rỉ bộ nhớ
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+});
+
+const authStore = useAuthStore();
+
+// Khôi phục token và user từ localStorage khi ứng dụng load lại
+// Điều này đã được xử lý trong initializeAuth của store, chỉ cần gọi nó
+onMounted(() => {
+  authStore.initializeAuth();
 });
 </script>
 <style scoped>
