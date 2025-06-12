@@ -1,7 +1,11 @@
 // import './assets/main.css'
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'; // Import createPinia
+
 import App from './App.vue'
 import router from './router'
+import axios from 'axios';
+import { useAuthStore } from './stores/auth'; // Import auth store
 
 import '@splidejs/splide/dist/css/splide.min.css'; // CSS của Splide
 import { Splide, SplideSlide } from '@splidejs/vue-splide';
@@ -21,13 +25,22 @@ import { faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
 library.add(faUser, faCog, faHome, faAddressBook, faFacebook, faTwitter, faShoppingCart);
 
 const app = createApp(App)
+const pinia = createPinia(); // Tạo instance Pinia
 
 app.component('Splide', Splide);
 app.component('SplideSlide', SplideSlide);
 
 app.component('font-awesome-icon', FontAwesomeIcon);
+// Cấu hình Axios toàn cục (nên làm đầu tiên)
+axios.defaults.baseURL = 'http://localhost:8000/api';
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-
+app.use(pinia); // Gắn Pinia vào ứng dụng Vue
 app.use(router)
+
+// Sau khi Pinia được gắn, khởi tạo trạng thái xác thực
+const authStore = useAuthStore();
+authStore.initializeAuth(); // Gọi để đọc token/user từ localStorage khi app load
 
 app.mount('#app')
