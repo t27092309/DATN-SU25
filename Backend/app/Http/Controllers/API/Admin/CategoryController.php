@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
@@ -11,10 +11,12 @@ class CategoryController extends Controller
 {
 
     // GET // http://localhost:8000/api/categories
-    public function index()
-    {
-        return response()->json(Category::all(), 200);
-    }
+   public function index()
+{
+    $categories = Category::orderBy('id', 'desc')->paginate(15);
+    return response()->json($categories, 200);
+}
+
 
     // POST // http://localhost:8000/api/categories
     public function store(CategoryRequest $request)
@@ -49,10 +51,12 @@ class CategoryController extends Controller
     }
 
     //DELETE // http://localhost:8000/api/categories/{id}
-    public function destroy(string $id) 
+    public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
         $category->delete();
         return response()->json(['message' => 'Xóa danh mục thành công'], 200);
     }
+
+
 }

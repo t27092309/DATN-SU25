@@ -22,7 +22,7 @@ class CouponRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => 'required|string|max:50|unique:coupons,code,' . $this->id,
+            'code' => 'required|string|max:50|unique:coupons,code,' . $this->route('coupon'),
             'discount_type' => 'required|in:percent,fixed',
             'discount_value' => 'required|numeric|min:0',
             'expires_at' => 'nullable|date',

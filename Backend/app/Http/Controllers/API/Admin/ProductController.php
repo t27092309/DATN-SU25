@@ -1,24 +1,26 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace App\Http\Controllers\API\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductResource;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // GET // http://localhost:8000/api/products
+
     public function index()
     {
         return Product::with(['images', 'variants'])->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+   // POST // http://localhost:8000/api/products
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -41,17 +43,17 @@ class ProductController extends Controller
 
         return response()->json($product, 201);
     }
-    /**
-     * Display the specified resource.
-     */
+
+     // GET // http://localhost:8000/api/products/{id}
+
+
     public function show(string $id)
     {
         return Product::with(['images', 'variants'])->findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+     // PUT // http://localhost:8000/api/products/{id}
+
     public function update(Request $request, string $id)
     {
         $product = Product::findOrFail($id);
@@ -77,9 +79,8 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // DELETE // http://localhost:8000/api/products/{id}
+
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
@@ -90,4 +91,6 @@ class ProductController extends Controller
             'product_id' => $product->id
         ], 200);
     }
-}
+
+    }
+

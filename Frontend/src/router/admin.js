@@ -1,11 +1,13 @@
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import Attribute from "@/views/admin/Attribute.vue";
-import Category from "@/views/admin/Category.vue";
-import CouponManager from "@/views/admin/CouponManager.vue";
+import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
+import CouponManager from "@/views/admin/Coupons/CouponManager.vue";
 import Datatables from "@/views/admin/Datatables.vue";
-import EditCategory from "@/views/admin/EditCategory.vue";
-import EditCoupon from "@/views/admin/EditCoupon.vue";
+import EditCategory from "@/views/admin/Categories/EditCategory.vue";
+import EditCoupon from "@/views/admin/Coupons/EditCoupon.vue";
+import ScentGroupManager from "@/views/admin/ScentGroups/ScentGroupManager.vue";
+import EditScentGroup from "@/views/admin/ScentGroups/EditScentGroup.vue";
 
 export default [
   {
@@ -30,7 +32,7 @@ export default [
       {
         path: "danh-muc",
         name: "category",
-        component: Category,
+        component: CategoryManager,
       },
       {
         path: "/categories/edit/:id",
@@ -46,6 +48,16 @@ export default [
         path: "/coupons/edit/:id",
         name: "EditCoupons",
         component: EditCoupon,
+      },
+      {
+        path: "nhom-huong",
+        name: "nhom-huong",
+        component: ScentGroupManager,
+      },
+      {
+        path: "/scent-group/edit/:id",
+        name: "EditScentGroup",
+        component: EditScentGroup,
       },
     ],
   },

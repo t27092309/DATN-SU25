@@ -154,19 +154,14 @@
               <li class="nav-item">
                 <a data-bs-toggle="collapse" href="#tables">
                   <i class="fas fa-table"></i>
-                  <p>Tables</p>
+                  <p>Nhóm hương</p>
                   <span class="caret"></span>
                 </a>
                 <div class="collapse" id="tables">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="tables/tables.html">
-                        <span class="sub-item">Basic Table</span>
-                      </a>
-                    </li>
-                    <li>
-                      <router-link to="/admin/datatables">
-                        <span class="sub-item">Datatables</span>
+                      <router-link to="/admin/nhom-huong">
+                        <span class="sub-item">Quản lý nhóm hương</span>
                       </router-link>
                     </li>
                   </ul>
@@ -898,7 +893,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, nextTick } from "vue";
 
 import logo from "@/assets/img/kaiadmin/logo_light.svg";
 const logoUrl = logo;
@@ -910,113 +905,134 @@ import talha from "@/assets/img/talha.jpg";
 import profile2 from "@/assets/img/profile2.jpg";
 import profile from "@/assets/img/profile.jpg";
 
-onMounted(() => {
+onMounted(async () => {
+  // Danh sách script cần tải
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
     "https://cdnjs.cloudflare.com/ajax/libs/jquery-sparkline/2.1.2/jquery.sparkline.min.js",
-    "/assets/js/kaiadmin.min.js",
+    "https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.5/dist/perfect-scrollbar.min.js",
+    "/assets/js/kaiadmin.min.js", // Kiểm tra xem file này có tồn tại không
   ];
 
-  scripts.forEach((src) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    document.head.appendChild(script);
-  });
-
-  // Khởi tạo Sparkline và Chart.js
-  const jqueryScript = document.createElement("script");
-  jqueryScript.src = "https://code.jquery.com/jquery-3.7.1.min.js";
-  jqueryScript.onload = () => {
-    // Sparkline
-    $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#177dff",
-      fillColor: "rgba(23, 125, 255, 0.14)",
+  // Hàm tải script tuần tự
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`Không thể tải script: ${src}`));
+      document.head.appendChild(script);
     });
 
-    $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#f3545d",
-      fillColor: "rgba(243, 84, 93, .14)",
-    });
+  // Tải tất cả script tuần tự
+  try {
+    for (const src of scripts) {
+      await loadScript(src);
+      console.log(`Đã tải script: ${src}`); // Debug để biết script nào tải thành công
+    }
 
-    $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
-      type: "line",
-      height: "70",
-      width: "100%",
-      lineWidth: "2",
-      lineColor: "#ffa534",
-      fillColor: "rgba(255, 165, 52, .14)",
-    });
-  };
-  document.head.appendChild(jqueryScript);
+    // Thêm CSS cho Perfect Scrollbar
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.5/css/perfect-scrollbar.css";
+    document.head.appendChild(link);
 
-  // Khởi tạo Chart.js
-  const chartScript = document.createElement("script");
-  chartScript.src =
-    "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js";
-  chartScript.onload = () => {
-    const ctxStats = document
-      .getElementById("statisticsChart")
-      .getContext("2d");
-    new Chart(ctxStats, {
-      type: "line",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [
-          {
-            label: "Visitors",
-            data: [1200, 1500, 1700, 1300, 1600, 1800],
-            borderColor: "#177dff",
-            fill: true,
-            backgroundColor: "rgba(23, 125, 255, 0.14)",
-          },
-          {
-            label: "Sales",
-            data: [300, 500, 400, 600, 700, 800],
-            borderColor: "#ffa534",
-            fill: true,
-            backgroundColor: "rgba(255, 165, 52, 0.14)",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
-    });
+    // Chờ DOM render hoàn toàn
+    await nextTick();
 
-    const ctxDaily = document
-      .getElementById("dailySalesChart")
-      .getContext("2d");
-    new Chart(ctxDaily, {
-      type: "bar",
-      data: {
-        labels: ["Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29"],
-        datasets: [
-          {
-            label: "Sales",
-            data: [500, 700, 600, 800, 900],
-            backgroundColor: "#177dff",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
-    });
-  };
-  document.head.appendChild(chartScript);
+    // Khởi tạo Sparkline
+    if (typeof jQuery !== "undefined" && jQuery.fn.sparkline) {
+      jQuery("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#177dff",
+        fillColor: "rgba(23, 125, 255, 0.14)",
+      });
+
+      jQuery("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#f3545d",
+        fillColor: "rgba(243, 84, 93, .14)",
+      });
+
+      jQuery("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#ffa534",
+        fillColor: "rgba(255, 165, 52, .14)",
+      });
+    } else {
+      console.error("jQuery hoặc Sparkline không được tải đúng cách.");
+    }
+
+    // Khởi tạo Chart.js
+    const ctxStats = document.getElementById("statisticsChart");
+    if (ctxStats) {
+      new Chart(ctxStats.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+          datasets: [
+            {
+              label: "Visitors",
+              data: [1200, 1500, 1700, 1300, 1600, 1800],
+              borderColor: "#177dff",
+              fill: true,
+              backgroundColor: "rgba(23, 125, 255, 0.14)",
+            },
+            {
+              label: "Sales",
+              data: [300, 500, 400, 600, 700, 800],
+              borderColor: "#ffa534",
+              fill: true,
+              backgroundColor: "rgba(255, 165, 52, 0.14)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+    } else {
+      console.error("Phần tử statisticsChart không tồn tại.");
+    }
+
+    const ctxDaily = document.getElementById("dailySalesChart");
+    if (ctxDaily) {
+      new Chart(ctxDaily.getContext("2d"), {
+        type: "bar",
+        data: {
+          labels: ["Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29"],
+          datasets: [
+            {
+              label: "Sales",
+              data: [500, 700, 600, 800, 900],
+              backgroundColor: "#177dff",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+    } else {
+      console.error("Phần tử dailySalesChart không tồn tại.");
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải script:", error.message); // Hiển thị URL script lỗi
+  }
 });
 </script>
 

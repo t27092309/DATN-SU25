@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class ScentGroup extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'color_code'
+    ];
 }

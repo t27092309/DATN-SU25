@@ -36,9 +36,7 @@
                         placeholder="Nhập mã giảm giá"
                         required
                       />
-                      <small class="form-text text-muted"
-                        >Mã giảm giá (ví dụ: SALE2025)</small
-                      >
+                      <small class="form-text text-muted">Ví dụ: SALE2025</small>
                     </div>
                     <div class="form-group">
                       <label for="discount_type">Loại giảm giá</label>
@@ -49,7 +47,7 @@
                         required
                       >
                         <option value="" disabled>Chọn loại giảm giá</option>
-                        <option value="percent ">Phần trăm (%)</option>
+                        <option value="percent">Phần trăm (%)</option>
                         <option value="fixed">Cố định (VNĐ)</option>
                       </select>
                     </div>
@@ -63,9 +61,7 @@
                         placeholder="Nhập giá trị giảm"
                         required
                       />
-                      <small class="form-text text-muted"
-                        >Ví dụ: 20 (cho 20%) hoặc 100000 (cho 100,000 VNĐ)</small
-                      >
+                      <small class="form-text text-muted">Ví dụ: 20 (cho 20%) hoặc 100000 (cho 100,000 VNĐ)</small>
                     </div>
                     <div class="form-group">
                       <label for="expires_at">Ngày hết hạn</label>
@@ -93,21 +89,26 @@
                           <th>Loại giảm giá</th>
                           <th>Giá trị</th>
                           <th>Ngày hết hạn</th>
-                          <th style="width: 10%">Action</th>
+                          <th style="width: 10%">Hành động</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="coupon in coupons" :key="coupon.id">
-                          <td>{{ coupon.code }}</td>
+                          <td>{{ coupon.code || 'Không có' }}</td>
                           <td>{{ coupon.discount_type === 'percent' ? 'Phần trăm' : 'Cố định' }}</td>
-                          <td>{{ coupon.discount_value }} {{ coupon.discount === 'percentage' ? '%' : 'VNĐ' }}</td>
-                          <td>{{ coupon.expires_at ? new Date(coupon.expires_at).toLocaleString() : 'Không có' }}</td>
+                          <td>
+                            {{ coupon.discount_value }}
+                            {{ coupon.discount_type === 'percent' ? '%' : 'VNĐ' }}
+                          </td>
+                          <td>
+                            {{ coupon.expires_at ? new Date(coupon.expires_at).toLocaleString() : 'Không có' }}
+                          </td>
                           <td>
                             <div class="form-button-action">
                               <button
                                 type="button"
                                 data-bs-toggle="tooltip"
-                                title="Edit Coupon"
+                                title="Chỉnh sửa mã giảm giá"
                                 class="btn btn-link btn-primary btn-lg"
                                 @click="editCoupon(coupon.id)"
                               >
@@ -116,7 +117,7 @@
                               <button
                                 type="button"
                                 data-bs-toggle="tooltip"
-                                title="Remove"
+                                title="Xóa"
                                 class="btn btn-link btn-danger"
                                 @click="openDeleteModal(coupon.id)"
                               >
@@ -124,6 +125,9 @@
                               </button>
                             </div>
                           </td>
+                        </tr>
+                        <tr v-if="!coupons || coupons.length === 0">
+                          <td colspan="5" class="text-center">Không có mã giảm giá nào</td>
                         </tr>
                       </tbody>
                     </table>
@@ -179,6 +183,7 @@ export default {
       listMessageClass: '',
       showDeleteModal: false,
       deleteId: null,
+      dataTable: null, // Store DataTable instance
     };
   },
   watch: {
@@ -191,14 +196,103 @@ export default {
     },
   },
   mounted() {
-    this.fetchCoupons();
+    this.loadScriptsAndInitializeTable();
   },
   methods: {
+    async loadScriptsAndInitializeTable() {
+      const scripts = [
+        'https://code.jquery.com/jquery-3.7.1.min.js',
+        'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
+        'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js', // For tooltips
+      ];
+
+      const loadScript = (src) =>
+        new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.onload = () => {
+            console.log(`Loaded: ${src}`);
+            resolve();
+          };
+          script.onerror = () => {
+            console.error(`Failed to load: ${src}`);
+            reject(new Error(`Không thể tải script: ${src}`));
+          };
+          document.head.appendChild(script);
+        });
+
+      try {
+        // Load scripts sequentially
+        for (const src of scripts) {
+          await loadScript(src);
+        }
+
+        // Load DataTables CSS
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css';
+        document.head.appendChild(link);
+
+        // Load Font Awesome
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
+        document.head.appendChild(fontAwesomeLink);
+
+        // Fetch coupons and initialize DataTable
+        await this.fetchCoupons();
+        this.initializeDataTable();
+      } catch (error) {
+        console.error('Lỗi khi tải script:', error.message);
+        this.listMessage = 'Có lỗi khi tải bảng mã giảm giá!';
+        this.listMessageClass = 'text-danger';
+      }
+    },
+    initializeDataTable() {
+      if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable) {
+        this.dataTable = jQuery('#add-row').DataTable({
+          pageLength: 10, // Default entries per page
+          lengthMenu: [10, 25, 50, 100], // Options for "Show entries"
+          searching: true, // Enable search
+          paging: true, // Enable pagination
+          info: true, // Show "Showing X to Y of Z entries"
+          responsive: true,
+          language: {
+            lengthMenu: 'Hiển thị _MENU_ mục',
+            search: 'Tìm kiếm:',
+            info: 'Hiển thị _START_ đến _END_ của _TOTAL_ mục',
+            paginate: {
+              previous: 'Trước',
+              next: 'Tiếp',
+            },
+            emptyTable: 'Không có mã giảm giá nào',
+          },
+          drawCallback: () => {
+            // Reinitialize Bootstrap tooltips after each draw
+            jQuery('[data-bs-toggle="tooltip"]').tooltip();
+          },
+        });
+      } else {
+        console.error('DataTables không được tải đúng cách.');
+        this.listMessage = 'Không thể khởi tạo bảng!';
+        this.listMessageClass = 'text-danger';
+      }
+    },
     async fetchCoupons() {
       try {
         const response = await axios.get('http://localhost:8000/api/coupons');
-        this.coupons = response.data;
+        this.coupons = Array.isArray(response.data) ? response.data : response.data.data || [];
+        if (!this.coupons.length) {
+          this.listMessage = 'Không có mã giảm giá nào.';
+          this.listMessageClass = 'text-info';
+        }
+        // Refresh DataTable if initialized
+        if (this.dataTable) {
+          this.dataTable.clear().rows.add(this.coupons).draw();
+        }
       } catch (error) {
+        console.error('Lỗi khi tải danh sách:', error);
         this.listMessage = error.response?.data?.message || 'Có lỗi khi tải danh sách mã giảm giá!';
         this.listMessageClass = 'text-danger';
       }
@@ -209,34 +303,28 @@ export default {
         this.addMessageClass = 'text-danger';
         return;
       }
-      console.log('Payload:', {
+      const payload = {
         code: this.coupon.code,
         discount_type: this.coupon.discount_type,
-        discount_value: this.coupon.discount_value,
+        discount_value: parseFloat(this.coupon.discount_value), // Ensure numeric value
         expires_at: this.coupon.expires_at || null,
-      });
+      };
+      console.log('Payload:', payload);
       try {
-        const response = await axios.post('http://localhost:8000/api/coupons', {
-          code: this.coupon.code,
-          discount_type: this.coupon.discount_type,
-          discount_value: this.coupon.discount_value,
-          expires_at: this.coupon.expires_at || null,
-        });
-        this.coupons.push(response.data.coupon);
-        this.addMessage = response.data.message;
+        const response = await axios.post('http://localhost:8000/api/coupons', payload);
+        await this.fetchCoupons(); // Refresh list
+        this.addMessage = response.data.message || 'Thêm mã giảm giá thành công!';
         this.addMessageClass = 'text-success';
         this.coupon.code = '';
         this.coupon.discount_type = 'percent';
         this.coupon.discount_value = '';
         this.coupon.expires_at = '';
       } catch (error) {
-        console.error('Error:', error.response);
+        console.error('Lỗi từ API:', error.response);
         const errors = error.response?.data?.errors;
-        if (errors) {
-          this.addMessage = Object.values(errors).flat().join(' ');
-        } else {
-          this.addMessage = error.response?.data?.message || 'Có lỗi khi thêm mã giảm giá!';
-        }
+        this.addMessage = errors
+          ? Object.values(errors).flat().join(' ')
+          : error.response?.data?.message || 'Có lỗi khi thêm mã giảm giá!';
         this.addMessageClass = 'text-danger';
       }
     },
@@ -250,8 +338,8 @@ export default {
     async confirmDelete() {
       try {
         const response = await axios.delete(`http://localhost:8000/api/coupons/${this.deleteId}`);
-        this.coupons = this.coupons.filter(coupon => coupon.id !== this.deleteId);
-        this.listMessage = response.data.message;
+        await this.fetchCoupons(); // Refresh list
+        this.listMessage = response.data.message || 'Xóa mã giảm giá thành công!';
         this.listMessageClass = 'text-success';
         this.showDeleteModal = false;
         this.deleteId = null;
@@ -261,6 +349,12 @@ export default {
         this.showDeleteModal = false;
       }
     },
+  },
+  beforeDestroy() {
+    // Clean up DataTable instance
+    if (this.dataTable) {
+      this.dataTable.destroy();
+    }
   },
 };
 </script>
@@ -356,5 +450,16 @@ export default {
   background: none;
   border: none;
   font-size: 1.2rem;
+}
+/* Style for DataTables controls */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 15px;
+}
+.dataTables_wrapper .dataTables_paginate {
+  margin-top: 15px;
+}
+.dataTables_wrapper .dataTables_info {
+  margin-top: 15px;
 }
 </style>
