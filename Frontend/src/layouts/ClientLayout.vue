@@ -34,10 +34,6 @@
                                 <span class="text-white font-semibold text-xs ml-10 mr-24">Tra cứu lịch sử mua
                                     hàng</span>
                             </a>
-                            <router-link to="/tai-khoan"
-                                class="text-sm font-semibold text-white hover:text-red-600 transition duration-200 ml-auto">
-                                <font-awesome-icon icon="user" />
-                            </router-link>
                             <UserDisplay></UserDisplay>
                         </div>
                     </div>
