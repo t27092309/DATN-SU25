@@ -25,6 +25,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('coupons', AdminCouponController::class);
             Route::apiResource('brands', AdminBrandController::class);
             Route::apiResource('products', AdminProductController::class);
+            // Route upload ảnh chính
+            Route::post('products/{product}/image', [AdminProductController::class, 'uploadImage']);
+            // Route upload ảnh phụ
+            Route::post('products/{product}/images', [AdminProductController::class, 'uploadImages']);
+            Route::delete('images/{imageId}', [AdminProductController::class, 'deleteImage']);
             Route::get('product-variants/trashed', [AdminProductVariantController::class, 'trashed']);
             Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
             Route::apiResource('product-variants', AdminProductVariantController::class);
