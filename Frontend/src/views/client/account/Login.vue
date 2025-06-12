@@ -22,6 +22,19 @@
                     </div>
                 </div>
 
+                <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4
+                flex items-center justify-between"> <span class="block sm:inline mr-4">{{ successMessage }}</span>
+                    <button @click="clearMessage"
+                        class="ml-auto p-1 rounded-full text-green-600 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <svg class="h-5 w-5 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20">
+                            <title>Close</title>
+                            <path
+                                d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                        </svg>
+                    </button>
+                </div>
+
                 <div class="mb-4">
                     <label for="email" class="sr-only">Email</label>
                     <input type="email" id="email" v-model="form.email" placeholder="Email của bạn"
@@ -110,13 +123,14 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router'; // Sử dụng useRouter từ vue-router
+import { useRouter, useRoute } from 'vue-router'; // Sử dụng useRouter từ vue-router
 import { useAuthStore } from '@/stores/auth'; // Import auth store
 
 
 const router = useRouter();
+const route = useRoute(); // Khởi tạo useRoute để đọc query parameters
 const authStore = useAuthStore(); // Sử dụng store
 
 const form = reactive({
@@ -127,6 +141,41 @@ const form = reactive({
 
 const errors = ref({});
 const isLoading = ref(false);
+const successMessage = ref(null);
+
+// Hàm để kiểm tra và hiển thị thông báo từ query parameter
+const checkSuccessMessage = () => {
+    if (route.query.message) {
+        successMessage.value = route.query.message;
+        // Tùy chọn: Xóa query parameter khỏi URL sau khi hiển thị
+        // để URL trông sạch hơn và thông báo không xuất hiện lại khi refresh trang
+        const query = { ...route.query };
+        delete query.message;
+        router.replace({ query });
+    }
+};
+
+// Gọi hàm checkSuccessMessage khi component được mount
+onMounted(() => {
+    checkSuccessMessage();
+});
+
+// Lắng nghe sự thay đổi của route (ví dụ: khi điều hướng từ Register sang Login)
+// để đảm bảo thông báo được hiển thị lại
+watch(() => route.query.message, (newMessage) => {
+    if (newMessage) {
+        successMessage.value = newMessage;
+        const query = { ...route.query };
+        delete query.message;
+        router.replace({ query });
+    }
+});
+
+// Hàm để xóa thông báo thủ công (khi click vào icon X)
+const clearMessage = () => {
+    successMessage.value = null;
+};
+
 
 const handleLogin = async () => {
     isLoading.value = true;

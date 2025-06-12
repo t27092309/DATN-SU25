@@ -150,7 +150,10 @@ const register = async () => {
         // Ví dụ: Lưu token vào localStorage, chuyển hướng người dùng
         localStorage.setItem('auth_token', response.data.token);
         successMessage.value = 'Đăng ký thành công! Đang chuyển hướng...';
-        router.push('/dang-nhap'); // Chuyển hướng đến trang dashboard hoặc trang chính
+        router.push({
+            path: '/dang-nhap',
+            query: { message: response.data.message || 'Đăng ký thành công. Vui lòng đăng nhập.' }
+        }); // Chuyển hướng đến trang dashboard hoặc trang chính
     } catch (error) {
         console.error('Lỗi đăng ký:', error);
         if (error.response && error.response.status === 422) {
