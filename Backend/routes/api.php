@@ -10,7 +10,8 @@ use App\Http\Controllers\API\Admin\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
-
+use App\Http\Controllers\API\Client\UserProfileController;
+use App\Http\Controllers\API\Client\UserAddressController;
 
 Route::middleware([CorsMiddleware::class])->group(function () {
 
@@ -18,6 +19,18 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        // Hồ sơ người dùng
+        Route::get('/user/profile', [UserProfileController::class, 'show']);
+        Route::put('/user/profile', [UserProfileController::class, 'update']);
+
+        // Địa chỉ người dùng
+        Route::get('/user/addresses', [UserAddressController::class, 'index']);
+        Route::post('/user/addresses', [UserAddressController::class, 'store']);
+        Route::put('/user/addresses/{id}', [UserAddressController::class, 'update']);
+        Route::delete('/user/addresses/{id}', [UserAddressController::class, 'destroy']);
+        Route::put('/user/addresses/{id}/set-default', [UserAddressController::class, 'setDefault']);
+
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
