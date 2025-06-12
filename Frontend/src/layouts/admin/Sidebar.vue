@@ -34,7 +34,7 @@
                             <i class="fa fa-ellipsis-h"></i>
                         </span>
                     </li>
-                    <li class="nav-item" :class="{ active: $route.name === 'products'}">
+                    <li class="nav-item" :class="{ active: $route.name === 'products' }">
                         <a data-bs-toggle="collapse" href="#base">
                             <i class="fas fa-tshirt"></i>
                             <p>Base</p>
@@ -51,6 +51,11 @@
                                     <a href="icon-menu.html">
                                         <span class="sub-item">Category</span>
                                     </a>
+                                </li>
+                                <li>
+                                    <router-link :to="{ name: 'scents' }">
+                                        <span class="sub-item">Scent_Group</span>
+                                    </router-link>
                                 </li>
                             </ul>
                         </div>

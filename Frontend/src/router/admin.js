@@ -2,11 +2,13 @@ import AdminLayout from "@/layouts/admin/AdminMaster.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import Datatables from "@/views/admin/Datatables.vue";
 
-//================= Product============================
+//================= Products ============================
 import Products from "@/views/admin/products/ProductsList.vue";
 import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
+//================= Scent_groups ============================
+import Scents from "@/views/admin/scent_groups/ScentsList.vue";
 
 export default [
     {
@@ -23,6 +25,7 @@ export default [
                 name: "Datatables",
                 component: Datatables,
             },
+            // =================================Products========================================
             {
                 path: "products",
                 name: "products",
@@ -55,6 +58,16 @@ export default [
                     title: "Chi tiết sản phẩm",
                 },
             },
+            // =================================Scent_group========================================
+            {
+                path: "scents",
+                name: "scents",
+                component: Scents,
+                meta: {
+                    title: "Danh sách mùi hương",
+                },
+            },
+
         ],
     },
 ];
