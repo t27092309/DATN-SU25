@@ -29,8 +29,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
             Route::apiResource('product-variants', AdminProductVariantController::class);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            
         });
     });
+    
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
@@ -47,6 +49,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     // route client
     Route::get('most-viewed-products-by-categories', [ClientProductController::class, 'getMostViewedProductsByCategories']);
     Route::get('category-page-products', [ClientProductController::class, 'getCategoryPageProducts']);
+    //route chi tiết sản phẩm cliend
+    Route::get('/products/{id}', [ClientProductController::class, 'getdetailproducts']);
+    //test postman:  http://127.0.0.1:8000/api/products/31
 });
 
 // use Illuminate\Support\Facades\Route;

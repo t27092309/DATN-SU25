@@ -22,15 +22,8 @@ class Product extends Model
     ];
 
 
-    public function images()
-    {
-        return $this->hasMany(ProductImage::class);
-    }
-
-    public function variants()
-    {
-        return $this->hasMany(ProductVariant::class);
-    }
+    
+    
 
     public function category()
     {
@@ -40,4 +33,23 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class); // Đảm bảo bạn đã import App\Models\Brand
     }
+    public function usageProfile()
+{
+    return $this->hasOne(ProductUsageProfile::class);
+}
+
+public function scentProfiles()
+{
+    return $this->hasMany(ProductScentProfile::class);
+}
+
+public function variants()
+{
+    return $this->hasMany(ProductVariant::class);
+}
+
+public function images()
+{
+    return $this->hasMany(ProductImage::class);
+}
 }

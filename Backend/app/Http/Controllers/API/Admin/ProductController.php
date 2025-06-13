@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductDetailResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
@@ -66,13 +67,16 @@ class ProductController extends Controller
         return response()->json($product, 201);
     }
 
+    
+
+
+    public function show($id)
+{
+//     $product = Product::with(['usageProfile', 'scentProfiles', 'variants', 'images'])->findOrFail($id);
+// return new ProductDetailResource($product);
+
+}
     // GET // http://localhost:8000/api/products/{id}
-
-
-    public function show(string $id)
-    {
-        return Product::with(['images', 'variants'])->findOrFail($id);
-    }
 
     // PUT // http://localhost:8000/api/products/{id}
 

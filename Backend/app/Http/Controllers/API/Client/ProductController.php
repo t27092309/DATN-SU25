@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\API\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-     //Vux
+    //Vux
     /**
      * Lấy 10 sản phẩm nhiều lượt xem nhất của 4 danh mục bất kỳ.
      * Hiển thị cả tên và slug danh mục ở đầu mỗi nhóm sản phẩm.
@@ -20,7 +22,7 @@ class ProductController extends Controller
      */
     // trang chu
     // GET //  http://localhost:8000/api/most-viewed-products-by-categories
-   public function getMostViewedProductsByCategories(): JsonResponse
+    public function getMostViewedProductsByCategories(): JsonResponse
     {
         // Lấy 4 danh mục bất kỳ từ cơ sở dữ liệu.
         $categories = Category::inRandomOrder()->limit(4)->get();
@@ -30,10 +32,10 @@ class ProductController extends Controller
             // Lấy 10 sản phẩm có nhiều lượt xem nhất thuộc danh mục hiện tại.
             // Eager load 'brand', 'images', và 'variants' để resource có thể sử dụng chúng.
             $products = $category->products()
-                                 ->with(['brand', 'images', 'variants']) // <-- Eager load các mối quan hệ
-                                 ->orderByDesc('views')
-                                 ->limit(10)
-                                 ->get();
+                ->with(['brand', 'images', 'variants']) // <-- Eager load các mối quan hệ
+                ->orderByDesc('views')
+                ->limit(10)
+                ->get();
 
             $data[] = [
                 'category_name' => $category->name,
@@ -50,28 +52,35 @@ class ProductController extends Controller
     // trang danh muc
     // GET // http://localhost:8000/api/category-page-products
     public function getCategoryPageProducts(Request $request): JsonResponse
-{
-    // Lấy tất cả danh mục thay vì phân trang
-    $categories = Category::all();
-    $data = [];
+    {
+        // Lấy tất cả danh mục thay vì phân trang
+        $categories = Category::all();
+        $data = [];
 
-    foreach ($categories as $category) {
-        // Lấy 10 sản phẩm có nhiều lượt xem nhất
-        $products = $category->products()
-            ->with(['brand', 'images', 'variants', 'category'])
-            ->orderByDesc('views')
-            ->limit(10)
-            ->get();
+        foreach ($categories as $category) {
+            // Lấy 10 sản phẩm có nhiều lượt xem nhất
+            $products = $category->products()
+                ->with(['brand', 'images', 'variants', 'category'])
+                ->orderByDesc('views')
+                ->limit(10)
+                ->get();
 
-        $data[] = [
-            'category_name' => $category->name,
-            'category_slug' => $category->slug,
-            'products' => ProductResource::collection($products),
-        ];
+            $data[] = [
+                'category_name' => $category->name,
+                'category_slug' => $category->slug,
+                'products' => ProductResource::collection($products),
+            ];
+        }
+
+        return response()->json([
+            'data' => $data
+        ]);
     }
-
-    return response()->json([
-        'data' => $data
-    ]);
-}
+    // trang chi tiết sản phẩm
+     //http://127.0.0.1:8000/api/products/31
+    public function getdetailproducts($id)
+    {
+        $product = Product::with(['usageProfile', 'scentProfiles', 'variants', 'images'])->findOrFail($id);
+        return new ProductDetailResource($product);
+    }
 }
