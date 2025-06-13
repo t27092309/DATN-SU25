@@ -8,24 +8,10 @@
 
     <aside class="w-full md:w-64 p-4 order-1 md:order-2 flex-shrink-0">
       <div class="flex items-center mb-6">
-        <template v-if="isLoggedIn">
-          <div class="w-10 h-10 rounded-full overflow-hidden mr-3">
-            <img src="https://via.placeholder.com/40" alt="Profile" class="w-full h-full object-cover" />
-          </div>
-          <div>
-            <p class="font-semibold text-gray-800">{{ userName }}</p>
-            <a href="#" class="text-sm text-blue-500 hover:underline">Sửa Hồ Sơ</a>
-            <button @click="logout" class="ml-2 text-sm text-red-500 hover:underline">Đăng Xuất</button>
-          </div>
-        </template>
-        <template v-else>
-          <div>
-            <button @click="login"
-              class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
-              Đăng Nhập
-            </button>
-          </div>
-        </template>
+        <div>
+          <p class="font-semibold text-gray-800">{{ userName }}</p>
+        </div>
+
       </div>
 
       <nav>
@@ -61,7 +47,7 @@
                 activeMenuItem === 'orders' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
               <i class="fas fa-file-invoice w-5 mr-3"
                 :class="activeMenuItem === 'orders' ? 'text-red-600' : 'text-orange-500'"></i>
-                Đơn mua
+              Đơn mua
             </router-link>
           </li>
           <li class="mb-2">
@@ -90,31 +76,14 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth'; // Import auth store
 import ProfileSubMenu from '@/components/user/ProfileSubMenu.vue';
 
 // Trạng thái đăng nhập
 const isLoggedIn = ref(false); // Mặc định là chưa đăng nhập
 const userName = ref('Guest'); // Tên người dùng
 
-// Hàm giả định để đăng nhập
-const login = () => {
-  // Thực tế sẽ gọi API đăng nhập, xử lý token, vv.
-  isLoggedIn.value = true;
-  userName.value = '127092309'; // Đặt tên người dùng sau khi đăng nhập thành công
-  activeMenuItem.value = 'profile'; // Tự động chọn hồ sơ sau khi đăng nhập
-  isAccountSubMenuOpen.value = true; // Đảm bảo submenu mở sau khi đăng nhập
-  console.log('Đã đăng nhập!');
-};
-
-// Hàm giả định để đăng xuất
-const logout = () => {
-  // Thực tế sẽ xóa token, reset trạng thái người dùng, vv.
-  isLoggedIn.value = false;
-  userName.value = 'Guest';
-  activeMenuItem.value = 'notifications'; // Có thể chuyển về trang thông báo hoặc trang chủ
-  isAccountSubMenuOpen.value = true; // Có thể đóng submenu lại khi logout
-  console.log('Đã đăng xuất!');
-};
 
 
 const isAccountSubMenuOpen = ref(true);
