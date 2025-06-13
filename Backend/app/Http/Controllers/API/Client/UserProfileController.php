@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class UserProfileController extends Controller
 {
@@ -21,30 +23,70 @@ class UserProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'phone_number' => 'nullable|string|max:20',
+            'gender' => 'nullable|in:male,female,other',
+            'birthday' => 'nullable|date',
             'password' => 'nullable|string|min:6|confirmed',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'name.required' => 'Tên không được để trống.',
             'name.max' => 'Tên không được vượt quá 255 ký tự.',
+            'name.string' => 'Tên phải là chuỗi ký tự.',
 
             'email.required' => 'Email không được để trống.',
             'email.email' => 'Email không đúng định dạng.',
             'email.max' => 'Email không được vượt quá 255 ký tự.',
-            'email.unique' => 'Email đã được sử dụng.',
+            'email.unique' => 'Email đã tồn tại.',
+
+            'phone_number.string' => 'Số điện thoại phải là chuỗi.',
+            'phone_number.max' => 'Số điện thoại không được vượt quá 20 ký tự.',
+
+            'gender.in' => 'Giới tính phải là male, female hoặc other.',
+
+            'birthday.date' => 'Ngày sinh phải là định dạng ngày hợp lệ.',
 
             'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
-            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+
+            'avatar.image' => 'Ảnh đại diện phải là tệp hình ảnh.',
+            'avatar.mimes' => 'Ảnh đại diện chỉ được định dạng jpeg, png, jpg.',
+            'avatar.max' => 'Ảnh đại diện không được vượt quá 2MB.',
         ]);
 
-        $user->name = $validated['name'];
-        $user->email = $validated['email'];
+        $user->fill($validated);
 
+        $user->phone_number = $validated['phone_number'] ?? null;
+        $user->gender = $validated['gender'] ?? null;
+        $user->birthday = $validated['birthday'] ?? null;
+
+        // Xử lý ảnh đại diện mới (avatar)
+        if ($request->hasFile('avatar')) {
+            // Xoá ảnh cũ nếu tồn tại
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // 👉 Lưu ảnh mới
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        // Cập nhật mật khẩu nếu có
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
 
         $user->save();
 
-        return response()->json(['message' => 'Cập nhật thông tin thành công.', 'user' => $user]);
+        return response()->json([
+            'message' => 'Cập nhật thông tin thành công.',
+            'user' => $user,
+        ]);
     }
 }
