@@ -29,8 +29,8 @@ project-root/
 ```bash
 cd backend
 
-# Cài thư viện PHP
-composer install
+# Cài thư viện PHP(chạy lệnh này là dc, thiếu j nó tự cài vào ko cần chạy lệnh cài sanctum hôm trước nữa)
+composer install(chạy trong terminal laragon cho nhanh)
 
 # Tạo file .env từ template
 cp .env.example .env
@@ -41,7 +41,7 @@ php artisan key:generate
 # Thiết lập DB trong file .env
 # Sau đó chạy migrate + seed (nếu có)
 php artisan migrate --seed
-
+php artisan db:seed --class=VietnamAdministrativeSeeder
 # Chạy server Laravel
 php artisan serve
 
