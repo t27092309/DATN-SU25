@@ -11,7 +11,10 @@ class UserAddressController extends Controller
     // Lấy danh sách địa chỉ của user
     public function index(Request $request)
     {
-        $addresses = $request->user()->addresses()->get();
+        $addresses = $request->user()->addresses()
+            ->orderByDesc('is_default') // địa chỉ mặc định lên đầu
+            ->latest()
+            ->get();
         return response()->json($addresses);
     }
 
@@ -25,6 +28,7 @@ class UserAddressController extends Controller
             'ward' => 'required|string|max:100',
             'district' => 'required|string|max:100',
             'province' => 'required|string|max:100',
+            'is_default' => 'nullable|boolean',
         ], [
             'recipient_name.required' => 'Tên người nhận không được để trống.',
             'recipient_name.max' => 'Tên người nhận không được vượt quá 255 ký tự.',
@@ -43,12 +47,19 @@ class UserAddressController extends Controller
 
             'province.required' => 'Tỉnh/thành phố không được để trống.',
             'province.max' => 'Tỉnh/thành phố không được vượt quá 100 ký tự.',
+
+            'is_default.boolean' => 'Trường địa chỉ mặc định phải là giá trị đúng hoặc sai.',
         ]);
 
         $user = $request->user();
 
+        if ($request->boolean('is_default')) {
+            UserAddress::where('user_id', $user->id)->update(['is_default' => false]);
+        }
+
         $address = new UserAddress($validated);
         $address->user_id = $user->id;
+        $address->is_default = $request->boolean('is_default', false);
         $address->save();
 
         return response()->json(['message' => 'Thêm địa chỉ thành công', 'address' => $address]);
@@ -68,6 +79,7 @@ class UserAddressController extends Controller
             'ward' => 'required|string|max:100',
             'district' => 'required|string|max:100',
             'province' => 'required|string|max:100',
+            'is_default' => 'nullable|boolean',
         ], [
             'recipient_name.required' => 'Tên người nhận không được để trống.',
             'recipient_name.max' => 'Tên người nhận không được vượt quá 255 ký tự.',
@@ -86,7 +98,16 @@ class UserAddressController extends Controller
 
             'province.required' => 'Tỉnh/thành phố không được để trống.',
             'province.max' => 'Tỉnh/thành phố không được vượt quá 100 ký tự.',
+
+            'is_default.boolean' => 'Trường địa chỉ mặc định phải là giá trị đúng hoặc sai.',
         ]);
+
+        if ($request->boolean('is_default')) {
+            UserAddress::where('user_id', $request->user()->id)->update(['is_default' => false]);
+            $validated['is_default'] = true;
+        } else {
+            $validated['is_default'] = $address->is_default; // giữ nguyên nếu không gửi
+        }
 
         $address->update($validated);
 
