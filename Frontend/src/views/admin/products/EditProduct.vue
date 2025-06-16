@@ -69,9 +69,8 @@
                                     <label for="exampleFormControlSelect1">Danh mục</label>
                                     <select class="form-select" id="exampleFormControlSelect1"
                                         v-model="product.category_id">
-                                        <option value="">Chọn danh mục</option>
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
+                                            {{ getBrandName(product.category_id) }}
                                         </option>
                                     </select>
                                 </div>
@@ -86,9 +85,8 @@
                                     <label for="exampleFormControlSelect1">Brand</label>
                                     <select class="form-select" id="exampleFormControlSelect1"
                                         v-model="product.brand_id">
-                                        <option value="">Chọn brand</option>
                                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-                                            {{ brand.name }}
+                                            {{ getBrandName(product.brand_id) }}
                                         </option>
                                     </select>
                                 </div>
@@ -151,8 +149,10 @@
 
     const fetchProduct = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/products/${params.id}`);
-            product.value = data;
+            const { data } = await axios.get(`http://localhost:8000/api/admin/products/${params.id}`);
+            product.value = data.data;
+            console.log(product.value); return
+
         } catch (error) {
             alert('Loi xay ra: ' + error.message)
         }
@@ -160,28 +160,26 @@
 
     const fetchCategory = async () => {
         try {
-            const {
-                data
-            } = await axios.get(
-                `http://localhost:8000/api/categories`
-            );
-            categories.value = data;
+            const { data } = await axios.get(`http://localhost:8000/api/admin/categories`)
+            categories.value = data.data
         } catch (error) {
-            alert("Co loi xay ra: " + error.message);
+            alert('Co loi xay ra: ' + error.message)
         }
-    };
+    }
+
     const fetchBrand = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/brands`);
-            brands.value = data;
+            const { data } = await axios.get('http://localhost:8000/api/admin/brands');
+            brands.value = data.data;
         } catch (error) {
-            alert("Co loi xay ra: " + error.message);
+            alert('Có lỗi xảy ra khi lấy danh sách thương hiệu: ' + error.message);
+            brands.value = [];
         }
     };
 
     const updateProduct = async () => {
         try {
-            await axios.put(`http://localhost:8000/api/products/${params.id}`, product.value);
+            await axios.put(`http://localhost:8000/api/admin/products/${params.id}`, product.value);
             alert('Sua thanh cong!')
             router.push("/admin/products");
         } catch (error) {
@@ -195,6 +193,18 @@
                 console.log("❌ Lỗi khác:", error.message);
             }
         }
+    };
+
+    const getCategoryName = (categoryId) => {
+        if (!Array.isArray(categories.value)) return 'Đang load...';
+        const category = categories.value.find(c => c.id === categoryId);
+        return category ? category.name : 'Đang load...';
+    };
+
+    const getBrandName = (brandId) => {
+        if (!Array.isArray(brands.value)) return 'Không rõ thương hiệu';
+        const brand = brands.value.find(b => b.id === brandId);
+        return brand ? brand.name : 'Đang load...';
     };
 
     onMounted(() => {

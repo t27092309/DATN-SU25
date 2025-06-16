@@ -42,53 +42,52 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
 
-const props = defineProps({
-  isVisible: {
-    type: Boolean,
-    default: false
-  },
-  activeMenuItem: {
-    type: String,
-    default: ''
-  }
-});
-
-const emits = defineEmits(['selectMenuItem']);
-
-const emitSelectMenuItem = (menuItem) => {
-  emits('selectMenuItem', menuItem);
-};
-
-// Vue Transition Hooks (giữ nguyên từ phần trước)
-const enter = (element) => {
-  element.style.height = 'auto';
-  const height = element.scrollHeight + 'px';
-  element.style.height = '0';
-  requestAnimationFrame(() => {
-    element.style.height = height;
+  const props = defineProps({
+    isVisible: {
+      type: Boolean,
+      default: false
+    },
+    activeMenuItem: {
+      type: String,
+      default: ''
+    }
   });
-};
 
-const afterEnter = (element) => {
-  element.style.height = 'auto';
-};
+  const emits = defineEmits(['selectMenuItem']);
 
-const leave = (element) => {
-  element.style.height = element.scrollHeight + 'px';
-  requestAnimationFrame(() => {
+  const emitSelectMenuItem = (menuItem) => {
+    emits('selectMenuItem', menuItem);
+  };
+
+  // Vue Transition Hooks (giữ nguyên từ phần trước)
+  const enter = (element) => {
+    element.style.height = 'auto';
+    const height = element.scrollHeight + 'px';
     element.style.height = '0';
-  });
-};
+    requestAnimationFrame(() => {
+      element.style.height = height;
+    });
+  };
+
+  const afterEnter = (element) => {
+    element.style.height = 'auto';
+  };
+
+  const leave = (element) => {
+    element.style.height = element.scrollHeight + 'px';
+    requestAnimationFrame(() => {
+      element.style.height = '0';
+    });
+  };
 </script>
 
 <style scoped>
-@import '@/assets/tailwind.css';
+  @import '@/assets/tailwind.css';
 
-.expand-enter-active,
-.expand-leave-active {
-  transition: height 0.3s ease-in-out;
-  /* Chỉ chuyển đổi thuộc tính height */
-}
+  .expand-enter-active,
+  .expand-leave-active {
+    transition: height 0.3s ease-in-out;
+    /* Chỉ chuyển đổi thuộc tính height */
+  }
 </style>

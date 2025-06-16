@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\ProductImage;
+
 class ProductController extends Controller
 {
     // GET // http://localhost:8000/api/products
@@ -81,15 +82,14 @@ class ProductController extends Controller
         return response()->json($product->load('images'), 201);
     }
 
-    
+
 
 
     public function show($id)
-{
-//     $product = Product::with(['usageProfile', 'scentProfiles', 'variants', 'images'])->findOrFail($id);
-// return new ProductDetailResource($product);
-
-}
+    {
+        $product = Product::with(['usageProfile', 'scentProfiles', 'variants', 'images'])->findOrFail($id);
+        return new ProductDetailResource($product);
+    }
     // GET // http://localhost:8000/api/products/{id}
 
     // PUT // http://localhost:8000/api/products/{id}
