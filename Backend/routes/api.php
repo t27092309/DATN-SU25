@@ -12,6 +12,7 @@ use App\Http\Controllers\API\Client\ProductController as ClientProductController
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\API\Client\UserProfileController;
 use App\Http\Controllers\API\Client\UserAddressController;
+use App\Http\Controllers\API\Client\LocationController;
 
 Route::middleware([CorsMiddleware::class])->group(function () {
 
@@ -31,6 +32,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::delete('/user/addresses/{id}', [UserAddressController::class, 'destroy']);
         Route::put('/user/addresses/{id}/set-default', [UserAddressController::class, 'setDefault']);
 
+        // Chọn địa chỉ 
+        Route::get('/provinces', [LocationController::class, 'provinces']);
+        Route::get('/provinces/{province_code}/districts', [LocationController::class, 'districts']);
+        Route::get('/districts/{district_code}/wards', [LocationController::class, 'wards']);
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
@@ -47,10 +52,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
             Route::apiResource('product-variants', AdminProductVariantController::class);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
-            
         });
     });
-    
+
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
