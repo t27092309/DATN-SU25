@@ -18,10 +18,9 @@ const router = createRouter({
         },
     ],
 });
-
 router.afterEach((to) => {
-    const title = to.meta.title || "Trang mặc định";
-    document.title = title;
+    if (to.path.startsWith('/admin')) {
+        document.title = to.meta.title || "Trang Admin";
+    }
 });
-
 export default router;
