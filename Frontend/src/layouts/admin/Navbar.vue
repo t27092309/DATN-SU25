@@ -268,12 +268,12 @@
 </template>
 
 <script setup>
-    import profileImg from '/public/assets/img/jm_denis.jpg';
-    import chadengle from '/public/assets/img/chadengle.jpg';
-    import mlane from "/public/assets/img/mlane.jpg";
-    import talha from "/public/assets/img/talha.jpg";
-    import profile2 from "/public/assets/img/profile2.jpg";
-    import profile from "/public/assets/img/profile.jpg";
+    import profileImg from '/assets/img/jm_denis.jpg';
+    import chadengle from '/assets/img/chadengle.jpg';
+    import mlane from "/assets/img/mlane.jpg";
+    import talha from "/assets/img/talha.jpg";
+    import profile2 from "/assets/img/profile2.jpg";
+    import profile from "/assets/img/profile.jpg";
 </script>
 
 <style></style>

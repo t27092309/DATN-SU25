@@ -103,46 +103,53 @@
 
     const fetchProducts = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/products`)
-            products.value = data
+            const { data } = await axios.get('http://localhost:8000/api/admin/products');
+            products.value = Array.isArray(data.data) ? data.data : [];
         } catch (error) {
-            alert('Co loi xay ra: ' + error.message)
+            console.error('Không lấy được sản phẩm:', error);
+            products.value = [];
         }
-    }
+    };
+
 
     const fetchCategory = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/categories`)
-            categories.value = data
+            const { data } = await axios.get(`http://localhost:8000/api/admin/categories`)
+            categories.value = data.data
         } catch (error) {
             alert('Co loi xay ra: ' + error.message)
         }
     }
+
     const fetchBrand = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/brands`)
-            brands.value = data
+            const { data } = await axios.get('http://localhost:8000/api/admin/brands');
+            brands.value = data.data || [];
         } catch (error) {
-            alert('Co loi xay ra: ' + error.message)
+            alert('Có lỗi xảy ra khi lấy danh sách thương hiệu: ' + error.message);
+            brands.value = [];
         }
-    }
+    };
 
     const getCategoryName = (categoryId) => {
+        if (!Array.isArray(categories.value)) return 'Đang load...';
         const category = categories.value.find(c => c.id === categoryId);
-        return category ? category.name : 'Không rõ danh mục';
-    }
+        return category ? category.name : 'Đang load...';
+    };
 
     const getBrandName = (brandId) => {
-        const brand = brands.value.find(c => c.id === brandId);
-        return brand ? brand.name : 'Không rõ brand';
-    }
+        if (!Array.isArray(brands.value)) return 'Đang load...';
+        const brand = brands.value.find(b => b.id === brandId);
+        return brand ? brand.name : 'Đang load...';
+    };
+
 
     const deleteProduct = async (id) => {
         try {
             const confirmDelete = confirm('Bạn có chắc muốn xóa sản phẩm này ?')
             if (!confirmDelete) return
 
-            await axios.delete(`http://localhost:8000/api/products/${id}`)
+            await axios.delete(`http://localhost:8000/api/admin/products/${id}`)
             fetchProducts();
             alert('Xóa thành công!')
         } catch (error) {
