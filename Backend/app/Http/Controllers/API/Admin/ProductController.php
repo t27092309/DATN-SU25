@@ -118,6 +118,17 @@ class ProductController extends Controller
             'brand_id.exists' => 'Thương hiệu không tồn tại.',
         ]);
 
+        // Nếu có file ảnh mới được upload
+        if ($request->hasFile('image')) {
+            // Xoá ảnh cũ nếu muốn (tuỳ bạn, có thể bỏ qua nếu không cần)
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+            // Lưu ảnh mới
+            $imagePath = $request->file('image')->store('products', 'public');
+            $validated['image'] = $imagePath;
+        }
+
         $product->update($validated);
 
         return response()->json([

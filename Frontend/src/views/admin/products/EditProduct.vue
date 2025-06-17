@@ -70,7 +70,7 @@
                                     <select class="form-select" id="exampleFormControlSelect1"
                                         v-model="product.category_id">
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ getBrandName(product.category_id) }}
+                                            {{ getCategoryName(product.category_id) }}
                                         </option>
                                     </select>
                                 </div>
@@ -95,11 +95,13 @@
                             <div class="col-md">
                                 <div class="form-group">
                                     <label for="image">Hình ảnh</label>
-                                    <input type="text" class="form-control" id="image" placeholder="Nhập link hình ảnh"
-                                        v-model="product.image" />
-                                    <img :src="product.image" alt="" width="170px" class="mt-2">
+                                    <input type="file" class="form-control mb-3" id="image" @change="onFileChange"
+                                        accept="image/*" />
+                                    <img :src="getImageUrl(product.image)" alt="" style="width: 150px;">
+
                                 </div>
                             </div>
+
                         </div>
                         <div class="row">
                             <div class="col">
@@ -130,6 +132,7 @@
     import { useRoute } from 'vue-router';
     import axios from 'axios'
     import router from '@/router';
+    import Swal from 'sweetalert2';
 
     const route = useRoute();
 
@@ -145,7 +148,13 @@
         category_id: "",
         brand_id: "",
     });
+
     const { params } = useRoute();
+    const imageFile = ref(null);
+
+    const getImageUrl = (imagePath) => {
+        return `http://localhost:8000/storage/${imagePath}`;
+    };
 
     const fetchProduct = async () => {
         try {
@@ -177,11 +186,39 @@
         }
     };
 
+    // Hàm xử lý khi chọn file
+    const onFileChange = (e) => {
+        imageFile.value = e.target.files[0];
+    };
+
     const updateProduct = async () => {
         try {
-            await axios.put(`http://localhost:8000/api/admin/products/${params.id}`, product.value);
-            alert('Sua thanh cong!')
-            router.push("/admin/products");
+            const formData = new FormData();
+            // Append các trường thông tin sản phẩm
+            for (const key in product.value) {
+                formData.append(key, product.value[key]);
+            }
+            // Append file ảnh nếu có
+            if (imageFile.value) {
+                formData.append('image', imageFile.value); // 'image' là tên field backend nhận
+            }
+
+            await axios.post(`http://localhost:8000/api/admin/products/${params.id}?_method=PUT`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const result = await Swal.fire({
+                title: 'Update thành công!',
+                text: 'Chúc mừng, bạn đã update thành công!',
+                icon: 'success', // 'success', 'error', 'warning', 'info', 'question'
+                confirmButtonText: 'Tuyệt vời!',
+            });
+
+            if (result.isConfirmed) {
+                router.push('/admin/products')
+            }
         } catch (error) {
             if (error.response && error.response.status === 422) {
                 console.log("💥 Lỗi từ Laravel:", error.response.data.errors);
