@@ -18,7 +18,7 @@ class ProductDetailResource extends JsonResource
         'price' => $this->price,
         'category_id' => $this->category_id,
         'brand_id' => $this->brand_id,
-        'view' => $this->view,
+        'view' => $this->brand_id,
         'description' => $this->description,
 
         'usage_profile' => $this->whenLoaded('usageProfile', function () {
