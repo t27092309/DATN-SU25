@@ -68,8 +68,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('most-viewed-products-by-categories', [ClientProductController::class, 'getMostViewedProductsByCategories']);
     Route::get('category-page-products', [ClientProductController::class, 'getCategoryPageProducts']);
     //route chi tiết sản phẩm cliend
-    Route::get('/products/{id}', [ClientProductController::class, 'getdetailproducts']);
-    //test postman:  http://127.0.0.1:8000/api/products/31
+    Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
+    //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
+    Route::get('/products/search', [ClientProductController::class, 'search']);
+
+
 });
 
 // use Illuminate\Support\Facades\Route;

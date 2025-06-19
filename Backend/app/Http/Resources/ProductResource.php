@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
@@ -7,11 +8,14 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends JsonResource
 {
-  public function toArray(Request $request): array
+    public function toArray(Request $request): array
     {
         $data = [
+            'id' => $this->id, // ID sản phẩm
+            'slug' => $this->slug, // Slug sản phẩm
             'name' => $this->name, // Tên sản phẩm
-            'category_name' => $this->whenLoaded('category', fn () => $this->category->name ?? 'No Category'), // Danh mục
+            'description' => $this->description, // Mô tả sản phẩm
+            'category_name' => $this->whenLoaded('category', fn() => $this->category->name ?? 'No Category'), // Danh mục
             'image' => $this->image ? Storage::url($this->image) : ($this->images->first()?->path ? Storage::url($this->images->first()->path) : 'https://via.placeholder.com/600x600.png'), // Ảnh
             'variants' => $this->whenLoaded('variants', function () { // Biến thể
                 return $this->variants->map(function ($variant) {
@@ -22,7 +26,7 @@ class ProductResource extends JsonResource
                 });
             }, []),
             'price' => $this->price ?? $this->variants->min('price') ?? 0, // Giá
-            'brand' => $this->whenLoaded('brand', fn () => $this->brand->name ?? 'No Brand'), // Hãng
+            'brand' => $this->whenLoaded('brand', fn() => $this->brand->name ?? 'No Brand'), // Hãng
             'gender' => $this->gender ?? 'Unknown', // Giới tính
         ];
 
