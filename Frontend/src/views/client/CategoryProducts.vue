@@ -1,16 +1,5 @@
-
 <template>
   <div class="container mx-auto p-4 max-w-[1200px]">
-    <p class="font-bold text-3xl text-black">{{ categoryName }}</p>
-    <nav class="text-sm breadcrumbs mb-6">
-      <ul class="flex items-center space-x-2">
-        <li><router-link to="/"><span class="text-base text-gray-500">Trang chủ</span></router-link></li>
-        <span class="text-gray-500 text-base">/</span>
-        <li><router-link to="/nuoc-hoa"><span class="text-base text-gray-500">Nước Hoa</span></router-link></li>
-        <span class="text-gray-500 text-base">/</span>
-        <li class="text-gray-900 font-bold text-base">{{ categoryName }}</li>
-      </ul>
-    </nav>
     <div class="flex flex-col md:flex-row gap-8 mt-5">
       <BrandList :brands="brands" :selected-brand="selectedBrand" @select-brand="handleSelectBrand" />
       <div class="flex-1">
@@ -20,11 +9,6 @@
             @select-aroma="handleSelectAroma" ref="productFilters" />
         </div>
         <div class="bg-gray-100 p-6 rounded-lg min-h-[300px]">
-          <!-- <h4 class="text-lg font-medium mb-4">
-            Nội dung chính cho {{ selectedBrand ? selectedBrand : 'tất cả hãng' }}
-          </h4>
-          <p v-if="selectedBrand">Bạn đã chọn hãng: **{{ selectedBrand }}**</p>
-          <p v-else>Chọn một hãng từ danh sách bên trái để xem sản phẩm.</p> -->
           <p v-if="selectedPriceRange">Phạm vi giá đã chọn: **{{ selectedPriceRange }}**</p>
           <div v-if="selectedAromas.length > 0" class="mb-2">
             <p class="font-medium">Nhóm Hương:</p>
@@ -38,13 +22,18 @@
           <div v-if="loading" class="text-center py-4">Đang tải...</div>
           <div v-else-if="error" class="error text-red-600 text-center py-4">{{ error }}</div>
           <div v-else-if="products.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            <div v-for="product in products" :key="product.name" class="p-4 bg-white rounded-lg shadow">
-              <img :src="product.image" alt="Product Image" class="w-full h-48 object-cover rounded-t-lg">
+            <router-link
+              v-for="product in products"
+              :key="product.slug || product.id"
+              :to="{ name: 'ProductDetail', params: { slug: product.slug || product.id } }"
+              class="block p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+            >
+              <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
               <h5 class="text-md font-semibold mt-2">{{ product.name }}</h5>
               <p class="text-gray-700">{{ product.brand }}</p>
               <p class="text-lg font-bold text-red-600">{{ product.price }} VNĐ</p>
+            </router-link>
             </div>
-          </div>
           <p v-else class="text-center py-4">Không có sản phẩm nào trong danh mục này.</p>
         </div>
       </div>
@@ -66,7 +55,8 @@ const props = defineProps(['categoryName']);
 const products = ref([]);
 const loading = ref(false);
 const error = ref(null);
-const router = useRouter();
+const router = useRouter(); // Giữ nguyên
+
 const brands = ref([
   { name: 'BVLGARI', imageUrl: 'https://orchard.vn/wp-content/uploads/2024/06/fragnance-logo-text-bvlgary.webp' },
   { name: 'Parfums', imageUrl: 'https://orchard.vn/wp-content/uploads/2024/04/logo-brand-calvin-klein.webp' },
@@ -144,7 +134,20 @@ const handleSelectAroma = (aromas) => {
 };
 
 const applyFilters = () => {
-  let filteredProducts = products.value;
+  // BẢO LƯU DANH SÁCH SẢN PHẨM GỐC TỪ API ĐỂ LỌC LẠI
+  // Nếu bạn muốn lọc trên dữ liệu gốc mỗi lần, bạn cần lưu trữ nó riêng.
+  // Ví dụ: const allProducts = ref([]); fetchProducts sẽ gán vào allProducts.value
+  // Và sau đó, lọc trên allProducts.value
+  // Hiện tại, logic lọc của bạn đang lọc trên products.value đã bị lọc từ trước đó.
+  // Điều này có thể dẫn đến kết quả không mong muốn khi áp dụng nhiều bộ lọc liên tiếp.
+
+  // ĐỂ KHẮC PHỤC, BẠN CẦN LƯU TRỮ DANH SÁCH SẢN PHẨM GỐC:
+  // Thêm một ref mới:
+  // const allProducts = ref([]);
+  // Trong fetchProducts, gán: allProducts.value = category ? category.products : [];
+  // Và sau đó: products.value = [...allProducts.value]; // Khởi tạo products với tất cả
+  // Và ở đây, hãy lọc trên allProducts.value:
+  let filteredProducts = products.value; // <= NÊN LÀ allProducts.value.filter(...)
 
   if (selectedBrand.value) {
     filteredProducts = filteredProducts.filter(product => product.brand === selectedBrand.value);
@@ -158,10 +161,12 @@ const applyFilters = () => {
   }
   if (selectedAromas.value.length > 0) {
     // Giả định sản phẩm có trường aroma (cần điều chỉnh dựa trên API thực tế)
+    // Nếu product.aroma là một mảng các hương, bạn cần kiểm tra sự giao thoa
+    // Ví dụ: product.aromas.some(aroma => selectedAromas.value.includes(aroma))
     filteredProducts = filteredProducts.filter(product => selectedAromas.value.includes(product.aroma));
   }
 
-  products.value = filteredProducts; // Cập nhật lại danh sách sản phẩm
+  products.value = filteredProducts; // Cập nhật lại danh sách sản phẩm hiển thị
 };
 
 const getPriceRange = (range) => {

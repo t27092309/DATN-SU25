@@ -16,6 +16,8 @@
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@splidejs/vue-splide": "^0.6.12",
     "axios": "^1.9.0",
+    "barcode": "^0.1.0",
+    "jsbarcode": "^3.12.1",
     "pinia": "^3.0.3",
     "swiper": "^11.2.8",
     "vue": "^3.5.13",

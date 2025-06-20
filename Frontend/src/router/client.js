@@ -11,7 +11,6 @@ import NuocHoaChietPage from "@/views/client/NuocHoaChietPage.vue";
 import NuocHoaNichePage from "@/views/client/NuocHoaNichePage.vue";
 import NuocHoaUnisexPage from "@/views/client/NuocHoaUnisexPage.vue";
 import Cart from "@/views/client/Cart.vue";
-import Product from "@/views/client/Product.vue";
 import Register from "@/views/client/account/Register.vue";
 import Login from "@/views/client/account/Login.vue";
 
@@ -23,7 +22,8 @@ import Bank from "@/views/client/user/Bank.vue";
 import Orders from "@/views/client/user/Orders.vue";
 import CategoryProducts from "@/views/client/CategoryProducts.vue";
 import ProductDetail from "@/views/client/Product.vue";
-export default [
+
+const routes = [
   {
     path: "/",
     component: ClientLayout,
@@ -94,9 +94,8 @@ export default [
         component: CategoryProducts,
         props: true,
       },
-
       {
-        path: "/product/:productId",
+        path: "/san-pham/:slug",
         name: "ProductDetail",
         component: ProductDetail,
         props: true,
@@ -134,3 +133,10 @@ export default [
     ],
   },
 ];
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+export default routes; // Export instance router đã được tạo
