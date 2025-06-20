@@ -47,7 +47,7 @@
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ product.name }}</td>
                                 <td>
-                                    <img :src="product.image" alt="" style="width: 150px;">
+                                    <img :src="getImageUrl(product.image)" alt="" style="width: 150px;">
                                 </td>
                                 <td>{{ product.price }}</td>
                                 <td>{{ getCategoryName(product.category_id) }}</td>
@@ -68,17 +68,16 @@
 
                     <nav>
                         <ul class="pagination justify-content-center">
-                            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                                <button class="page-link" @click="fetchProducts(currentPage - 1)">Trước</button>
+                            <li class="page-item">
+                                <button class="page-link" :disabled="!pagination.prev_page_url"
+                                    @click="fetchProducts(pagination.current_page - 1)">Trước</button>
                             </li>
 
-                            <li class="page-item" v-for="page in totalPages" :key="page"
-                                :class="{ active: page === currentPage }">
-                                <button class="page-link" @click="fetchProducts(page)">{{ page }}</button>
-                            </li>
+                            <span>Trang {{ pagination.current_page }} / {{ pagination.last_page }}</span>
 
-                            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                                <button class="page-link" @click="fetchProducts(currentPage + 1)">Sau</button>
+                            <li class="page-item">
+                                <button class="page-link" :disabled="!pagination.next_page_url"
+                                    @click="fetchProducts(pagination.current_page + 1)">Sau</button>
                             </li>
                         </ul>
                     </nav>
@@ -94,17 +93,28 @@
     import { onMounted, ref } from 'vue';
     import { useRoute } from 'vue-router';
     import axios from 'axios'
+    import Swal from 'sweetalert2';
 
     const route = useRoute()
 
     const products = ref([]);
+    const pagination = ref({});
     const categories = ref([]);
     const brands = ref([]);
 
-    const fetchProducts = async () => {
+    const getImageUrl = (imagePath) => {
+        return `http://localhost:8000/storage/${imagePath}`;
+    };
+
+    const fetchProducts = async (page = 1) => {
         try {
-            const { data } = await axios.get('http://localhost:8000/api/admin/products');
-            products.value = Array.isArray(data.data) ? data.data : [];
+            const { data } = await axios.get(`http://localhost:8000/api/admin/products?page=${page}`);
+            console.log(data);
+
+            products.value = data.data; // data là mảng sản phẩm
+            pagination.value = data;
+
+            window.scrollTo(0, 0);
         } catch (error) {
             console.error('Không lấy được sản phẩm:', error);
             products.value = [];
@@ -146,12 +156,26 @@
 
     const deleteProduct = async (id) => {
         try {
-            const confirmDelete = confirm('Bạn có chắc muốn xóa sản phẩm này ?')
-            if (!confirmDelete) return
-
-            await axios.delete(`http://localhost:8000/api/admin/products/${id}`)
-            fetchProducts();
-            alert('Xóa thành công!')
+            const confirmDelete = await Swal.fire({
+                title: 'Bạn có chắc muốn xóa ?',
+                text: 'Bạn sẽ không thể hoàn tác hành động này!',
+                icon: 'warning', // Dùng icon 'warning' cho hành động xóa sẽ hợp lý hơn
+                showCancelButton: true, // Hiển thị nút "Hủy"
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Vâng, xóa đi!',
+                cancelButtonText: 'Hủy' // Thêm text cho nút hủy
+            });
+            if (confirmDelete.isConfirmed) {
+                await axios.delete(`http://localhost:8000/api/admin/products/${id}`)
+                fetchProducts();
+                Swal.fire({
+                    title: 'Xóa thành công!',
+                    text: 'Chúc mừng, bạn đã xóa thành công!',
+                    icon: 'success', // 'success', 'error', 'warning', 'info', 'question'
+                    confirmButtonText: 'Tuyệt vời!'
+                });
+            }
         } catch (error) {
             if (error.response) {
                 console.log('Lỗi chi tiết:', error.response.data)

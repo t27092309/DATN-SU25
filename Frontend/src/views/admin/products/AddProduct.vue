@@ -98,8 +98,8 @@
                             <div class="col-md">
                                 <div class="form-group">
                                     <label for="image">Hình ảnh</label>
-                                    <input type="text" class="form-control" id="image" placeholder="Nhập link hình ảnh"
-                                        v-model="product.image" />
+                                    <input type="file" class="form-control" id="image" @change="onFileChange"
+                                        accept="image/*" />
                                 </div>
                             </div>
                         </div>
@@ -131,6 +131,7 @@
     import { useRoute } from 'vue-router';
     import axios from 'axios'
     import router from '@/router';
+    import Swal from 'sweetalert2';
 
     const route = useRoute();
     const categories = ref([]);
@@ -145,19 +146,20 @@
         category_id: '',
         brand_id: ''
     })
+    const imageFile = ref(null);
 
     const fetchCategory = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/categories`)
-            categories.value = data
+            const { data } = await axios.get(`http://localhost:8000/api/admin/categories`)
+            categories.value = data.data
         } catch (error) {
             alert('Co loi xay ra: ' + error.message)
         }
     }
     const fetchBrand = async () => {
         try {
-            const { data } = await axios.get(`http://localhost:8000/api/brands`)
-            brands.value = data
+            const { data } = await axios.get(`http://localhost:8000/api/admin/brands`)
+            brands.value = data.data
         } catch (error) {
             alert('Co loi xay ra: ' + error.message)
         }
@@ -168,11 +170,39 @@
         fetchBrand()
     })
 
+    // Hàm xử lý khi chọn file
+    const onFileChange = (e) => {
+        imageFile.value = e.target.files[0];
+    };
+
     const addProduct = async () => {
         try {
-            await axios.post('http://localhost:8000/api/products', product.value)
-            alert('Them sp thanh cong!')
-            router.push('/admin/products')
+            const formData = new FormData();
+            // Append các trường thông tin sản phẩm
+            for (const key in product.value) {
+                formData.append(key, product.value[key]);
+            }
+            // Append file ảnh nếu có
+            if (imageFile.value) {
+                formData.append('image', imageFile.value); // 'image' là tên field backend nhận
+            }
+
+            await axios.post('http://localhost:8000/api/admin/products', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            const result = await Swal.fire({
+                title: 'Thêm thành công!',
+                text: 'Chúc mừng, bạn đã thêm thành công!',
+                icon: 'success',
+                confirmButtonText: 'Tuyệt vời!'
+            });
+
+            // Code sẽ tạm dừng ở dòng "await" cho đến khi người dùng bấm nút
+            if (result.isConfirmed) {
+                router.push('/admin/products')
+            }
         } catch (error) {
             if (error.response && error.response.status === 422) {
                 console.log("💥 Lỗi từ Laravel:", error.response.data.errors);
@@ -181,7 +211,7 @@
                 console.log("❌ Lỗi khác:", error.message);
             }
         }
-    }
+    };
 
 
 
