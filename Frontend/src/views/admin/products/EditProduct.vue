@@ -70,7 +70,7 @@
                                     <select class="form-select" id="exampleFormControlSelect1"
                                         v-model="product.category_id">
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ getCategoryName(product.category_id) }}
+                                            {{ category.name }}
                                         </option>
                                     </select>
                                 </div>
@@ -86,7 +86,7 @@
                                     <select class="form-select" id="exampleFormControlSelect1"
                                         v-model="product.brand_id">
                                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-                                            {{ getBrandName(product.brand_id) }}
+                                            {{ brand.name }}
                                         </option>
                                     </select>
                                 </div>
