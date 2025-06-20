@@ -62,7 +62,6 @@ class ProductController extends Controller
             $products = $category->products()
                 ->with(['brand', 'images', 'variants', 'category'])
                 ->orderByDesc('views')
-                ->limit(10)
                 ->get();
 
             $data[] = [
@@ -85,26 +84,27 @@ class ProductController extends Controller
             'brand',
             'category',
             'usageProfile',
-            'scentProfiles',
-            'variants',
+            'scentProfiles.scentGroup',
+            'variants.attributeValues.attribute',
             'images',
         ])->where('slug', $slug)->firstOrFail();
 
         return new ProductDetailResource($product);
     }
+
     public function search(Request $request)
-{
-    $query = $request->input('q');
+    {
+        $query = $request->input('q');
 
-    $products = Product::where(function ($q1) use ($query) {
+        $products = Product::where(function ($q1) use ($query) {
             $q1->where('name', 'like', '%' . $query . '%')
-               ->orWhere('description', 'like', '%' . $query . '%')
-               ->orWhere('slug', 'like', '%' . $query . '%');
+                ->orWhere('description', 'like', '%' . $query . '%')
+                ->orWhere('slug', 'like', '%' . $query . '%');
         })
-        ->orderByDesc('views') // sắp xếp views cao nhất lên đầu
-        ->with(['brand', 'category']) // nếu dùng resource cần quan hệ
-        ->get();
+            ->orderByDesc('views') // sắp xếp views cao nhất lên đầu
+            ->with(['brand', 'category']) // nếu dùng resource cần quan hệ
+            ->get();
 
-    return ProductResource::collection($products);
-}
+        return ProductResource::collection($products);
+    }
 }
