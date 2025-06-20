@@ -89,7 +89,7 @@ const routes = [
         component: Login,
       },
       {
-        path: "/category/:categoryName",
+        path: "/category/:categorySlug",
         name: "CategoryProducts",
         component: CategoryProducts,
         props: true,

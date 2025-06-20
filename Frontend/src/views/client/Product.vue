@@ -23,12 +23,15 @@
 
                         <div class="mb-4">
                             <span class="font-semibold text-gray-600">Thương hiệu:</span>
-                            <a href="#" class="text-blue-600 hover:underline ml-2">Brand ID: {{ product.brand_id }}</a>
+                            <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand_name }}</a>
                         </div>
                         <div class="mb-4">
                             <span class="font-semibold text-gray-600">Loại sản phẩm:</span>
-                            <a href="#" class="text-blue-600 hover:underline ml-2">Category ID: {{ product.category_id
-                                }}</a>
+                            <router-link
+                                :to="{ name: 'CategoryProducts', params: { categorySlug: product.category_slug } }"
+                                class="text-blue-600 hover:underline ml-2">
+                                {{ product.category_name }}
+                            </router-link>
                         </div>
                         <div class="mb-6">
                             <span class="font-semibold text-gray-600">Tình trạng:</span>
@@ -92,8 +95,23 @@
                             <span class="ml-2">{{ selectedVariantStock }}</span>
                         </div>
 
+                        <div class="flex gap-4 mt-6">
+                            <button
+                                class="flex-1 py-3 px-6 border border-red-500 text-red-500 rounded-lg font-bold hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                                :disabled="selectedVariantStatus === 'unavailable' || selectedVariantStock === 0"
+                                @click="addToCart">
+                                Thêm vào giỏ hàng
+                            </button>
+                            <button
+                                class="flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors duration-200"
+                                :disabled="selectedVariantStatus === 'unavailable' || selectedVariantStock === 0"
+                                @click="buyNow">
+                                Mua ngay
+                            </button>
+                        </div>
+
                         <div
-                            class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg flex items-center mb-6">
+                            class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg flex items-center mb-6 mt-4">
                             <i class="fas fa-gift mr-2"></i>
                             <span>Giảm <span class="font-bold">100K</span> khi thanh toán qua Fundiin (<a href="#"
                                     class="underline">xem thêm</a>)</span>
@@ -439,6 +457,27 @@ const isDarkColor = (hexColor) => {
     const b = parseInt(hexColor.slice(5, 7), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance < 0.5;
+};
+
+// Placeholder functions for button actions
+const addToCart = () => {
+    if (foundVariant.value) {
+        alert(`Thêm vào giỏ hàng: Sản phẩm ${product.value.name}, Biến thể: ${JSON.stringify(selectedAttributes.value)}`);
+        // Implement your actual add to cart logic here
+        // e.g., using a Vuex store, an API call, etc.
+    } else {
+        alert('Vui lòng chọn đầy đủ các thuộc tính để thêm sản phẩm vào giỏ hàng.');
+    }
+};
+
+const buyNow = () => {
+    if (foundVariant.value) {
+        alert(`Mua ngay: Sản phẩm ${product.value.name}, Biến thể: ${JSON.stringify(selectedAttributes.value)}`);
+        // Implement your actual buy now logic here
+        // e.g., redirect to checkout with this product
+    } else {
+        alert('Vui lòng chọn đầy đủ các thuộc tính để mua sản phẩm.');
+    }
 };
 
 // Hook lifecycle: Gọi API khi component được mount

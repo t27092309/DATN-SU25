@@ -13,7 +13,7 @@ class ProductDetailResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -22,10 +22,26 @@ class ProductDetailResource extends JsonResource
             'image' => $this->image,
             'gender' => $this->gender,
             'price' => $this->price,
-            'category_id' => $this->category_id,
-            'brand_id' => $this->brand_id,
             'view' => $this->views,
             'description' => $this->description,
+
+            // Include brand_name when the 'brand' relationship is loaded
+            'brand_id' => $this->brand_id, // Still good to include the ID
+            'brand_name' => $this->whenLoaded('brand', function () {
+                return $this->brand->name;
+            }),
+            'brand_slug' => $this->whenLoaded('brand', function () {
+                return $this->brand->slug;
+            }),
+
+            // Include category_name when the 'category' relationship is loaded
+            'category_id' => $this->category_id, // Still good to include the ID
+            'category_name' => $this->whenLoaded('category', function () {
+                return $this->category->name;
+            }),
+            'category_slug' => $this->whenLoaded('category', function () {
+                return $this->category->slug;
+            }),
 
             'usage_profile' => $this->whenLoaded('usageProfile', function () {
                 return [
@@ -61,15 +77,8 @@ class ProductDetailResource extends JsonResource
                         'status' => $variant->status,
                         'barcode' => $variant->barcode,
                         'description' => $variant->description,
-                        // THE FIX IS HERE:
-                        // You need to create a new, nested resource for the variant,
-                        // or check the relation status directly using wasLoaded().
-                        // The simplest and cleanest way for complex nested relations
-                        // is often to create a dedicated resource for ProductVariant.
-                        // However, if you want to keep it flat, you can do this:
-                        'attributes' => $variant->relationLoaded('attributeValues') ? // Use relationLoaded() on the model
-                            $variant->attributeValues->filter(function($attributeValue) {
-                                // Filter out attributeValues where 'attribute' relation is null
+                        'attributes' => $variant->relationLoaded('attributeValues') ?
+                            $variant->attributeValues->filter(function ($attributeValue) {
                                 return $attributeValue->relationLoaded('attribute') && $attributeValue->attribute !== null;
                             })->map(function ($attributeValue) {
                                 return [
@@ -78,7 +87,7 @@ class ProductDetailResource extends JsonResource
                                     'value_id' => $attributeValue->id,
                                     'value_name' => $attributeValue->value,
                                 ];
-                            }) : [], // If not loaded, return an empty array
+                            }) : [],
                     ];
                 });
             }),
