@@ -10,7 +10,6 @@
                     <ProductCarousel :productImages="product.images.length > 0 ? product.images : [product.image]" />
                     <div class="flex-grow">
                         <h1 class="text-3xl font-semibold mb-2">{{ product.name }}</h1>
-
                         <div class="flex items-center mb-4">
                             <div class="flex text-yellow-400 mr-2">
                                 <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9734;</span>
@@ -18,17 +17,23 @@
                             <span class="text-sm text-gray-600">(9 đánh giá)</span>
                             <span class="mx-2 text-gray-300">|</span>
                             <span class="text-sm text-gray-600">Đã bán {{ formatSold(product.variants) }}</span>
+                            <span class="mx-2 text-gray-300" v-if="selectedVariantStock !== 'N/A'">|</span>
+                            <span class="text-sm text-gray-600" v-if="selectedVariantStock !== 'N/A'">Tồn kho: {{
+                                selectedVariantStock }}</span>
                         </div>
                         <p class="text-gray-700 mb-6">{{ product.description }}</p>
 
                         <div class="mb-4">
                             <span class="font-semibold text-gray-600">Thương hiệu:</span>
-                            <a href="#" class="text-blue-600 hover:underline ml-2">Brand ID: {{ product.brand_id }}</a>
+                            <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand_name }}</a>
                         </div>
                         <div class="mb-4">
                             <span class="font-semibold text-gray-600">Loại sản phẩm:</span>
-                            <a href="#" class="text-blue-600 hover:underline ml-2">Category ID: {{ product.category_id
-                                }}</a>
+                            <router-link
+                                :to="{ name: 'CategoryProducts', params: { categorySlug: product.category_slug } }"
+                                class="text-blue-600 hover:underline ml-2">
+                                {{ product.category_name }}
+                            </router-link>
                         </div>
                         <div class="mb-6">
                             <span class="font-semibold text-gray-600">Tình trạng:</span>
@@ -87,16 +92,44 @@
                             <span class="font-semibold text-gray-600">Mã SKU:</span>
                             <span class="ml-2">{{ selectedVariantSku || 'N/A' }}</span>
                         </div>
-                        <div class="mb-4">
-                            <span class="font-semibold text-gray-600">Tồn kho:</span>
-                            <span class="ml-2">{{ selectedVariantStock }}</span>
+
+
+
+                        <div class="flex gap-4 mt-6">
+                            <button
+                                class="flex-1 py-3 px-6 border border-red-500 text-red-500 rounded-lg font-bold hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                                :disabled="selectedVariantStatus === 'unavailable' || selectedVariantStock === 0"
+                                @click="addToCart">
+                                Thêm vào giỏ hàng
+                            </button>
+                            <button
+                                class="flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors duration-200"
+                                :disabled="selectedVariantStatus === 'unavailable' || selectedVariantStock === 0"
+                                @click="buyNow">
+                                Mua ngay
+                            </button>
                         </div>
 
                         <div
-                            class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg flex items-center mb-6">
+                            class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg flex items-center mb-6 mt-4">
                             <i class="fas fa-gift mr-2"></i>
                             <span>Giảm <span class="font-bold">100K</span> khi thanh toán qua Fundiin (<a href="#"
                                     class="underline">xem thêm</a>)</span>
+                        </div>
+                        <div class="flex gap-4 mt-6">
+                            <button
+                                class="flex-1 py-3 px-6 border border-red-500 text-red-500 rounded-lg font-bold hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                                :disabled="selectedVariantStatus === 'unavailable' || selectedVariantStock === 0"
+                                @click="addToCart">
+                                Thêm vào giỏ hàng
+                            </button>
+                            <router-link :to="{ path: '/thanh-toan' }" :class="[
+                                'flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors duration-200 text-center flex items-center justify-center', // Added flex/items-center/justify-center for better text centering
+                                { 'opacity-50 cursor-not-allowed': selectedVariantStatus === 'unavailable' || selectedVariantStock === 0 || !foundVariant } // Thêm !foundVariant vào điều kiện làm mờ
+                            ]" @click.prevent="handleBuyNowClick"
+                                v-if="selectedVariantStatus !== 'unavailable' && selectedVariantStock !== 0">
+                                Mua ngay
+                            </router-link>
                         </div>
                     </div>
                 </div>
@@ -439,6 +472,47 @@ const isDarkColor = (hexColor) => {
     const b = parseInt(hexColor.slice(5, 7), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance < 0.5;
+};
+
+// Placeholder functions for button actions
+const addToCart = () => {
+    if (foundVariant.value) {
+        alert(`Thêm vào giỏ hàng: Sản phẩm ${product.value.name}, Biến thể: ${JSON.stringify(selectedAttributes.value)}`);
+        // Implement your actual add to cart logic here
+        // e.g., using a Vuex store, an API call, etc.
+    } else {
+        alert('Vui lòng chọn đầy đủ các thuộc tính để thêm sản phẩm vào giỏ hàng.');
+    }
+};
+
+const buyNow = () => {
+    if (foundVariant.value) {
+        alert(`Mua ngay: Sản phẩm ${product.value.name}, Biến thể: ${JSON.stringify(selectedAttributes.value)}`);
+        // Implement your actual buy now logic here
+        // e.g., redirect to checkout with this product
+    } else {
+        alert('Vui lòng chọn đầy đủ các thuộc tính để mua sản phẩm.');
+    }
+};
+
+const handleBuyNowClick = (event) => {
+    // Nếu biến thể không có sẵn (hết hàng, ngừng kinh doanh) hoặc không có tồn kho
+    if (selectedVariantStatus.value === 'unavailable' || selectedVariantStock.value === 0) {
+        event.preventDefault(); // Ngăn router-link chuyển hướng
+        alert('Sản phẩm này hiện không có sẵn để mua.');
+        return;
+    }
+
+    // THÊM ĐIỀU KIỆN NÀY: Nếu chưa tìm thấy biến thể phù hợp (chưa chọn đủ thuộc tính)
+    if (!foundVariant.value) {
+        event.preventDefault(); // Ngăn router-link chuyển hướng
+        alert('Vui lòng chọn đầy đủ các thuộc tính để mua sản phẩm.');
+        return;
+    }
+
+    // Nếu đã chọn đủ thuộc tính và biến thể hợp lệ
+    alert(`Chuẩn bị mua ngay: Sản phẩm ${product.value.name}, Biến thể: ${JSON.stringify(selectedAttributes.value)}. Chuyển hướng đến trang thanh toán.`);
+    // router-link sẽ tự động xử lý việc chuyển hướng nếu không bị preventDefault()
 };
 
 // Hook lifecycle: Gọi API khi component được mount

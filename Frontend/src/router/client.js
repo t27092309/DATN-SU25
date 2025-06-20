@@ -3,17 +3,11 @@ import { createRouter, createWebHistory } from "vue-router";
 import ClientLayout from "@/layouts/ClientLayout.vue";
 import Home from "@/views/client/Home.vue";
 import NuocHoaPage from "@/views/client/NuocHoaPage.vue";
-import NuocHoaNamPage from "@/views/client/NuocHoaNamPage.vue";
-import NuocHoaNuPage from "@/views/client/NuocHoaNuPage.vue";
 import ThuongHieuPage from "@/views/client/ThuongHieuPage.vue";
-import NuocHoaMiniPage from "@/views/client/NuocHoaMiniPage.vue";
-import NuocHoaChietPage from "@/views/client/NuocHoaChietPage.vue";
-import NuocHoaNichePage from "@/views/client/NuocHoaNichePage.vue";
-import NuocHoaUnisexPage from "@/views/client/NuocHoaUnisexPage.vue";
 import Cart from "@/views/client/Cart.vue";
 import Register from "@/views/client/account/Register.vue";
 import Login from "@/views/client/account/Login.vue";
-
+import Checkout from "@/views/client/Checkout.vue";
 //-----User--------
 import UserLayout from "@/layouts/UserLayout.vue";
 import Profile from "@/views/client/user/Profile.vue";
@@ -39,44 +33,19 @@ const routes = [
         component: NuocHoaPage,
       },
       {
-        path: "nuoc-hoa-nam",
-        name: "NuocHoaNam",
-        component: NuocHoaNamPage,
-      },
-      {
-        path: "nuoc-hoa-nu",
-        name: "NuocHoaNu",
-        component: NuocHoaNuPage,
-      },
-      {
         path: "thuong-hieu",
         name: "ThuongHieu",
         component: ThuongHieuPage,
       },
       {
-        path: "nuoc-hoa-mini",
-        name: "NuocHoaMini",
-        component: NuocHoaMiniPage,
-      },
-      {
-        path: "nuoc-hoa-chiet",
-        name: "NuocHoaChiet",
-        component: NuocHoaChietPage,
-      },
-      {
-        path: "nuoc-hoa-unisex",
-        name: "NuocHoaUnisex",
-        component: NuocHoaUnisexPage,
-      },
-      {
-        path: "nuoc-hoa-niche",
-        name: "NuocHoaNiche",
-        component: NuocHoaNichePage,
-      },
-      {
         path: "gio-hang",
         name: "GioHang",
         component: Cart,
+      },
+      {
+        path: "thanh-toan",
+        name: "ThanhToan",
+        component: Checkout,
       },
       {
         path: "dang-ky",
@@ -89,7 +58,7 @@ const routes = [
         component: Login,
       },
       {
-        path: "/category/:categoryName",
+        path: "/category/:categorySlug",
         name: "CategoryProducts",
         component: CategoryProducts,
         props: true,
