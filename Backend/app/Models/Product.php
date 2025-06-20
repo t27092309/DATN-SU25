@@ -31,7 +31,7 @@ class Product extends Model
     }
     public function brand()
     {
-        return $this->belongsTo(Brand::class); // Đảm bảo bạn đã import App\Models\Brand
+        return $this->belongsTo(Brand::class);
     }
     public function usageProfile()
     {

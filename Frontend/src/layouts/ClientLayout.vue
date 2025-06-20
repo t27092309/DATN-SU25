@@ -1,4 +1,3 @@
-
 <template>
   <div class="client-root">
     <div class="header">
@@ -157,15 +156,11 @@
 
               <div
                 v-for="category in categories"
-                :key="category.category_name"
-                @click="goToCategory(category.category_name)"
-                class="category-item text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200 cursor-pointer"
+                :key="category.category_slug" @click="goToCategory(category.category_slug)" class="category-item text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200 cursor-pointer"
                 :class="{
-                  'bg-gray-100 font-bold': selectedCategory === category.category_name,
-                }"
+                  'bg-gray-100 font-bold': selectedCategory === category.category_slug, }"
               >
-                {{ category.category_name }}
-              </div>
+                {{ category.category_name }} </div>
 
               <a
                 href="#"
@@ -353,7 +348,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center text-sm">
           <p>© Bản quyền nội dung thuộc về Floréa © 2025</p>
           <p>Trích dẫn "florea.vn" khi sử dụng thông tin từ website này.</p>
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0L1Y4x7f-kY8Q8Q0Q4x4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q&s" alt="DMCA Badge" class="h-10 mt-4 md:mt-0" />
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0L1Y4x7f-kY8Q8Q0Q4x4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q4Q&s" alt="DMCA Badge" class="h-10 mt-4 md:mt-0" />
         </div>
       </div>
     </footer>
@@ -362,10 +357,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router'; // Import useRouter
-import { useAuthStore } from '@/stores/auth'; // Import auth store
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import logormbg from '@/assets/images/categories/Logo-removebg.png';
-import cart from '@/assets/images/icons/cart.webp';
 import ChatWindow from '@/components/ChatWindow.vue';
 import UserDisplay from '@/components/user/UserDisplay.vue';
 import axios from 'axios';
@@ -374,7 +368,7 @@ import axios from 'axios';
 const categories = ref([]);
 const loading = ref(false);
 const error = ref(null);
-const selectedCategory = ref(null);
+const selectedCategory = ref(null); // This will store the SLUG of the currently selected category
 const router = useRouter();
 const showChatWindow = ref(false);
 const chatButtonRef = ref(null);
@@ -385,17 +379,37 @@ const fetchCategories = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await axios.get('http://localhost:8000/api/category-page-products'); // Thay URL API thực tế
+    const response = await axios.get('http://localhost:8000/api/category-page-products');
     if (response.data && Array.isArray(response.data.data)) {
+      // Đảm bảo lấy cả category_name VÀ category_slug
       categories.value = response.data.data.slice(0, 8).map((item) => ({
         category_name: item.category_name,
-        products: item.products,
+        category_slug: item.category_slug, // THÊM DÒNG NÀY ĐỂ LẤY SLUG
+        products: item.products, // Bạn có thể bỏ products ở đây nếu chỉ cần name và slug cho menu
       }));
+      // Sau khi lấy categories, đặt selectedCategory dựa trên route hiện tại
+      if (router.currentRoute.value.params.categorySlug) {
+        selectedCategory.value = router.currentRoute.value.params.categorySlug;
+      } else {
+        // Nếu không có slug trên URL (ví dụ trang chủ), có thể chọn category đầu tiên làm mặc định
+        if (categories.value.length > 0) {
+          selectedCategory.value = categories.value[0].category_slug;
+        }
+      }
     } else if (response.data && Array.isArray(response.data)) {
+      // Trường hợp backend trả về trực tiếp mảng (ít khả năng hơn với cấu trúc hiện tại của bạn)
       categories.value = response.data.slice(0, 8).map((item) => ({
         category_name: item.category_name,
+        category_slug: item.category_slug, // THÊM DÒNG NÀY ĐỂ LẤY SLUG
         products: item.products,
       }));
+      if (router.currentRoute.value.params.categorySlug) {
+        selectedCategory.value = router.currentRoute.value.params.categorySlug;
+      } else {
+        if (categories.value.length > 0) {
+          selectedCategory.value = categories.value[0].category_slug;
+        }
+      }
     } else {
       throw new Error('Dữ liệu từ API không hợp lệ');
     }
@@ -406,9 +420,9 @@ const fetchCategories = async () => {
   }
 };
 
-// Điều hướng đến trang sản phẩm
-const goToCategory = (categoryName) => {
-  router.push(`/category/${categoryName}`);
+// Điều hướng đến trang sản phẩm theo slug
+const goToCategory = (categorySlug) => {
+  router.push(`/category/${categorySlug}`); // Đảm bảo route của bạn trong router/index.js là '/category/:categorySlug'
 };
 
 // Gọi API khi component được mount
