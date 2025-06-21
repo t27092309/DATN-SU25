@@ -8,6 +8,7 @@ import Cart from "@/views/client/Cart.vue";
 import Register from "@/views/client/account/Register.vue";
 import Login from "@/views/client/account/Login.vue";
 import Checkout from "@/views/client/Checkout.vue";
+import SearchResult from "@/views/client/SearchResult.vue";
 //-----User--------
 import UserLayout from "@/layouts/UserLayout.vue";
 import Profile from "@/views/client/user/Profile.vue";
@@ -67,6 +68,12 @@ const routes = [
         path: "/san-pham/:slug",
         name: "ProductDetail",
         component: ProductDetail,
+        props: true,
+      },
+      {
+        path: "/search/:keyword",
+        name: "SearchResult",
+        component: SearchResult,
         props: true,
       },
 
