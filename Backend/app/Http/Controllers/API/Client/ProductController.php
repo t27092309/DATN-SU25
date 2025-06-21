@@ -94,7 +94,7 @@ class ProductController extends Controller
 
     public function search(Request $request)
     {
-        $query = $request->input('q');
+        $query = $request->input('keyword');
 
         $products = Product::where(function ($q1) use ($query) {
             $q1->where('name', 'like', '%' . $query . '%')
