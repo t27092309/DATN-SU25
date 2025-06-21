@@ -7,6 +7,7 @@ use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Client\CartItemController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -18,6 +19,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
     // route admin yêu cầu xác thực
     Route::middleware('auth:sanctum')->group(function () {
+
+        // route giỏ hàng cho client
+       Route::apiResource('cart-items', CartItemController::class);
+
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -32,7 +37,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::delete('/user/addresses/{id}', [UserAddressController::class, 'destroy']);
         Route::put('/user/addresses/{id}/set-default', [UserAddressController::class, 'setDefault']);
 
-        // Chọn địa chỉ 
+        // Chọn địa chỉ
         Route::get('/provinces', [LocationController::class, 'provinces']);
         Route::get('/provinces/{province_code}/districts', [LocationController::class, 'districts']);
         Route::get('/districts/{district_code}/wards', [LocationController::class, 'wards']);
