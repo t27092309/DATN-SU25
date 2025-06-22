@@ -2,31 +2,23 @@
 
 namespace Database\Factories;
 
-use App\Models\Attribute; // Make sure to import your Attribute model
+use App\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str; // For generating slugs
+use Illuminate\Support\Str;
 
 class AttributeFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = Attribute::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        $name = $this->faker->unique()->word(); // Generate a unique random word for the name
+        // Đảm bảo slug luôn unique bằng cách nối thêm số random
+        $name = $this->faker->unique()->word();
+        $slug = Str::slug($name . '-' . $this->faker->unique()->numberBetween(1, 100000));
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name), // Generate a slug from the name
+            'slug' => $slug,
         ];
     }
 }
