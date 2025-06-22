@@ -14,5 +14,9 @@ class Coupon extends Model
         'discount_type',
         'discount_value',
         'expires_at',
+        'start_date',
+        'end_date',
+        'min_order_amount',
+        'max_discount',
     ];
 }
