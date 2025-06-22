@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class CouponController extends Controller
 {
-    // GET // http://localhost:8000/api/coupons
+    // GET // http://localhost:8000/api/admin/coupons
    public function index()
 {
     $coupons = Coupon::orderBy('id', 'desc')->paginate(15);
@@ -18,7 +18,17 @@ class CouponController extends Controller
 
 
 
-    // POST // http://localhost:8000/api/coupons
+    // POST // http://localhost:8000/api/admin/coupons
+    // test posman
+        //{
+            //   "code": "SALE15",
+            //   "discount_type": "percent",
+            //   "discount_value": 15,
+            //   "start_date": "2025-01-01",
+            //   "end_date": "2025-01-05",
+            //   "min_order_amount": 1000000,
+            //   "max_discount": 50000
+        // }
     public function store(CouponRequest $request)
     {
         $data = $request->validated();
@@ -29,7 +39,7 @@ class CouponController extends Controller
         ], 201);
     }
 
-   // GET // http://localhost:8000/api/coupons/{id}
+   // GET // http://localhost:8000/api/admin/coupons/{id}
     public function show(string $id)
     {
         $coupon = Coupon::findOrFail($id);
@@ -37,7 +47,7 @@ class CouponController extends Controller
     }
 
 
-    // PUT // http://localhost:8000/api/coupons/{id}
+    // PUT // http://localhost:8000/api/admin/coupons/{id}
     public function update(CouponRequest $request, string $id)
     {
         $coupon = Coupon::findOrFail($id);
@@ -50,7 +60,7 @@ class CouponController extends Controller
     }
 
 
-    // DELETE // http://localhost:8000/api/coupons/{id}
+    // DELETE // http://localhost:8000/api/admin/coupons/{id}
     public function destroy(string $id)
     {
         $coupon = Coupon::findOrFail($id);
