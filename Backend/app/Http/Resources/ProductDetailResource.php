@@ -29,7 +29,7 @@ class ProductDetailResource extends JsonResource
             'brand_id' => $this->brand_id, // Still good to include the ID
             'brand_name' => $this->whenLoaded('brand', function () {
                 return $this->brand->name;
-            }),
+            },null),
             'brand_slug' => $this->whenLoaded('brand', function () {
                 return $this->brand->slug;
             }),
@@ -61,6 +61,7 @@ class ProductDetailResource extends JsonResource
                     return [
                         'scent_group_id' => $item->scent_group_id,
                         'scent_group_name' => $item->scentGroup->name,
+                        'scent_group_color_code' => $item->scentGroup->color_code,
                         'strength' => $item->strength,
                     ];
                 });

@@ -16,9 +16,8 @@ class CartItemRequest extends FormRequest
         // Nếu là POST (store)
         if ($this->isMethod('post')) {
             return [
-                'product_id' => 'required|exists:products,id',
                 'quantity' => 'required|integer|min:1',
-                'product_variant_id' => 'nullable|exists:product_variants,id'
+                'product_variant_id' => 'required|exists:product_variants,id',
             ];
         }
 

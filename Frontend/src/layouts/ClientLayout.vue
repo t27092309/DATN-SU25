@@ -58,7 +58,7 @@
                   </svg>
                 </router-link>
                 <div
-                  class="absolute left-14 -translate-x-1/4 top-6 mt-2 bg-white rounded-b-lg shadow-xl p-8 w-[1200px] z-50 hidden group-hover:block"
+                  class="absolute left-56 -translate-x-1/2 top-6 mt-2 bg-white rounded-b-lg shadow-xl p-8 w-[1200px] z-50 hidden group-hover:block"
                   style="max-height: calc(100vh - 70px); overflow-y: auto">
                   <div class="mx-auto px-0">
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">

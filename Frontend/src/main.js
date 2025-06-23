@@ -1,10 +1,9 @@
-// import './assets/main.css'
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'; // Import createPinia
-
-import App from './App.vue'
-import router from './router'
-import axios from 'axios';
+// main.js
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import App from './App.vue';
+import router from './router';
+import axios from 'axios'; // Import Axios
 import { useAuthStore } from './stores/auth'; // Import auth store
 
 import '@splidejs/splide/dist/css/splide.min.css'; // CSS của Splide
@@ -12,35 +11,40 @@ import { Splide, SplideSlide } from '@splidejs/vue-splide';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
-// 2. Import các icon bạn muốn sử dụng
-// Ví dụ: icon solid
-import { faUser, faCog, faHome, faShoppingCart } from '@fortawesome/free-solid-svg-icons'; // Thêm faShoppingCart
-// Ví dụ: icon regular
+import { faUser, faCog, faHome, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faAddressBook } from '@fortawesome/free-regular-svg-icons';
-// Ví dụ: icon brands
 import { faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
 // 3. Thêm các icon vào thư viện Font Awesome
 library.add(faUser, faCog, faHome, faAddressBook, faFacebook, faTwitter, faShoppingCart);
 
-const app = createApp(App)
-const pinia = createPinia(); // Tạo instance Pinia
+// --- Khởi tạo Vue App và Pinia ---
+const app = createApp(App);
+const pinia = createPinia();
 
+// --- Đăng ký Components toàn cục ---
 app.component('Splide', Splide);
 app.component('SplideSlide', SplideSlide);
-
 app.component('font-awesome-icon', FontAwesomeIcon);
-// Cấu hình Axios toàn cục (nên làm đầu tiên)
+
+// --- Cấu hình Axios toàn cục ---
+// Base URL cho tất cả các API requests
 axios.defaults.baseURL = 'http://localhost:8000/api';
+// Cho phép gửi credentials (cookies, session) qua CORS requests (quan trọng cho Sanctum)
 axios.defaults.withCredentials = true;
+// Header này giúp Laravel nhận diện request là AJAX
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-app.use(pinia); // Gắn Pinia vào ứng dụng Vue
-app.use(router)
+// --- Sử dụng Pinia và Vue Router ---
+app.use(pinia);
+app.use(router);
 
-// Sau khi Pinia được gắn, khởi tạo trạng thái xác thực
+// --- Khởi tạo trạng thái xác thực từ Pinia Store ---
+// Sau khi Pinia được gắn vào ứng dụng, chúng ta có thể sử dụng store.
+// Việc gọi initializeAuth() ở đây là rất quan trọng để đọc token từ localStorage
+// và thiết lập header Authorization cho Axios NGAY KHI ứng dụng khởi động.
 const authStore = useAuthStore();
-authStore.initializeAuth(); // Gọi để đọc token/user từ localStorage khi app load
+authStore.initializeAuth();
 
-app.mount('#app')
+// --- Mount ứng dụng Vue ---
+app.mount('#app');
