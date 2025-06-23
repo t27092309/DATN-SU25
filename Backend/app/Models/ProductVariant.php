@@ -6,19 +6,27 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class ProductVariant extends Model
 {
     use HasFactory, SoftDeletes;
 
-     protected $fillable = [
-        'product_id', 'sku', 'price', 'stock', 'sold', 'status', 'barcode', 'description'
+    protected $fillable = [
+        'product_id',
+        'sku',
+        'price',
+        'stock',
+        'sold',
+        'status',
+        'barcode',
+        'description'
     ];
-    
+
     public function product()
-{
-    return $this->belongsTo(Product::class);
-}
-public function attributeValues(): BelongsToMany
+    {
+        return $this->belongsTo(Product::class);
+    }
+    public function attributeValues(): BelongsToMany
     {
         return $this->belongsToMany(
             AttributeValue::class,
@@ -27,9 +35,9 @@ public function attributeValues(): BelongsToMany
             'attribute_value_id'               // Khóa ngoại của AttributeValue trên bảng pivot
         )
 
-        ->withPivot('attribute_id')
-        // Eager load mối quan hệ 'attribute' trên mỗi AttributeValue được tải
-        // để có thể truy cập $attributeValue->attribute->name
-        ->with('attribute');
+            ->withPivot('attribute_id')
+            // Eager load mối quan hệ 'attribute' trên mỗi AttributeValue được tải
+            // để có thể truy cập $attributeValue->attribute->name
+            ->with('attribute');
     }
 }
