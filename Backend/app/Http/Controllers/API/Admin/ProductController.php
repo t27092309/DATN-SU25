@@ -198,40 +198,69 @@ class ProductController extends Controller
 
     public function destroy(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('images')->findOrFail($id);
+        $product->delete(); // soft delete
 
+        return response()->json([
+            'message' => 'Đã xóa sản phẩm thành công.',
+            'product_id' => $product->id
+        ]);
+    }
+
+    // Danh sách sản phẩm đã xoá
+    public function trashed()
+    {
+        $trashed = Product::onlyTrashed()->with('images')->paginate(15);
+        return response()->json($trashed);
+    }
+
+    // Khôi phục sản phẩm đã xoá
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return response()->json([
+            'message' => 'Sản phẩm đã được khôi phục thành công.',
+            'product' => $product->load('images')
+        ]);
+    }
+
+    // Xóa vĩnh viễn sản phẩm + file
+    public function forceDelete($id)
+    {
+        $product = Product::onlyTrashed()->with('images')->findOrFail($id);
+
+        // Xoá ảnh
         if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
         }
 
-
-        // Xoá toàn bộ ảnh phụ liên quan
         foreach ($product->images as $image) {
-            Storage::delete('public/' . $image->image_url); // Xoá file thật
-            $image->delete(); // Xoá bản ghi DB
+            if (Storage::disk('public')->exists($image->image_url)) {
+                Storage::disk('public')->delete($image->image_url);
+            }
+            $image->forceDelete();
         }
 
-        $product->delete();
+        $product->forceDelete();
 
         return response()->json([
-            'message' => 'Product deleted successfully.',
-            'product_id' => $product->id
-        ], 200);
+            'message' => 'Sản phẩm đã bị xóa vĩnh viễn.',
+            'product_id' => $id
+        ]);
     }
 
+    // Xoá ảnh phụ riêng biệt
     public function deleteImage(string $imageId)
     {
         $image = ProductImage::findOrFail($imageId);
-
-        // Xoá file ảnh khỏi storage
         Storage::disk('public')->delete($image->image_url);
-
-        // Xoá bản ghi DB
         $image->delete();
 
         return response()->json([
-            'message' => 'Image deleted successfully.',
+            'message' => 'Đã xóa hình ảnh thành công.',
             'image_id' => $imageId
-        ], 200);
+        ]);
     }
 }

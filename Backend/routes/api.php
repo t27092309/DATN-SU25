@@ -21,7 +21,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
 
         // route giỏ hàng cho client
-       Route::apiResource('cart-items', CartItemController::class);
+        Route::apiResource('cart-items', CartItemController::class);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -47,6 +47,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('categories', AdminCategoryController::class);
             Route::apiResource('coupons', AdminCouponController::class);
             Route::apiResource('brands', AdminBrandController::class);
+             // Soft Delete product 
+            Route::get('products/trashed', [AdminProductController::class, 'trashed']);
+            Route::put('products/{id}/restore', [AdminProductController::class, 'restore']);
+            Route::delete('products/{id}/force', [AdminProductController::class, 'forceDelete']);
             Route::apiResource('products', AdminProductController::class);
             // Route upload ảnh chính
             Route::post('products/{product}/image', [AdminProductController::class, 'uploadImage']);
@@ -80,8 +84,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
     //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
     Route::get('/products/search', [ClientProductController::class, 'search']);
-
-
 });
 
 // use Illuminate\Support\Facades\Route;
