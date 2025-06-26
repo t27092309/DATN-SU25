@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController
 use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Api\Admin\AttributeController as AttributeController;
+use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
@@ -21,7 +23,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
 
         // route giỏ hàng cho client
-       Route::apiResource('cart-items', CartItemController::class);
+        Route::apiResource('cart-items', CartItemController::class);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -56,6 +58,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('product-variants/trashed', [AdminProductVariantController::class, 'trashed']);
             Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
             Route::apiResource('product-variants', AdminProductVariantController::class);
+            Route::apiResource('attributes', AttributeController::class);
+            Route::apiResource('attribute-values', AttributeValueController::class);
+
             Route::apiResource('scent-groups', AdminScentGroupController::class);
         });
     });
@@ -80,8 +85,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
     //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
     Route::get('/products/search', [ClientProductController::class, 'search']);
-
-
 });
 
 // use Illuminate\Support\Facades\Route;

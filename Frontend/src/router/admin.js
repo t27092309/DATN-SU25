@@ -7,6 +7,7 @@ import Products from "@/views/admin/products/ProductsList.vue";
 import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
+import AttributeManager from "@/views/admin/Attribute/AttributeManager.vue";
 import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
 import CouponManager from "@/views/admin/Coupons/CouponManager.vue";
@@ -51,6 +52,14 @@ export default [
         component: EditProduct,
         meta: {
           title: "Sửa sản phẩm",
+        },
+      },
+      {
+        path: "attributes",
+        name: "Attributes",
+        component: AttributeManager,
+        meta: {
+          title: "Danh sách biến thể",
         },
       },
       {
