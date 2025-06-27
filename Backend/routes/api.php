@@ -46,10 +46,16 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+            //categories
+            Route::get('categories/trashed', [AdminCategoryController::class, 'trashed']);
+            Route::put('categories/{id}/restore', [AdminCategoryController::class, 'restore']);
+            Route::delete('categories/{id}/force', [AdminCategoryController::class, 'forceDelete']);
             Route::apiResource('categories', AdminCategoryController::class);
+
+
             Route::apiResource('coupons', AdminCouponController::class);
             Route::apiResource('brands', AdminBrandController::class);
-             // Soft Delete product 
+            // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed']);
             Route::put('products/{id}/restore', [AdminProductController::class, 'restore']);
             Route::delete('products/{id}/force', [AdminProductController::class, 'forceDelete']);
