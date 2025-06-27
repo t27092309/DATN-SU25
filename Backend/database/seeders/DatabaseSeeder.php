@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
 
 
             ProductSeeder::class,
-            ProductImageSeeder::class,
+            // ProductImageSeeder::class,
 
             AttributeSeeder::class,
             AttributeValueSeeder::class,

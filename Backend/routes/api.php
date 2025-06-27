@@ -49,6 +49,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('categories', AdminCategoryController::class);
             Route::apiResource('coupons', AdminCouponController::class);
             Route::apiResource('brands', AdminBrandController::class);
+             // Soft Delete product 
+            Route::get('products/trashed', [AdminProductController::class, 'trashed']);
+            Route::put('products/{id}/restore', [AdminProductController::class, 'restore']);
+            Route::delete('products/{id}/force', [AdminProductController::class, 'forceDelete']);
             Route::apiResource('products', AdminProductController::class);
             // Route upload ảnh chính
             Route::post('products/{product}/image', [AdminProductController::class, 'uploadImage']);
