@@ -7,12 +7,17 @@ import Products from "@/views/admin/products/ProductsList.vue";
 import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
+import AttributeManager from "@/views/admin/Attribute/AttributeManager.vue";
 import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
 import CouponManager from "@/views/admin/Coupons/CouponManager.vue";
 import EditCoupon from "@/views/admin/Coupons/EditCoupon.vue";
 import ScentGroupManager from "@/views/admin/ScentGroups/ScentGroupManager.vue";
 import EditScentGroup from "@/views/admin/ScentGroups/EditScentGroup.vue";
+import AttributeIndex from "@/views/admin/Attribute/AttributeIndex.vue";
+import AttributeForm from "@/views/admin/Attribute/AttributeForm.vue";
+import AttributeValueIndex from "@/views/admin/Attribute/AttributeValueIndex.vue";
+import AttributeValueForm from "@/views/admin/AttributeValue/AttributeValueForm.vue";
 
 export default [
   {
@@ -59,6 +64,58 @@ export default [
         component: detailProduct,
         meta: {
           title: "Chi tiết sản phẩm",
+        },
+      },
+      {
+        path: "attributes",
+        name: "AttributeIndex",
+        component: AttributeIndex,
+        meta: {
+          title: "Danh sách biến thể",
+        },
+      },
+      {
+        path: "attributes/create",
+        name: "AttributeCreate",
+        component: AttributeForm,
+        meta: {
+          title: "Danh sách biến thể",
+        },
+      },
+      {
+        path: "attributes/:id/edit",
+        name: "AttributeEdit",
+        component: AttributeForm,
+        props: true,
+        meta: {
+          title: "Danh sách biến thể",
+        },
+      },
+      {
+        path: "attributes/:attributeId/values",
+        name: "AttributeValueIndex",
+        component: AttributeValueIndex,
+        props: true,
+        meta: {
+          title: "Danh sách biến thể",
+        },
+      },
+      {
+        path: "attributes/:attributeId/values/create",
+        name: "AttributeValueCreate",
+        component: AttributeValueForm,
+        props: true,
+        meta: {
+          title: "Danh sách biến thể",
+        },
+      },
+      {
+        path: "attributes/:attributeId/values/:valueId/edit",
+        name: "AttributeValueEdit",
+        component: AttributeValueForm,
+        props: true,
+        meta: {
+          title: "Danh sách biến thể",
         },
       },
       {

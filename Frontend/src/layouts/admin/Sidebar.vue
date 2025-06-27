@@ -4,12 +4,7 @@
       <!-- Logo Header -->
       <div class="logo-header" data-background-color="dark">
         <router-link to="/admin" class="home-link">
-          <img
-            :src="logoUrl"
-            alt="navbar brand"
-            class="navbar-brand"
-            height="20"
-          />
+          <img :src="logoUrl" alt="navbar brand" class="navbar-brand" height="20" />
         </router-link>
         <div class="nav-toggle">
           <button class="btn btn-toggle toggle-sidebar">
@@ -28,15 +23,8 @@
     <div class="sidebar-wrapper scrollbar scrollbar-inner">
       <div class="sidebar-content">
         <ul class="nav nav-secondary">
-          <li
-            class="nav-item"
-            :class="{ active: $route.name === 'AdminDashboard' }"
-          >
-            <router-link
-              :to="{ name: 'AdminDashboard' }"
-              class="collapsed"
-              aria-expanded="false"
-            >
+          <li class="nav-item" :class="{ active: $route.name === 'AdminDashboard' }">
+            <router-link :to="{ name: 'AdminDashboard' }" class="collapsed" aria-expanded="false">
               <i class="fas fa-home"></i>
               <p>Dashboard</p>
             </router-link>
@@ -83,7 +71,7 @@
               </ul>
             </div>
           </li>
-   
+
           <li class="nav-item">
             <a data-bs-toggle="collapse" href="#forms">
               <i class="fas fa-pen-square"></i>
@@ -116,7 +104,22 @@
               </ul>
             </div>
           </li>
-
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#sidebarLayouts">
+              <i class="fas fa-th-list"></i>
+              <p>Thuộc tính</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="sidebarLayouts">
+              <ul class="nav nav-collapse">
+                <li>
+                  <router-link to="/admin/attributes">
+                    <span class="sub-item">Quản lý biến thể</span>
+                  </router-link>
+                </li>
+              </ul>
+            </div>
+          </li>
           <li class="nav-item">
             <a data-bs-toggle="collapse" href="#maps">
               <i class="fas fa-map-marker-alt"></i>

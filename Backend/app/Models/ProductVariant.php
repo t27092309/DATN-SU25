@@ -33,11 +33,6 @@ class ProductVariant extends Model
             'product_variant_attribute_value', // Tên bảng pivot
             'product_variant_id',              // Khóa ngoại của ProductVariant trên bảng pivot
             'attribute_value_id'               // Khóa ngoại của AttributeValue trên bảng pivot
-        )
-
-            ->withPivot('attribute_id')
-            // Eager load mối quan hệ 'attribute' trên mỗi AttributeValue được tải
-            // để có thể truy cập $attributeValue->attribute->name
-            ->with('attribute');
+        );
     }
 }

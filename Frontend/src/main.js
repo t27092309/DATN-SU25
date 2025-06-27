@@ -34,7 +34,11 @@ axios.defaults.baseURL = 'http://localhost:8000/api';
 axios.defaults.withCredentials = true;
 // Header này giúp Laravel nhận diện request là AJAX
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+const token = localStorage.getItem('authToken'); // Giả sử bạn lưu token với key 'api_token'
 
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+}
 // --- Sử dụng Pinia và Vue Router ---
 app.use(pinia);
 app.use(router);

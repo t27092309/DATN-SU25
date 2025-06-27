@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController
 use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Api\Admin\AttributeController as AttributeController;
+use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
@@ -57,9 +59,23 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             // Route upload ảnh phụ
             Route::post('products/{product}/images', [AdminProductController::class, 'uploadImages']);
             Route::delete('images/{imageId}', [AdminProductController::class, 'deleteImage']);
+
             Route::get('product-variants/trashed', [AdminProductVariantController::class, 'trashed']);
             Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
             Route::apiResource('product-variants', AdminProductVariantController::class);
+
+            Route::post('products/{product}/variants/generate', [AdminProductVariantController::class, 'generateForProduct'])
+                ->name('admin.products.variants.generate');
+
+            Route::apiResource('attributes', AttributeController::class);
+            Route::get('attributes/{attribute}/values', [AttributeValueController::class, 'indexByAttribute'])
+                ->name('admin.attributes.values.index');
+            Route::post('attributes/{attribute}/values', [AttributeValueController::class, 'storeByAttribute']);
+            Route::put('attributes/{attribute}/values/{attributeValue}', [AttributeValueController::class, 'updateNested']);
+            Route::delete('attributes/{attribute}/values/{attributeValue}', [AttributeValueController::class, 'destroyNested']);
+
+            Route::apiResource('attribute-values', AttributeValueController::class);
+
             Route::apiResource('scent-groups', AdminScentGroupController::class);
         });
     });

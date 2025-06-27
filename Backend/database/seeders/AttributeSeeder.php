@@ -13,6 +13,6 @@ class AttributeSeeder extends Seeder
     public function run(): void
     {
         // Create 10 fake attributes
-        Attribute::factory()->count(50)->create();
+        Attribute::factory()->count(10)->create();
     }
 }
