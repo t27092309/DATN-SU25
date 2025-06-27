@@ -29,7 +29,7 @@ class Attribute extends Model
     /**
      * An Attribute has many AttributeValues.
      */
-    public function values()
+    public function AttributeValues()
     {
         return $this->hasMany(AttributeValue::class);
     }

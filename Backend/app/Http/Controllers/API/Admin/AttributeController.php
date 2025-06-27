@@ -16,7 +16,7 @@ class AttributeController extends Controller
     public function index()
     {
         // Lấy tất cả các thuộc tính, có thể phân trang hoặc eager load các giá trị thuộc tính nếu cần
-        $attributes = Attribute::with('values')->latest()->paginate(10);
+        $attributes = Attribute::with('AttributeValues')->latest()->paginate(10);
         return response()->json($attributes);
     }
 
