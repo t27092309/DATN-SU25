@@ -94,19 +94,45 @@ const showToast = (message, type = 'success') => {
 };
 
 const fetchAttributeDetails = async () => {
-  try {
-    const attrResponse = await axios.get(`/api/attributes/${props.attributeId}`);
-    attributeName.value = attrResponse.data.data.name;
-  } catch (error) {
-    console.error('Lỗi khi lấy thông tin thuộc tính:', error);
-    showToast('Không tìm thấy thuộc tính. Quay lại trang danh sách.', 'error');
+  if (!props.attributeId) {
+    console.error("Attribute ID is undefined in AttributeValueForm. Redirecting.");
+    showToast('Lỗi: Không tìm thấy ID thuộc tính cha.', 'error');
     router.push({ name: 'AttributeIndex' });
+    return false; // Indicate failure
+  }
+
+  try {
+    const attrResponse = await axios.get(`/admin/attributes/${props.attributeId}`);
+
+    // --- SỬA ĐỔI PHẦN KIỂM TRA TẠI ĐÂY ---
+    // API khi fetch một thuộc tính đơn lẻ sẽ luôn bọc dữ liệu trong `data.data`
+    if (attrResponse.data && attrResponse.data.data && typeof attrResponse.data.data === 'object' && attrResponse.data.data.name) {
+        attributeName.value = attrResponse.data.data.name; // <--- TRUY CẬP ĐÚNG CẤU TRÚC
+    } else {
+        // Nếu không tìm thấy thuộc tính cha hoặc dữ liệu không hợp lệ
+        console.warn('API trả về dữ liệu thuộc tính cha không hợp lệ hoặc rỗng cho ID:', props.attributeId, attrResponse.data);
+        showToast('Không tìm thấy thông tin thuộc tính cha. Vui lòng thử lại.', 'error');
+        router.push({ name: 'AttributeIndex' }); // Điều hướng về trang danh sách thuộc tính
+        return false; // Dừng hàm nếu không tìm thấy thuộc tính cha
+    }
+    // --- KẾT THÚC PHẦN SỬA ĐỔI ---
+
+    return true; // Indicate success
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin thuộc tính cha:', error);
+    if (error.response && error.response.status === 404) {
+      showToast('Không tìm thấy thuộc tính cha. ID có thể không tồn tại.', 'error');
+    } else {
+      showToast('Có lỗi xảy ra khi tải thông tin thuộc tính cha.', 'error');
+    }
+    router.push({ name: 'AttributeIndex' });
+    return false; // Indicate failure
   }
 };
 
 const fetchAttributeValue = async (valueId) => {
   try {
-    const response = await axios.get(`/api/attribute-values/${valueId}`);
+    const response = await axios.get(`/admin/attribute-values/${valueId}`);
     // Đảm bảo rằng giá trị thuộc về attributeId hiện tại
     if (response.data.data.attribute_id != props.attributeId) {
         showToast('Giá trị không thuộc về thuộc tính này.', 'error');
@@ -126,10 +152,10 @@ const saveAttributeValue = async () => {
     errors.value = {}; // Reset lỗi
     attributeValue.value.attribute_id = props.attributeId; // Đảm bảo đúng attribute_id
     if (isEditMode.value) {
-      await axios.put(`/api/attribute-values/${attributeValue.value.id}`, attributeValue.value);
+      await axios.put(`/admin/attribute-values/${attributeValue.value.id}`, attributeValue.value);
       showToast('Giá trị đã được cập nhật thành công!');
     } else {
-      await axios.post('/api/attribute-values', attributeValue.value);
+      await axios.post('/admin/attribute-values', attributeValue.value);
       showToast('Giá trị đã được thêm mới thành công!');
     }
     router.push({ name: 'AttributeValueIndex', params: { attributeId: props.attributeId } }); // Chuyển hướng về trang danh sách giá trị

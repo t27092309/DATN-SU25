@@ -100,25 +100,63 @@ const showToast = (message, type = 'success') => {
 };
 
 const fetchAttributeValues = async () => {
-  try {
-    // Lấy tên thuộc tính trước
-    const attrResponse = await axios.get(`/api/attributes/${props.attributeId}`);
-    attributeName.value = attrResponse.data.data.name;
+  if (!props.attributeId) {
+    console.error("Lỗi: Không có ID thuộc tính được cung cấp.");
+    showToast('Lỗi: Không tìm thấy ID thuộc tính.', 'error');
+    router.push({ name: 'AttributeIndex' });
+    return;
+  }
 
-    // Sau đó lấy các giá trị của thuộc tính
-    const valuesResponse = await axios.get(`/api/attribute-values?attribute_id=${props.attributeId}`);
-    attributeValues.value = valuesResponse.data.data;
+  try {
+    // 1. Lấy tên thuộc tính cha
+    // Đảm bảo URL này khớp với route Laravel của bạn (ví dụ: /api/admin/attributes/{id})
+    const attrResponse = await axios.get(`/admin/attributes/${props.attributeId}`);
+
+    // Bây giờ, API sẽ luôn bọc dữ liệu thuộc tính đơn lẻ trong `data.data`
+    if (attrResponse.data && attrResponse.data.data && typeof attrResponse.data.data === 'object' && attrResponse.data.data.name) {
+        attributeName.value = attrResponse.data.data.name; // <--- TRUY CẬP ĐÚNG CẤU TRÚC
+    } else {
+        // Nếu không tìm thấy thuộc tính hoặc dữ liệu không hợp lệ
+        console.warn('API trả về dữ liệu thuộc tính không hợp lệ hoặc rỗng cho ID:', props.attributeId, attrResponse.data);
+        showToast('Không tìm thấy thông tin thuộc tính cha. Vui lòng thử lại.', 'error');
+        router.push({ name: 'AttributeIndex' }); // Điều hướng về trang danh sách thuộc tính
+        return; // Dừng hàm nếu không tìm thấy thuộc tính cha
+    }
+
+
+
+    // 2. Lấy danh sách các giá trị thuộc tính
+    // Đảm bảo URL này khớp với route Laravel của bạn (ví dụ: /api/admin/attributes/{id}/values)
+    const valuesResponse = await axios.get(`/admin/attributes/${props.attributeId}/values`);
+
+    if (valuesResponse.data && Array.isArray(valuesResponse.data.data)) {
+        attributeValues.value = valuesResponse.data.data;
+    } else {
+        console.warn('API trả về dữ liệu giá trị thuộc tính không hợp lệ hoặc rỗng.');
+        // Có thể không cần redirect ở đây, chỉ hiển thị thông báo "chưa có giá trị"
+        // showToast('Không tìm thấy giá trị cho thuộc tính này.', 'info');
+        attributeValues.value = []; // Đảm bảo là một mảng rỗng
+    }
+
   } catch (error) {
     console.error('Lỗi khi lấy giá trị thuộc tính:', error);
-    showToast('Lỗi khi tải giá trị thuộc tính.', 'error');
-    router.push({ name: 'AttributeIndex' }); // Quay về trang danh sách thuộc tính nếu lỗi
+    // Xử lý lỗi cụ thể từ API
+    if (error.response && error.response.status === 404) {
+      showToast('Không tìm thấy thuộc tính hoặc giá trị của nó. ID có thể không tồn tại.', 'error');
+    } else if (error.response && error.response.status === 401) {
+      showToast('Không được phép. Vui lòng đăng nhập.', 'error');
+    } else {
+      showToast('Có lỗi xảy ra khi tải giá trị thuộc tính.', 'error');
+    }
+    router.push({ name: 'AttributeIndex' }); // Luôn điều hướng về trang danh sách thuộc tính nếu có lỗi nghiêm trọng
   }
 };
 
 const deleteAttributeValue = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa giá trị này không?')) {
     try {
-      await axios.delete(`/api/attribute-values/${id}`);
+      // Đảm bảo URL này khớp với route Laravel của bạn (ví dụ: /api/admin/attribute-values/{id})
+      await axios.delete(`/admin/attribute-values/${id}`);
       showToast('Giá trị đã được xóa thành công!');
       fetchAttributeValues();
     } catch (error) {
@@ -136,8 +174,9 @@ onMounted(() => {
   fetchAttributeValues();
 });
 
-// Watch for changes in attributeId if user navigates directly between value lists
-watch(() => props.attributeId, () => {
-  fetchAttributeValues();
+watch(() => props.attributeId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    fetchAttributeValues();
+  }
 });
 </script>

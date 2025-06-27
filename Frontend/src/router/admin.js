@@ -86,6 +86,7 @@ export default [
         path: "attributes/:id/edit",
         name: "AttributeEdit",
         component: AttributeForm,
+        props: true,
         meta: {
           title: "Danh sách biến thể",
         },
@@ -94,6 +95,7 @@ export default [
         path: "attributes/:attributeId/values",
         name: "AttributeValueIndex",
         component: AttributeValueIndex,
+        props: true,
         meta: {
           title: "Danh sách biến thể",
         },
@@ -102,6 +104,7 @@ export default [
         path: "attributes/:attributeId/values/create",
         name: "AttributeValueCreate",
         component: AttributeValueForm,
+        props: true,
         meta: {
           title: "Danh sách biến thể",
         },
@@ -110,6 +113,7 @@ export default [
         path: "attributes/:attributeId/values/:valueId/edit",
         name: "AttributeValueEdit",
         component: AttributeValueForm,
+        props: true,
         meta: {
           title: "Danh sách biến thể",
         },

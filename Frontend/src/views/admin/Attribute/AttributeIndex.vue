@@ -103,7 +103,7 @@ const fetchAttributes = async () => {
 const deleteAttribute = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa thuộc tính này không? Thao tác này sẽ xóa tất cả các giá trị và liên kết của thuộc tính này.')) {
     try {
-      await axios.delete(`/api/attributes/${id}`);
+      await axios.delete(`/admin/attributes/${id}`);
       showToast('Thuộc tính đã được xóa thành công!');
       fetchAttributes();
     } catch (error) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attribute;
+use App\Http\Resources\AttributeResource; // <-- Đảm bảo import
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -15,9 +16,9 @@ class AttributeController extends Controller
      */
     public function index()
     {
-        // Lấy tất cả các thuộc tính, có thể phân trang hoặc eager load các giá trị thuộc tính nếu cần
-        $attributes = Attribute::with('AttributeValues')->latest()->paginate(10);
-        return response()->json($attributes);
+        $attributes = Attribute::with('attributeValues')->latest()->paginate(10);
+        // Consistently use AttributeResource for collection
+        return AttributeResource::collection($attributes);
     }
 
     /**
@@ -25,20 +26,17 @@ class AttributeController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:attributes,name'],
-            // Slug sẽ được tạo tự động, không cần nhập từ người dùng
         ]);
 
         $attribute = Attribute::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'name' => $validatedData['name'], // Use validated data
+            'slug' => Str::slug($validatedData['name']),
         ]);
 
-        return response()->json([
-            'message' => 'Attribute created successfully.',
-            'attribute' => $attribute
-        ], 201);
+        // Consistently return the created resource
+        return new AttributeResource($attribute); // Laravel automatically sets 201 Created status
     }
 
     /**
@@ -46,9 +44,9 @@ class AttributeController extends Controller
      */
     public function show(Attribute $attribute)
     {
-        // Eager load các giá trị thuộc tính khi hiển thị một thuộc tính cụ thể
         $attribute->load('attributeValues');
-        return response()->json($attribute);
+        // Consistently return the single resource
+        return new AttributeResource($attribute);
     }
 
     /**
@@ -56,24 +54,21 @@ class AttributeController extends Controller
      */
     public function update(Request $request, Attribute $attribute)
     {
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('attributes')->ignore($attribute->id),
-            ],
+        $validatedData = $request->validate([
+            'name' => ['required', 'string', 'max:255'], // No need for unique check here if slug is auto-generated
+            // If you still want to allow slug to be sent and updated, keep the unique rule:
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('attributes')->ignore($attribute->id)],
         ]);
 
-        $attribute->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name), // Cập nhật lại slug nếu tên thay đổi
-        ]);
+        // If you are not sending 'slug' from frontend and want to regenerate it
+        if (!isset($validatedData['slug']) || empty($validatedData['slug'])) {
+            $validatedData['slug'] = Str::slug($validatedData['name']);
+        }
 
-        return response()->json([
-            'message' => 'Attribute updated successfully.',
-            'attribute' => $attribute
-        ]);
+        $attribute->update($validatedData);
+
+        // Consistently return the updated resource
+        return new AttributeResource($attribute);
     }
 
     /**
@@ -82,9 +77,7 @@ class AttributeController extends Controller
     public function destroy(Attribute $attribute)
     {
         $attribute->delete();
-
-        return response()->json([
-            'message' => 'Attribute deleted successfully.'
-        ], 204); // 204 No Content
+        // Return 204 No Content for successful deletion, as no data is returned
+        return response()->noContent();
     }
 }
