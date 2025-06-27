@@ -14,15 +14,14 @@ return new class extends Migration
         Schema::create('product_variant_attribute_value', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('product_variant_id');
-            $table->unsignedBigInteger('attribute_id');
-            $table->unsignedBigInteger('attribute_value_id')->index();
+            $table->unsignedBigInteger('attribute_value_id')->index(); // Đã có index
+
             $table->timestamps();
 
             $table->foreign('product_variant_id')->references('id')->on('product_variants')->onDelete('cascade');
-            $table->foreign('attribute_id')->references('id')->on('attributes')->onDelete('cascade');
             $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->onDelete('cascade');
 
-            $table->unique(['product_variant_id', 'attribute_id'], 'product_variant_attribute'); // Mỗi biến thể chỉ có 1 giá trị cho 1 thuộc tính
+            $table->unique(['product_variant_id', 'attribute_value_id'], 'product_variant_attribute_value_unique');
         });
     }
 

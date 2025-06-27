@@ -83,6 +83,7 @@ class ProductDetailResource extends JsonResource
                                 return $attributeValue->relationLoaded('attribute') && $attributeValue->attribute !== null;
                             })->map(function ($attributeValue) {
                                 return [
+                                    'attribute_id' => $attributeValue->attribute_id,
                                     'attribute_name' => $attributeValue->attribute->name,
                                     'attribute_slug' => $attributeValue->attribute->slug,
                                     'value_id' => $attributeValue->id,

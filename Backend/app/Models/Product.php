@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str; 
 
 class Product extends Model
 {
@@ -20,11 +21,6 @@ class Product extends Model
         'brand_id',
         'views'
     ];
-
-
-
-
-
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -58,5 +54,10 @@ class Product extends Model
     public function images()
     {
         return $this->hasMany(ProductImage::class);
+    }
+        public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = $value;
+        $this->attributes['slug'] = Str::slug($value);
     }
 }

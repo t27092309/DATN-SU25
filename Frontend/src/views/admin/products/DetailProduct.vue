@@ -110,6 +110,54 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mt-4" v-if="product.variants && product.variants.length > 0">
+                            <div class="col-12">
+                                <h4 class="mb-3">Các Biến thể Sản phẩm</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>SKU</th>
+                                                <th>Giá</th>
+                                                <th>Tồn kho</th>
+                                                <th>Đã bán</th>
+                                                <th>Trạng thái</th>
+                                                <th>Mã vạch</th>
+                                                <th>Mô tả biến thể</th>
+                                                <th>Thuộc tính</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="variant in product.variants" :key="variant.id">
+                                                <td>{{ variant.sku }}</td>
+                                                <td>{{ variant.price }}</td>
+                                                <td>{{ variant.stock }}</td>
+                                                <td>{{ variant.sold }}</td>
+                                                <td>{{ variant.status }}</td>
+                                                <td>{{ variant.barcode }}</td>
+                                                <td>{{ variant.description }}</td>
+                                                <td>
+                                                    <span v-if="variant.attributes && variant.attributes.length > 0">
+                                                        <ul class="list-unstyled mb-0">
+                                                            <li v-for="attr in variant.attributes" :key="attr.value_id">
+                                                                <strong>{{ attr.attribute_name }}:</strong> {{ attr.value_name }}
+                                                            </li>
+                                                        </ul>
+                                                    </span>
+                                                    <span v-else>Không có thuộc tính</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4" v-else>
+                            <div class="col-12">
+                                <p class="text-info">Sản phẩm này hiện không có biến thể nào.</p>
+                            </div>
+                        </div>
                         <div class="card-action">
                             <router-link to="/admin/products" class="btn btn-primary">
                                 Quay lại
@@ -126,7 +174,7 @@
     import { onMounted, ref, reactive } from 'vue';
     import { useRoute } from 'vue-router';
     import axios from 'axios'
-    import router from '@/router';
+    // import router from '@/router'; // Không cần thiết nếu bạn chỉ dùng useRoute để lấy params
 
     const route = useRoute();
     const categories = ref([]);
@@ -140,15 +188,18 @@
         price: "",
         category_id: "",
         brand_id: "",
+        variants: [], // Khởi tạo mảng variants
     });
     const { params } = useRoute();
 
     const fetchProduct = async () => {
         try {
+            // Đảm bảo URL là đúng cho API admin để lấy chi tiết sản phẩm
             const { data } = await axios.get(`http://localhost:8000/api/admin/products/${params.id}`);
-            product.value = data.data;
+            product.value = data.data; // data.data vì resource trả về trong key 'data'
         } catch (error) {
             console.error('Không lấy được sản phẩm:', error);
+            // Xử lý lỗi, ví dụ: chuyển hướng hoặc hiển thị thông báo lỗi
         }
     };
 

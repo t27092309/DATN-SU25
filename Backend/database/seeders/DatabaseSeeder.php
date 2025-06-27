@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
 
             AttributeSeeder::class,
             AttributeValueSeeder::class,
-            ProductVariantAttributeValueSeeder::class,
+            // ProductVariantAttributeValueSeeder::class,
             ProductVariantSeeder::class,
 
 
