@@ -52,9 +52,15 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::delete('categories/{id}/force', [AdminCategoryController::class, 'forceDelete']);
             Route::apiResource('categories', AdminCategoryController::class);
 
-
+            // coupons
+            Route::get('coupons/trashed', [AdminCouponController::class, 'trashed']);
+            Route::put('coupons/{id}/restore', [AdminCouponController::class, 'restore']);
+            Route::delete('coupons/{id}/force', [AdminCouponController::class, 'forceDelete']);
             Route::apiResource('coupons', AdminCouponController::class);
+
+            // brands
             Route::apiResource('brands', AdminBrandController::class);
+                                                
             // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed']);
             Route::put('products/{id}/restore', [AdminProductController::class, 'restore']);
