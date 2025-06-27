@@ -119,6 +119,30 @@
                             </div>
                         </div>
 
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="productGallery">Thư viện ảnh sản phẩm</label>
+                                    <input type="file" class="form-control" id="productGallery" multiple
+                                        @change="onFileChangeGalleryImages" accept="image/*" />
+                                    <small v-if="errors.gallery_images" class="form-text text-danger">{{
+                                        errors.gallery_images[0] }}</small>
+                                </div>
+                                <div v-if="galleryImagePreviews.length > 0" class="mt-2">
+                                    <label>Ảnh thư viện xem trước:</label><br />
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <div v-for="(image, index) in galleryImagePreviews" :key="index"
+                                            class="position-relative">
+                                            <img :src="image" alt="Gallery Image Preview"
+                                                style="max-width: 100px; height: 100px; object-fit: cover; border-radius: 5px;" />
+                                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                                style="--bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem;"
+                                                @click="removeGalleryImage(index)">X</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <hr />
 
                         <div class="row mt-4">
@@ -313,6 +337,11 @@ const product = ref({
 
 const mainImageFile = ref(null);
 const imageUrlPreview = ref(null);
+
+// Thêm các ref mới cho thư viện ảnh
+const galleryImageFiles = ref([]); // Mảng các File object
+const galleryImagePreviews = ref([]); // Mảng các URL preview
+
 const errors = ref({});
 
 // Watch for changes in product.name to auto-generate slug
@@ -325,8 +354,6 @@ watch(() => product.value.has_variants, (newVal) => {
     if (newVal === true) { // Chuyển sang có biến thể
         product.value.price = '';
         product.value.stock = '';
-        // Không tự động thêm biến thể mặc định nữa, chờ người dùng chọn thuộc tính
-        // Thay vào đó, nếu đã có selectedAttributeValues, tạo lại biến thể
         generateVariants();
     } else { // Chuyển sang không có biến thể
         product.value.variants = [];
@@ -388,6 +415,27 @@ const onFileChangeMainImage = (e) => {
         imageUrlPreview.value = null;
     }
 };
+
+// Hàm xử lý khi chọn nhiều file ảnh cho thư viện
+const onFileChangeGalleryImages = (e) => {
+    const files = Array.from(e.target.files);
+    galleryImageFiles.value = []; // Reset mảng ảnh cũ
+    galleryImagePreviews.value = []; // Reset mảng preview cũ
+
+    files.forEach(file => {
+        galleryImageFiles.value.push(file);
+        galleryImagePreviews.value.push(URL.createObjectURL(file));
+    });
+};
+
+// Hàm xóa một ảnh trong thư viện
+const removeGalleryImage = (index) => {
+    // Revoke object URL to free memory
+    URL.revokeObjectURL(galleryImagePreviews.value[index]);
+    galleryImageFiles.value.splice(index, 1);
+    galleryImagePreviews.value.splice(index, 1);
+};
+
 
 // Hàm xử lý khi chọn file ảnh cho biến thể
 const onFileChangeVariantImage = (e, index) => {
@@ -483,15 +531,11 @@ const addProduct = async () => {
 
         // Append các trường thông tin sản phẩm chính
         for (const key in product.value) {
-            if (key !== 'slug' && key !== 'variants' && product.value[key] !== null && product.value[key] !== '') {
-                for (const key in product.value) {
-                    if (key === 'has_variants') {
-                        // Chuyển đổi boolean thành 0 hoặc 1
-                        formData.append('has_variants', product.value.has_variants ? 1 : 0);
-                    } else if (key !== 'slug' && key !== 'variants' && product.value[key] !== null && product.value[key] !== '') {
-                        formData.append(key, product.value[key]);
-                    }
-                }
+            if (key === 'has_variants') {
+                // Chuyển đổi boolean thành 0 hoặc 1
+                formData.append('has_variants', product.value.has_variants ? 1 : 0);
+            } else if (key !== 'slug' && key !== 'variants' && product.value[key] !== null && product.value[key] !== '') {
+                formData.append(key, product.value[key]);
             }
         }
 
@@ -499,6 +543,12 @@ const addProduct = async () => {
         if (mainImageFile.value) {
             formData.append('image', mainImageFile.value);
         }
+
+        // Append nhiều ảnh gallery nếu có
+        galleryImageFiles.value.forEach((file, index) => {
+            formData.append(`gallery_images[${index}]`, file);
+        });
+
 
         // Append biến thể nếu product.has_variants là true
         if (product.value.has_variants) {
@@ -610,5 +660,22 @@ const addProduct = async () => {
 .table input[type="file"] {
     max-width: 150px;
     /* Điều chỉnh độ rộng input trong bảng */
+}
+
+/* Thêm style cho phần thư viện ảnh */
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.end-0 {
+    right: 0;
 }
 </style>

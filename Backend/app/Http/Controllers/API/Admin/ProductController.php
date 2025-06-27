@@ -5,18 +5,19 @@ namespace App\Http\Controllers\API\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\ProductImage; // Cần thiết cho upload/delete ảnh phụ
-use App\Models\Category; // Import Category cho validation (nếu cần)
-use App\Models\Brand;    // Import Brand cho validation (nếu cần)
+use App\Models\ProductImage; // Essential for handling additional images
+use App\Models\Category;
+use App\Models\Brand;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductDetailResource;
-use App\Http\Resources\ProductImageResource;
+use App\Http\Resources\ProductImageResource; // Still useful if you want to return individual image details
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Dùng để quản lý file
-use Illuminate\Support\Facades\DB;       // Dùng cho Transaction
-use Illuminate\Support\Facades\Log; // 
-use Illuminate\Support\Str;              // Dùng để tạo slug
-use Illuminate\Validation\Rule;          // Dùng cho validation Rule
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException; // Import for specific exception handling
 
 class ProductController extends Controller
 {
@@ -26,12 +27,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // Eager load các quan hệ cần thiết cho trang danh sách (chỉ những cái cần hiển thị)
-        $products = Product::with(['category', 'brand']) // Không load images và variants để giữ nhẹ dữ liệu
+        $products = Product::with(['category', 'brand'])
             ->orderByDesc('id')
             ->paginate(15);
 
-        // TRẢ VỀ RESOURCE COLLECTION CHO DANH SÁCH
         return ProductResource::collection($products);
     }
 
@@ -39,73 +38,136 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      * POST /api/admin/products
      */
-    public function store(Request $request)
+public function store(Request $request)
     {
-        // 1. Validation cơ bản cho sản phẩm
         $rules = [
             'name' => 'required|string|max:255|unique:products,name',
             'description' => 'nullable|string',
             'gender' => 'required|in:male,female,unisex',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Ảnh chính của sản phẩm
-            'has_variants' => 'required|boolean', // Rule mới
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
+            // --- Cập nhật: Validation cho ảnh thư viện (gallery images) ---
+            'gallery_images' => 'nullable|array', // Allows an array of files
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:4096', // Each file in the array
+            // -------------------------------------------------------------
+            'has_variants' => 'required|boolean',
         ];
 
-        // 2. Thêm rules tùy thuộc vào has_variants
+        // Thêm quy tắc validation tùy thuộc vào loại sản phẩm (có/không biến thể)
         if ($request->boolean('has_variants')) {
-            // Rules cho sản phẩm có biến thể
-            $rules['variants'] = 'required|array|min:1'; // Phải có ít nhất 1 biến thể
+            $rules['variants'] = 'required|array|min:1';
             $rules['variants.*.sku'] = 'required|string|max:255|unique:product_variants,sku';
             $rules['variants.*.price'] = 'required|numeric|min:0';
             $rules['variants.*.stock'] = 'required|integer|min:0';
-            $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'; // Ảnh biến thể
-            $rules['variants.*.attribute_values'] = 'required|array|min:1'; // Mỗi biến thể phải có ít nhất 1 thuộc tính
-            $rules['variants.*.attribute_values.*'] = 'exists:attribute_values,id'; // Giá trị thuộc tính phải tồn tại
+            $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+            $rules['variants.*.attribute_values'] = 'required|array|min:1';
+            $rules['variants.*.attribute_values.*'] = 'exists:attribute_values,id';
         } else {
-            // Rules cho sản phẩm không có biến thể
             $rules['price'] = 'required|numeric|min:0';
             $rules['stock'] = 'required|integer|min:0';
         }
 
-        $validatedData = $request->validate($rules);
-
-        // Bắt đầu Transaction để đảm bảo tính toàn vẹn dữ liệu
-        DB::beginTransaction();
         try {
-            // 3. Xử lý tải lên ảnh chính (nếu có)
+            // Thực hiện Validation
+            $validatedData = $request->validate($rules, [
+                'name.required' => 'Tên sản phẩm là bắt buộc.',
+                'name.unique' => 'Tên sản phẩm này đã tồn tại.',
+                'category_id.required' => 'Danh mục là bắt buộc.',
+                'category_id.exists' => 'Danh mục không hợp lệ.',
+                'brand_id.required' => 'Thương hiệu là bắt buộc.',
+                'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+                'gender.required' => 'Giới tính là bắt buộc.',
+                'gender.in' => 'Giới tính không hợp lệ.',
+                'image.image' => 'Tệp ảnh chính phải là hình ảnh.',
+                'image.mimes' => 'Định dạng ảnh chính không hợp lệ. Chỉ chấp nhận: jpeg, png, jpg, gif, svg.',
+                'image.max' => 'Kích thước ảnh chính không được vượt quá 4MB.',
+                'gallery_images.array' => 'Thư viện ảnh phải là một mảng.',
+                'gallery_images.*.image' => 'Mỗi tệp trong thư viện ảnh phải là một hình ảnh.',
+                'gallery_images.*.mimes' => 'Mỗi tệp trong thư viện ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
+                'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 2MB.',
+                'has_variants.required' => 'Loại sản phẩm là bắt buộc.',
+                'has_variants.boolean' => 'Loại sản phẩm không hợp lệ.',
+                'price.required' => 'Giá sản phẩm là bắt buộc.',
+                'price.numeric' => 'Giá sản phẩm phải là số.',
+                'price.min' => 'Giá sản phẩm không được âm.',
+                'stock.required' => 'Tồn kho là bắt buộc.',
+                'stock.integer' => 'Tồn kho phải là số nguyên.',
+                'stock.min' => 'Tồn kho không được âm.',
+
+                // Validation cho biến thể
+                'variants.required' => 'Bạn phải tạo ít nhất một biến thể cho sản phẩm có biến thể.',
+                'variants.array' => 'Dữ liệu biến thể không hợp lệ.',
+                'variants.min' => 'Bạn phải tạo ít nhất một biến thể.',
+                'variants.*.sku.required' => 'SKU biến thể là bắt buộc.',
+                'variants.*.sku.unique' => 'SKU biến thể đã tồn tại.',
+                'variants.*.price.required' => 'Giá biến thể là bắt buộc.',
+                'variants.*.price.numeric' => 'Giá biến thể phải là số.',
+                'variants.*.price.min' => 'Giá biến thể không được âm.',
+                'variants.*.stock.required' => 'Tồn kho biến thể là bắt buộc.',
+                'variants.*.stock.integer' => 'Tồn kho biến thể phải là số nguyên.',
+                'variants.*.stock.min' => 'Tồn kho biến thể không được âm.',
+                'variants.*.image.image' => 'Tệp ảnh biến thể phải là hình ảnh.',
+                'variants.*.image.mimes' => 'Định dạng ảnh biến thể không hợp lệ.',
+                'variants.*.image.max' => 'Kích thước ảnh biến thể không được vượt quá 2MB.',
+                'variants.*.attribute_values.required' => 'Biến thể phải có ít nhất một giá trị thuộc tính.',
+                'variants.*.attribute_values.array' => 'Giá trị thuộc tính biến thể phải là một mảng.',
+                'variants.*.attribute_values.min' => 'Biến thể phải có ít nhất một giá trị thuộc tính.',
+                'variants.*.attribute_values.*.exists' => 'Giá trị thuộc tính không hợp lệ.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Lỗi validation khi thêm sản phẩm.',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        $uploadedFilePaths = []; // Mảng để theo dõi tất cả các đường dẫn file đã tải lên
+
+        try {
+            // Xử lý ảnh chính
             $imagePath = null;
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('products', 'public');
+                $imagePath = $request->file('image')->store('products/main_images', 'public');
+                $uploadedFilePaths[] = $imagePath; // Thêm vào danh sách để cleanup nếu lỗi
             }
 
-            // 4. Tạo sản phẩm
-            // Slug sẽ tự động được tạo bởi mutator setNameAttribute trong Product Model
+            // Tạo dữ liệu sản phẩm
             $productData = [
                 'name' => $validatedData['name'],
+                'slug' => Str::slug($validatedData['name']), // Tự động tạo slug từ tên sản phẩm
                 'description' => $validatedData['description'] ?? null,
                 'gender' => $validatedData['gender'],
                 'category_id' => $validatedData['category_id'],
                 'brand_id' => $validatedData['brand_id'],
                 'image' => $imagePath,
                 'has_variants' => $validatedData['has_variants'],
+                'price' => !$validatedData['has_variants'] ? ($validatedData['price'] ?? 0) : null,
+                'stock' => !$validatedData['has_variants'] ? ($validatedData['stock'] ?? 0) : null,
             ];
-
-            // Thêm giá và tồn kho cho sản phẩm đơn giản nếu không có biến thể
-            if (!$validatedData['has_variants']) {
-                $productData['price'] = $validatedData['price'];
-                $productData['stock'] = $validatedData['stock'];
-            }
 
             $product = Product::create($productData);
 
-            // 5. Xử lý biến thể (nếu có)
-            if ($validatedData['has_variants']) {
+            // --- Xử lý Thư viện ảnh (Gallery Images) ---
+            if ($request->hasFile('gallery_images')) {
+                foreach ($request->file('gallery_images') as $file) {
+                    $galleryImagePath = $file->store('products/gallery_images', 'public');
+                    $uploadedFilePaths[] = $galleryImagePath; // Thêm vào danh sách
+                    $product->images()->create([
+                        'image_url' => $galleryImagePath, // Sử dụng 'image_path' thay vì 'image_url' nếu cột là 'image_path'
+                    ]);
+                }
+            }
+            // ------------------------------------------
+
+            // Xử lý biến thể
+            if ($validatedData['has_variants'] && isset($validatedData['variants'])) {
                 foreach ($validatedData['variants'] as $variantData) {
                     $variantImagePath = null;
-                    // Lấy file ảnh cho biến thể cụ thể
                     if (isset($variantData['image']) && $variantData['image'] instanceof \Illuminate\Http\UploadedFile) {
-                        $variantImagePath = $variantData['image']->store('product_variants', 'public');
+                        $variantImagePath = $variantData['image']->store('product_variants/images', 'public'); // Thư mục rõ ràng hơn
+                        $uploadedFilePaths[] = $variantImagePath; // Thêm vào danh sách
                     }
 
                     $variant = $product->variants()->create([
@@ -113,25 +175,40 @@ class ProductController extends Controller
                         'price' => $variantData['price'],
                         'stock' => $variantData['stock'],
                         'image' => $variantImagePath,
+                        'sold' => $variantData['sold'] ?? 0,
+                        'status' => $variantData['status'] ?? 'available',
+                        'barcode' => $variantData['barcode'] ?? null,
+                        'description' => $variantData['description'] ?? null,
                     ]);
 
-                    // Đồng bộ các giá trị thuộc tính cho biến thể
+                    // Sử dụng sync để đảm bảo mối quan hệ many-to-many được cập nhật đúng
                     $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
             }
 
-            DB::commit(); // Hoàn tất transaction
+            DB::commit();
+            // Tải các mối quan hệ để trả về dữ liệu đầy đủ
+            $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute']);
+
             return response()->json([
-                'message' => 'Sản phẩm và biến thể (nếu có) đã được thêm thành công!',
-                'data' => new ProductDetailResource($product) // Trả về resource chi tiết
+                'message' => 'Sản phẩm đã được thêm thành công!',
+                'data' => new ProductDetailResource($product) // Đảm bảo ProductDetailResource được import
             ], 201);
+
         } catch (\Exception $e) {
-            DB::rollBack(); // Hoàn tác nếu có lỗi
-            if ($imagePath && Storage::disk('public')->exists($imagePath)) { // Chỉ xóa nếu ảnh đã được upload và tồn tại
-                Storage::disk('public')->delete($imagePath);
-            }            // Log lỗi chi tiết hơn cho việc debug
+            DB::rollBack();
+            // Xóa tất cả các file đã tải lên nếu có lỗi xảy ra
+            foreach ($uploadedFilePaths as $path) {
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
             Log::error("Lỗi khi thêm sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
-            return response()->json(['message' => 'Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -141,9 +218,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        // Eager load tất cả các quan hệ cần thiết cho trang chi tiết
-        $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute']); // Load biến thể và các giá trị thuộc tính của biến thể
-        // TRẢ VỀ PRODUCT DETAIL RESOURCE
+        $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute']);
         return new ProductDetailResource($product);
     }
 
@@ -153,25 +228,54 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => ['sometimes', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
             'description' => 'nullable|string',
             'gender' => 'sometimes|in:male,female,unisex',
-            'price' => 'sometimes|numeric|min:0',
+            'price' => 'sometimes|numeric|min:0', // Applied if not has_variants
+            'stock' => 'sometimes|integer|min:0', // Applied if not has_variants
             'category_id' => 'sometimes|exists:categories,id',
             'brand_id' => 'sometimes|exists:brands,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Ảnh chính mới
-            'remove_main_image' => 'boolean', // Cờ để xóa ảnh chính hiện tại
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
+            'remove_main_image' => 'boolean', // Flag to delete main image
 
-            // Validation for variants
-            'variants' => 'nullable|json', // Expect variants as a JSON string
-            // You can add more specific rules for variants array if needed after decoding
-            // For example, 'variants.*.sku' => 'required|string|max:255|unique:product_variants,sku,' . $variant->id
-            // This kind of nested validation is easier after json_decode.
-        ], [
+            // --- NEW: Validation for additional images and deletions ---
+            'additional_images' => 'nullable|array', // New images to upload
+            'additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'deleted_image_ids' => 'nullable|array', // IDs of existing images to delete
+            'deleted_image_ids.*' => 'integer|exists:product_images,id', // Ensure IDs are integers and exist
+            // -----------------------------------------------------------
+
+            'has_variants' => 'sometimes|boolean',
+            'variants' => 'nullable|json',
+        ];
+
+        // Apply rules for price/stock based on has_variants, if present in request
+        if ($request->has('has_variants')) {
+            if ($request->boolean('has_variants')) {
+                $rules['price'] = 'nullable|numeric|min:0'; // Price/stock become nullable if variants exist
+                $rules['stock'] = 'nullable|integer|min:0';
+                $rules['variants'] = 'required|array|min:1'; // If true, variants are required
+                $rules['variants.*.sku'] = ['required', 'string', 'max:255', Rule::unique('product_variants')->ignore($product->id, 'product_id')->where(function ($query) use ($product) {
+                    return $query->where('product_id', $product->id); // Ensure uniqueness within this product's variants
+                })]; // Complex rule for unique SKU per product
+                $rules['variants.*.price'] = 'required|numeric|min:0';
+                $rules['variants.*.stock'] = 'required|integer|min:0';
+                $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+                $rules['variants.*.attribute_values'] = 'required|array|min:1';
+                $rules['variants.*.attribute_values.*'] = 'exists:attribute_values,id';
+            } else {
+                $rules['price'] = 'required|numeric|min:0'; // Price/stock required if no variants
+                $rules['stock'] = 'required|integer|min:0';
+                $rules['variants'] = 'nullable|array|max:0'; // No variants allowed
+            }
+        }
+
+
+        $validated = $request->validate($rules, [
             'name.unique' => 'Tên sản phẩm đã tồn tại.',
             'image.image' => 'Tệp tải lên phải là hình ảnh.',
-            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
             'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
             'gender.in' => 'Giới tính không hợp lệ.',
             'price.numeric' => 'Giá phải là một số.',
@@ -179,45 +283,81 @@ class ProductController extends Controller
             'category_id.exists' => 'Danh mục không tồn tại.',
             'brand_id.exists' => 'Thương hiệu không tồn tại.',
             'variants.json' => 'Dữ liệu biến thể không hợp lệ.',
+            'additional_images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
+            'additional_images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'additional_images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
+            'deleted_image_ids.*.exists' => 'Ảnh phụ cần xóa không tồn tại.',
         ]);
 
         DB::beginTransaction();
         try {
             $currentImagePath = $product->image;
 
-            // Xử lý xóa ảnh chính hiện tại
-            if (isset($validated['remove_main_image']) && $validated['remove_main_image'] && $currentImagePath) {
-                if (Storage::disk('public')->exists($currentImagePath)) {
+            // Handle main image deletion
+            if (isset($validated['remove_main_image']) && $validated['remove_main_image']) {
+                if ($currentImagePath && Storage::disk('public')->exists($currentImagePath)) {
                     Storage::disk('public')->delete($currentImagePath);
                 }
-                $validated['image'] = null; // Set ảnh về null trong DB
+                $validated['image'] = null; // Set image to null in DB
             }
 
-            // Xử lý upload ảnh chính mới
+            // Handle main image upload/update
             if ($request->hasFile('image')) {
-                // Xóa ảnh cũ nếu có ảnh mới và ảnh cũ tồn tại
                 if ($currentImagePath && Storage::disk('public')->exists($currentImagePath)) {
                     Storage::disk('public')->delete($currentImagePath);
                 }
                 $validated['image'] = $request->file('image')->store('products', 'public');
             } else if (!isset($validated['image']) && !isset($validated['remove_main_image'])) {
-                // Nếu không có ảnh mới và không yêu cầu xóa, giữ ảnh cũ
+                // If no new image and not removing, retain old image path
                 $validated['image'] = $currentImagePath;
             }
 
-            // Cập nhật slug nếu tên thay đổi
+            // Update slug if name changes
             if (isset($validated['name'])) {
                 $validated['slug'] = Str::slug($validated['name']);
             }
 
-            // Update main product details
-            $product->update($validated);
+            // Prepare product data for update (excluding image/variant specific fields handled below)
+            $productDataForUpdate = collect($validated)->except([
+                'image', 'remove_main_image', 'additional_images', 'deleted_image_ids', 'variants'
+            ])->toArray();
+
+            // Explicitly set price/stock to null if has_variants is true and they are not provided
+            if (isset($validated['has_variants']) && $validated['has_variants']) {
+                $productDataForUpdate['price'] = null;
+                $productDataForUpdate['stock'] = null;
+            }
+
+            $product->update($productDataForUpdate);
+
+            // --- NEW: Handle deleted additional images ---
+            if (isset($validated['deleted_image_ids']) && is_array($validated['deleted_image_ids'])) {
+                foreach ($validated['deleted_image_ids'] as $imageId) {
+                    $productImage = ProductImage::find($imageId);
+                    if ($productImage && $productImage->product_id === $product->id) { // Ensure ownership
+                        if (Storage::disk('public')->exists($productImage->image_url)) {
+                            Storage::disk('public')->delete($productImage->image_url);
+                        }
+                        $productImage->delete();
+                    }
+                }
+            }
+
+            // --- NEW: Handle new additional images upload ---
+            if ($request->hasFile('additional_images')) {
+                foreach ($request->file('additional_images') as $file) {
+                    $additionalImagePath = $file->store('products/gallery', 'public');
+                    $product->images()->create([
+                        'image_url' => $additionalImagePath,
+                    ]);
+                }
+            }
+            // -----------------------------------------------
 
             // --- Handle Variants ---
             $submittedVariantsData = [];
             if (isset($validated['variants'])) {
-                $submittedVariantsData = json_decode($validated['variants'], true); // Decode the JSON string
-                // Basic check if decoding was successful and it's an array
+                $submittedVariantsData = json_decode($validated['variants'], true);
                 if (!is_array($submittedVariantsData)) {
                     throw new \Exception('Dữ liệu biến thể không phải là một mảng hợp lệ.');
                 }
@@ -226,15 +366,34 @@ class ProductController extends Controller
             $existingVariantIds = $product->variants->pluck('id')->toArray();
             $variantsToKeepIds = [];
 
-            foreach ($submittedVariantsData as $variantData) {
-                // Determine if it's an existing variant or a new one
-                if (isset($variantData['id']) && in_array($variantData['id'], $existingVariantIds)) {
-                    // This is an existing variant, update it
-                    $variant = ProductVariant::find($variantData['id']);
-                    if ($variant) {
-                        // Validate variant specific fields
-                        $variantValidated = validator($variantData, [
-                            'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants')->ignore($variant->id)],
+            if (isset($validated['has_variants']) && $validated['has_variants']) { // If product should have variants
+                foreach ($submittedVariantsData as $variantData) {
+                    if (isset($variantData['id']) && in_array($variantData['id'], $existingVariantIds)) {
+                        $variant = ProductVariant::find($variantData['id']);
+                        if ($variant) {
+                            $variantValidated = validator($variantData, [
+                                'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants')->ignore($variant->id)],
+                                'price' => 'required|numeric|min:0',
+                                'stock' => 'required|integer|min:0',
+                                'sold' => 'sometimes|integer|min:0',
+                                'status' => 'sometimes|string',
+                                'barcode' => 'nullable|string|max:255',
+                                'description' => 'nullable|string',
+                            ])->validate();
+
+                            $variant->update($variantValidated);
+                            $variantsToKeepIds[] = $variant->id;
+
+                            if (isset($variantData['attribute_value_ids']) && is_array($variantData['attribute_value_ids'])) {
+                                $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_value_ids'])->pluck('id');
+                                $variant->attributeValues()->sync($validAttributeValueIds);
+                            } else {
+                                $variant->attributeValues()->detach();
+                            }
+                        }
+                    } else { // New variant
+                        $newVariantData = validator($variantData, [
+                            'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku'],
                             'price' => 'required|numeric|min:0',
                             'stock' => 'required|integer|min:0',
                             'sold' => 'sometimes|integer|min:0',
@@ -243,58 +402,39 @@ class ProductController extends Controller
                             'description' => 'nullable|string',
                         ])->validate();
 
-                        $variant->update($variantValidated);
-                        $variantsToKeepIds[] = $variant->id;
+                        $newVariant = $product->variants()->create($newVariantData);
+                        $variantsToKeepIds[] = $newVariant->id;
 
-                        // Sync attribute values for the updated variant
                         if (isset($variantData['attribute_value_ids']) && is_array($variantData['attribute_value_ids'])) {
-                            // Only attach values that exist in AttributeValue model
                             $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_value_ids'])->pluck('id');
-                            $variant->attributeValues()->sync($validAttributeValueIds);
-                        } else {
-                            $variant->attributeValues()->detach(); // Remove all if none submitted
+                            $newVariant->attributeValues()->attach($validAttributeValueIds);
                         }
                     }
-                } else {
-                    // This is a new variant, create it
-                    $newVariantData = validator($variantData, [
-                        'sku' => ['required', 'string', 'max:255', 'unique:product_variants,sku'],
-                        'price' => 'required|numeric|min:0',
-                        'stock' => 'required|integer|min:0',
-                        'sold' => 'sometimes|integer|min:0',
-                        'status' => 'sometimes|string',
-                        'barcode' => 'nullable|string|max:255',
-                        'description' => 'nullable|string',
-                    ])->validate();
-
-                    $newVariant = $product->variants()->create($newVariantData);
-                    $variantsToKeepIds[] = $newVariant->id;
-
-                    // Attach attribute values for the new variant
-                    if (isset($variantData['attribute_value_ids']) && is_array($variantData['attribute_value_ids'])) {
-                        $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_value_ids'])->pluck('id');
-                        $newVariant->attributeValues()->attach($validAttributeValueIds);
-                    }
                 }
+            } else { // If product should NOT have variants
+                // Ensure all existing variants are soft-deleted
+                $product->variants()->delete();
+                $variantsToKeepIds = []; // No variants to keep
             }
 
-            // Delete variants that were removed from the frontend
-            ProductVariant::where('product_id', $product->id)
-                ->whereNotIn('id', $variantsToKeepIds)
-                ->delete(); // This will also soft delete due to SoftDeletes trait
+            // Delete variants that were removed from the frontend (only if has_variants is true initially)
+            if ($product->has_variants || ($request->has('has_variants') && !$request->boolean('has_variants'))) {
+                ProductVariant::where('product_id', $product->id)
+                    ->whereNotIn('id', $variantsToKeepIds)
+                    ->delete();
+            }
 
             DB::commit();
 
-            // Load the necessary relations to return ProductDetailResource
+            // Reload the product with all necessary relations for the detailed response
             $product->load([
                 'images',
                 'category',
                 'brand',
-                // Eager load variants with their attribute values and attributes
                 'variants.attributeValues.attribute'
             ]);
             return new ProductDetailResource($product);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
                 'message' => 'Lỗi validation khi cập nhật sản phẩm.',
@@ -302,7 +442,8 @@ class ProductController extends Controller
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật sản phẩm.', 'error' => $e->getMessage()], 500);
+            Log::error("Lỗi khi cập nhật sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
+            return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -314,114 +455,128 @@ class ProductController extends Controller
     {
         DB::beginTransaction();
         try {
-            // Xóa ảnh chính
+            // Delete main image
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);
             }
 
-            // Xóa tất cả ảnh phụ và file của chúng
+            // Delete all additional images and their files
             foreach ($product->images as $image) {
                 if (Storage::disk('public')->exists($image->image_url)) {
                     Storage::disk('public')->delete($image->image_url);
                 }
-                $image->delete(); // Xóa bản ghi ProductImage
+                $image->delete(); // Delete ProductImage record
             }
 
-            // Xóa tất cả các biến thể liên quan và các quan hệ của chúng (ProductVariantController sẽ xử lý xóa mềm)
-            // Nếu bạn muốn xóa cứng ProductVariant khi xóa Product, có thể dùng $product->variants()->forceDelete();
-            $product->variants()->delete(); // Thực hiện soft delete cho tất cả biến thể liên quan
+            // Delete associated variants (this will soft delete due to SoftDeletes trait)
+            // If you want to hard delete ProductVariant when deleting Product, use $product->variants()->forceDelete();
+            $product->variants()->delete();
 
-            $product->delete(); // Xóa sản phẩm
+            $product->delete(); // Soft delete the product
 
             DB::commit();
-            return response()->noContent(); // Trả về 204 No Content cho xóa thành công
+            return response()->noContent(); // Return 204 No Content for successful deletion
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Lỗi khi xóa sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
             return response()->json(['message' => 'Có lỗi xảy ra khi xóa sản phẩm.', 'error' => $e->getMessage()], 500);
         }
     }
 
+    // --- Consider removing these specific image upload/delete methods if they are merged into store/update ---
+    // However, if you have very specific UI flows that require separate endpoints for single image operations,
+    // you might keep them. For a typical product management, handling them in store/update is often simpler.
+
     /**
-     * Upload / Cập nhật ảnh chính cho sản phẩm.
+     * Upload / Update main image for a product.
      * POST /api/admin/products/{product}/image
+     * (Consider merging this into the main 'update' method for simplicity)
      */
     public function uploadImage(Request $request, Product $product)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ], [
             'image.required' => 'Vui lòng chọn ảnh chính.',
-            // ... (thêm thông báo lỗi chi tiết khác nếu cần)
+            'image.image' => 'Tệp tải lên phải là hình ảnh.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
         ]);
 
         DB::beginTransaction();
         try {
-            // Xóa ảnh cũ nếu có
             if ($product->image && Storage::disk('public')->exists($product->image)) {
                 Storage::disk('public')->delete($product->image);
             }
 
-            // Lưu ảnh mới
             $path = $request->file('image')->store('products', 'public');
             $product->update(['image' => $path]);
 
             DB::commit();
             return response()->json([
                 'message' => 'Ảnh chính đã được cập nhật thành công.',
-                'image_url' => Storage::url($path), // Trả về URL ảnh mới
+                'image_url' => Storage::url($path),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Lỗi khi cập nhật ảnh chính: " . $e->getMessage());
             return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật ảnh chính.', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Upload / Cập nhật ảnh phụ cho sản phẩm.
+     * Upload / Update additional images for a product.
      * POST /api/admin/products/{product}/images
-     * (Phương thức này sẽ xóa tất cả ảnh phụ cũ và thêm ảnh mới)
+     * WARNING: This method currently REPLACES all existing additional images.
+     * (Consider merging this functionality into the main 'update' method for additive/selective changes)
      */
     public function uploadImages(Request $request, Product $product)
     {
         $request->validate([
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ], [
-            'images.*.required' => 'Vui lòng chọn ảnh phụ.',
-            // ... (thêm thông báo lỗi chi tiết khác nếu cần)
+            'images.required' => 'Vui lòng chọn ít nhất một ảnh phụ.',
+            'images.min' => 'Vui lòng chọn ít nhất một ảnh phụ.',
+            'images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
+            'images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
         ]);
 
         DB::beginTransaction();
         try {
-            // Xóa tất cả ảnh phụ cũ và file của chúng
+            // Delete all old additional images and their files
             foreach ($product->images as $image) {
                 if (Storage::disk('public')->exists($image->image_url)) {
                     Storage::disk('public')->delete($image->image_url);
                 }
-                $image->delete(); // Xóa bản ghi ProductImage
+                $image->delete();
             }
 
-            // Lưu ảnh phụ mới
+            // Save new additional images
             foreach ($request->file('images') as $file) {
                 $path = $file->store('products/gallery', 'public');
                 $product->images()->create(['image_url' => $path]);
             }
 
             DB::commit();
-            $product->load('images'); // Load lại ảnh phụ để trả về
+            $product->load('images');
             return response()->json([
                 'message' => 'Ảnh phụ đã được cập nhật thành công.',
-                'data' => ProductImageResource::collection($product->images), // Trả về Resource Collection
+                'data' => ProductImageResource::collection($product->images),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Lỗi khi cập nhật ảnh phụ: " . $e->getMessage());
             return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật ảnh phụ.', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Xóa một ảnh phụ cụ thể của sản phẩm.
+     * Delete a specific additional product image.
      * DELETE /api/admin/products/images/{imageId}
+     * (Can be kept as a separate endpoint if needed for specific UI operations)
      */
     public function deleteImage(string $imageId)
     {
@@ -429,18 +584,16 @@ class ProductController extends Controller
 
         DB::beginTransaction();
         try {
-            // Xóa file ảnh khỏi storage
             if (Storage::disk('public')->exists($image->image_url)) {
                 Storage::disk('public')->delete($image->image_url);
             }
-
-            // Xóa bản ghi DB
             $image->delete();
 
             DB::commit();
             return response()->json(['message' => 'Ảnh phụ đã được xóa thành công.', 'image_id' => $imageId]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error("Lỗi khi xóa ảnh phụ: " . $e->getMessage());
             return response()->json(['message' => 'Có lỗi xảy ra khi xóa ảnh phụ.', 'error' => $e->getMessage()], 500);
         }
     }
