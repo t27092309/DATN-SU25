@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
+use App\Http\Controllers\API\Client\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -24,6 +25,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // route giỏ hàng cho client
         Route::apiResource('cart-items', CartItemController::class);
+
+        // route thanh toan cho Client
+        Route::post('checkout/place-order',[CheckoutController::class, 'placeOrder']);
+        Route::post('checkout/buy-now',[CheckoutController::class, 'buyNow']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
