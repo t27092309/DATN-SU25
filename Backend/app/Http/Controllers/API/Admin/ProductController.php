@@ -38,7 +38,7 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      * POST /api/admin/products
      */
-public function store(Request $request)
+    public function store(Request $request)
     {
         $rules = [
             'name' => 'required|string|max:255|unique:products,name',
@@ -194,7 +194,6 @@ public function store(Request $request)
                 'message' => 'Sản phẩm đã được thêm thành công!',
                 'data' => new ProductDetailResource($product) // Đảm bảo ProductDetailResource được import
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
             // Xóa tất cả các file đã tải lên nếu có lỗi xảy ra
@@ -319,7 +318,11 @@ public function store(Request $request)
 
             // Prepare product data for update (excluding image/variant specific fields handled below)
             $productDataForUpdate = collect($validated)->except([
-                'image', 'remove_main_image', 'additional_images', 'deleted_image_ids', 'variants'
+                'image',
+                'remove_main_image',
+                'additional_images',
+                'deleted_image_ids',
+                'variants'
             ])->toArray();
 
             // Explicitly set price/stock to null if has_variants is true and they are not provided
@@ -451,36 +454,134 @@ public function store(Request $request)
      * Remove the specified resource from storage.
      * DELETE /api/admin/products/{product}
      */
-    public function destroy(Product $product)
+    public function destroy(string $id)
     {
-        DB::beginTransaction();
         try {
-            // Delete main image
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
+            $product = Product::findOrFail($id); // Tìm sản phẩm theo ID
 
-            // Delete all additional images and their files
-            foreach ($product->images as $image) {
-                if (Storage::disk('public')->exists($image->image_url)) {
-                    Storage::disk('public')->delete($image->image_url);
-                }
-                $image->delete(); // Delete ProductImage record
-            }
+            // Laravel sẽ tự động điền cột 'deleted_at' khi gọi delete()
+            $product->delete();
 
-            // Delete associated variants (this will soft delete due to SoftDeletes trait)
-            // If you want to hard delete ProductVariant when deleting Product, use $product->variants()->forceDelete();
-            $product->variants()->delete();
-
-            $product->delete(); // Soft delete the product
-
-            DB::commit();
-            return response()->noContent(); // Return 204 No Content for successful deletion
-
+            return response()->json([
+                'message' => 'Sản phẩm đã được xóa mềm thành công!'
+            ], 200);
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Lỗi khi xóa sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
-            return response()->json(['message' => 'Có lỗi xảy ra khi xóa sản phẩm.', 'error' => $e->getMessage()], 500);
+            Log::error("Lỗi khi xóa mềm sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi xóa mềm sản phẩm. Vui lòng thử lại.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function trashed()
+    {
+        // Lấy tất cả sản phẩm đã xóa mềm
+        $trashedProducts = Product::onlyTrashed()->get();
+
+        // Bạn có thể trả về resource nếu cần
+        // return ProductCollection::make($trashedProducts);
+        return response()->json([
+            'message' => 'Danh sách sản phẩm đã xóa mềm.',
+            'data' => $trashedProducts
+        ]);
+    }
+
+    public function restore(string $id)
+    {
+        try {
+            // Tìm sản phẩm đã xóa mềm
+            $product = Product::onlyTrashed()->findOrFail($id);
+
+            // Khôi phục sản phẩm
+            $product->restore();
+
+            return response()->json([
+                'message' => 'Sản phẩm đã được khôi phục thành công!'
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error("Lỗi khi khôi phục sản phẩm: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi khôi phục sản phẩm. Vui lòng thử lại.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function forceDelete(string $id)
+    {
+        DB::beginTransaction(); // Bắt đầu transaction để đảm bảo toàn vẹn dữ liệu
+        try {
+            // 1. Tìm sản phẩm đã xóa mềm
+            $product = Product::onlyTrashed()->findOrFail($id);
+
+            // 2. XÓA CÁC FILE ẢNH VẬT LÝ TRƯỚC
+            // Đây là phần quan trọng nhất để giải quyết vấn đề của bạn.
+
+            // 2.1. Xóa ảnh chính của sản phẩm
+            if ($product->image) { // Kiểm tra xem có ảnh chính không
+                // Đường dẫn ảnh lưu trong DB là 'products/main_images/ten_file.jpg'
+                // Storage::disk('public')->delete() sẽ tìm file trong 'storage/app/public/products/main_images/ten_file.jpg'
+                if (Storage::disk('public')->exists($product->image)) {
+                    Storage::disk('public')->delete($product->image);
+                    Log::info("Đã xóa ảnh chính: " . $product->image);
+                } else {
+                    Log::warning("Không tìm thấy ảnh chính để xóa: " . $product->image);
+                }
+            }
+
+            // 2.2. Xóa tất cả ảnh trong thư viện (gallery images)
+            // Lấy các bản ghi ProductImage liên quan
+            $galleryImages = $product->images;
+            foreach ($galleryImages as $image) {
+                // image_path là tên cột trong DB của ProductImage (vd: 'products/gallery_images/ten_file.jpg')
+                if ($image->image_url) { // Đảm bảo có đường dẫn
+                    // Đảm bảo loại bỏ tiền tố /storage/ nếu có
+                    $galleryPathToDelete = str_replace('/storage/', '', $image->image_url);
+
+                    if (Storage::disk('public')->exists($galleryPathToDelete)) {
+                        Storage::disk('public')->delete($galleryPathToDelete);
+                        Log::info("Đã xóa ảnh gallery: " . $galleryPathToDelete);
+                    } else {
+                        Log::warning("Không tìm thấy ảnh gallery để xóa: " . $galleryPathToDelete);
+                    }
+                } else {
+                    Log::warning("Đường dẫn ảnh gallery trống cho ID: " . $image->id);
+                }
+            }
+
+            // 2.3. Xóa ảnh của các biến thể (nếu có)
+            $variants = $product->variants;
+            foreach ($variants as $variant) {
+                if ($variant->image) { // Kiểm tra xem biến thể có ảnh không
+                    // variant->image là tên cột trong DB của ProductVariant (vd: 'product_variants/images/ten_file.jpg')
+                    if (Storage::disk('public')->exists($variant->image)) {
+                        Storage::disk('public')->delete($variant->image);
+                        Log::info("Đã xóa ảnh biến thể: " . $variant->image);
+                    } else {
+                        Log::warning("Không tìm thấy ảnh biến thể để xóa: " . $variant->image);
+                    }
+                }
+            }
+
+            // 3. Xóa bản ghi trong database (SAU KHI XÓA FILE VẬT LÝ)
+            // Khi gọi $product->forceDelete(), nó sẽ kích hoạt onDelete('cascade')
+            // trên các mối quan hệ nếu bạn đã cấu hình đúng trong migration.
+            // Điều này có nghĩa là các bản ghi ProductImage và ProductVariant liên quan
+            // sẽ tự động bị xóa khỏi DB khi Product bị xóa cứng.
+            $product->forceDelete();
+
+            DB::commit(); // Hoàn tất transaction
+            return response()->json([
+                'message' => 'Sản phẩm và tất cả ảnh liên quan đã được xóa vĩnh viễn thành công!'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback transaction nếu có lỗi
+            Log::error("Lỗi khi xóa vĩnh viễn sản phẩm và ảnh: " . $e->getMessage() . " tại " . $e->getFile() . " dòng " . $e->getLine());
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi xóa vĩnh viễn sản phẩm. Vui lòng thử lại.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

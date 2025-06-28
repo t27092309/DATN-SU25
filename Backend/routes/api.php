@@ -65,11 +65,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
             // brands
             Route::apiResource('brands', AdminBrandController::class);
-                                                
-            // Soft Delete product
-            Route::get('products/trashed', [AdminProductController::class, 'trashed']);
-            Route::put('products/{id}/restore', [AdminProductController::class, 'restore']);
-            Route::delete('products/{id}/force', [AdminProductController::class, 'forceDelete']);
+            // Soft Delete product 
+            Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
+            Route::post('products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+            Route::delete('products/{id}/force-delete', [AdminProductController::class, 'forceDelete'])->name('products.forceDelete');
             Route::apiResource('products', AdminProductController::class);
             // Route upload ảnh chính
             Route::post('products/{product}/image', [AdminProductController::class, 'uploadImage']);
