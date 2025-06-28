@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
+use App\Http\Controllers\API\Client\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -24,6 +25,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // route giỏ hàng cho client
         Route::apiResource('cart-items', CartItemController::class);
+
+        // route thanh toan cho Client
+        Route::post('checkout/place-order',[CheckoutController::class, 'placeOrder']);
+        Route::post('checkout/buy-now',[CheckoutController::class, 'buyNow']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -46,8 +51,19 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+            //categories
+            Route::get('categories/trashed', [AdminCategoryController::class, 'trashed']);
+            Route::put('categories/{id}/restore', [AdminCategoryController::class, 'restore']);
+            Route::delete('categories/{id}/force', [AdminCategoryController::class, 'forceDelete']);
             Route::apiResource('categories', AdminCategoryController::class);
+
+            // coupons
+            Route::get('coupons/trashed', [AdminCouponController::class, 'trashed']);
+            Route::put('coupons/{id}/restore', [AdminCouponController::class, 'restore']);
+            Route::delete('coupons/{id}/force', [AdminCouponController::class, 'forceDelete']);
             Route::apiResource('coupons', AdminCouponController::class);
+
+            // brands
             Route::apiResource('brands', AdminBrandController::class);
             // Soft Delete product 
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
