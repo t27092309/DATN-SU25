@@ -27,8 +27,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::apiResource('cart-items', CartItemController::class);
 
         // route thanh toan cho Client
-        Route::post('checkout/place-order',[CheckoutController::class, 'placeOrder']);
-        Route::post('checkout/buy-now',[CheckoutController::class, 'buyNow']);
+        Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
+        Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -65,7 +65,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
             // brands
             Route::apiResource('brands', AdminBrandController::class);
-            // Soft Delete product 
+            // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
             Route::post('products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
             Route::delete('products/{id}/force-delete', [AdminProductController::class, 'forceDelete'])->name('products.forceDelete');
@@ -92,7 +92,12 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
             Route::apiResource('attribute-values', AttributeValueController::class);
 
+            // Nhóm scent-groups
+            Route::get('scent-groups/trashed', [AdminScentGroupController::class, 'trashed']);
+            Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
+            Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+
         });
     });
 
