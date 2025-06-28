@@ -1,10 +1,10 @@
 // main.js
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import App from './App.vue';
-import router from './router';
+import App from './ClientApp.vue';
+import router from '../router';
 import axios from 'axios'; // Import Axios
-import { useAuthStore } from './stores/auth'; // Import auth store
+import { useAuthStore } from '../stores/auth'; // Import auth store
 
 import '@splidejs/splide/dist/css/splide.min.css'; // CSS của Splide
 import { Splide, SplideSlide } from '@splidejs/vue-splide';
