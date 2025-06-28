@@ -7,6 +7,7 @@ import Products from "@/views/admin/products/ProductsList.vue";
 import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
+import ProductTrash from "@/views/admin/products/ProductTrash.vue";
 import AttributeManager from "@/views/admin/Attribute/AttributeManager.vue";
 import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
@@ -65,6 +66,12 @@ export default [
         meta: {
           title: "Chi tiết sản phẩm",
         },
+      },
+      {
+        path: 'products/trash', // Đường dẫn cho thùng rác
+        name: 'trashedProducts', // Tên route cho thùng rác
+        component: ProductTrash,
+        meta: { title: 'Thùng rác Sản phẩm' } // Tiêu đề cho trang thùng rác
       },
       {
         path: "attributes",
