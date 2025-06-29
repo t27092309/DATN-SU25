@@ -36,21 +36,16 @@
           </li>
           <li class="nav-item" :class="{ active: $route.name === 'products' }">
             <a data-bs-toggle="collapse" href="#base">
-              <i class="fas fa-tshirt"></i>
-              <p>Base</p>
+              <i class="fa-solid fa-spray-can-sparkles"></i>
+              <p>Sản phẩm</p>
               <span class="caret"></span>
             </a>
             <div class="collapse" id="base">
               <ul class="nav nav-collapse">
                 <li>
                   <router-link :to="{ name: 'products' }">
-                    <span class="sub-item">Products</span>
+                    <span class="sub-item">Quản lí sản phẩm</span>
                   </router-link>
-                </li>
-                <li>
-                  <a href="icon-menu.html">
-                    <span class="sub-item">Category</span>
-                  </a>
                 </li>
               </ul>
             </div>
@@ -105,12 +100,12 @@
             </div>
           </li>
           <li class="nav-item">
-            <a data-bs-toggle="collapse" href="#sidebarLayouts">
+            <a data-bs-toggle="collapse" href="#maps">
               <i class="fas fa-th-list"></i>
               <p>Thuộc tính</p>
               <span class="caret"></span>
             </a>
-            <div class="collapse" id="sidebarLayouts">
+            <div class="collapse" id="maps">
               <ul class="nav nav-collapse">
                 <li>
                   <router-link to="/admin/attributes">
@@ -120,7 +115,7 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a data-bs-toggle="collapse" href="#maps">
               <i class="fas fa-map-marker-alt"></i>
               <p>Maps</p>
@@ -140,7 +135,7 @@
                 </li>
               </ul>
             </div>
-          </li>
+          </li> -->
           <li class="nav-item">
             <a data-bs-toggle="collapse" href="#charts">
               <i class="far fa-chart-bar"></i>
