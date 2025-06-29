@@ -20,52 +20,53 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-       $this->call([
-        //Bảng độc lập trước
-        RoleSeeder::class,
-        UserSeeder::class,
-        CategorySeeder::class,
-        BrandSeeder::class,
-        ScentGroupSeeder::class,
-        
-        
-        ShippingMethodSeeder::class,
-        WarehouseSeeder::class,
-        CouponSeeder::class,
+        $this->call([
+            //Bảng độc lập trước
+            RoleSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            BrandSeeder::class,
+            ScentGroupSeeder::class,
 
-        // Bảng phụ thuộc bảng trên
-        RoleUserSeeder::class,
-        UserAddressSeeder::class,
-        
 
-        ProductSeeder::class,
-        ProductImageSeeder::class,
+            ShippingMethodSeeder::class,
+            WarehouseSeeder::class,
+            CouponSeeder::class,
 
-        
-        ProductVariantSeeder::class,
+            // Bảng phụ thuộc bảng trên
+            RoleUserSeeder::class,
+            UserAddressSeeder::class,
 
-        
-        ProductUsageProfileSeeder::class,
-        ProductScentProfileSeeder::class,
 
-        ReviewSeeder::class,
-        WishlistSeeder::class,
+            ProductSeeder::class,
+            // ProductImageSeeder::class,
 
-        CartSeeder::class,
-        CartItemSeeder::class,
+            AttributeSeeder::class,
+            AttributeValueSeeder::class,
+            // ProductVariantAttributeValueSeeder::class,
+            ProductVariantSeeder::class,
 
-        OrderSeeder::class,
 
-        
-        OrderItemSeeder::class,
-        PaymentSeeder::class,
+            ProductUsageProfileSeeder::class,
+            ProductScentProfileSeeder::class,
 
-        ShippingTrackingSeeder::class,
-        OrderReturnSeeder::class,
+            ReviewSeeder::class,
+            WishlistSeeder::class,
 
-        WarehouseStockSeeder::class,
-        InventoryLogSeeder::class,
-    ]);
-        
+            CartSeeder::class,
+            CartItemSeeder::class,
+
+            OrderSeeder::class,
+
+
+            OrderItemSeeder::class,
+            PaymentSeeder::class,
+
+            ShippingTrackingSeeder::class,
+            OrderReturnSeeder::class,
+
+            WarehouseStockSeeder::class,
+            InventoryLogSeeder::class,
+        ]);
     }
 }

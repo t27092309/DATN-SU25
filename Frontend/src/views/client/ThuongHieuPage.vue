@@ -2,7 +2,7 @@
 @import '@/assets/tailwind.css';
 </style>
 <template>
-    <div class="container mx-auto p-4">
+    <div class="container mx-auto p-4 max-w-[1200px]">
         <p class="font-bold text-3xl text-black">Thương hiệu</p>
         <nav class="text-sm breadcrumbs mb-6 ">
             <ul class="flex items-center space-x-2">

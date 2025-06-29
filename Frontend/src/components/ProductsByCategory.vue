@@ -14,21 +14,21 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div v-for="product in categoryData.products" :key="product.id"
-                class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center bg-white relative hover:shadow-md transition-shadow duration-300">
+            <router-link
+                v-for="product in categoryData.products"
+                :key="product.slug || product.id"
+                :to="{ name: 'ProductDetail', params: { slug: product.slug || product.id } }"
+                class="border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center bg-white relative hover:shadow-md transition-shadow duration-300"
+            >
                 <span v-if="product.discount_percentage"
                     class="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                     -{{ product.discount_percentage }}%
                 </span>
-                <img src="https://via.placeholder.com/150" alt="NARCISO RODRIGUEZ For Her EDP"
-                    class="w-28 h-28 object-contain mb-2">
-                <!-- <img :src="product.images[0]?.url || 'https://via.placeholder.com/150'" :alt="product.name"
-             class="w-28 h-28 object-contain mb-2"> -->
+                <img :src="product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/150'" :alt="product.name"
+                   class="w-28 h-28 object-contain mb-2">
+                
                 <p class="text-xs text-gray-500 mb-1">
-                    <!-- <span v-for="(variant, index) in product.variants" :key="variant.id">
-            {{ variant.size }} <span v-if="index < product.variants.length - 1"> </span>
-          </span> -->
-                </p>
+                    </p>
                 <p class="text-sm font-semibold mb-1 truncate w-full">{{ product.brand.name }}</p>
                 <p class="text-xs font-medium mb-1 truncate w-full">{{ product.name }}</p>
 
@@ -38,7 +38,7 @@
                 <p class="text-md font-bold text-red-600">
                     {{ new Intl.NumberFormat('vi-VN').format(product.price) }} ₫
                 </p>
-            </div>
+            </router-link>
         </div>
     </div>
 
@@ -74,5 +74,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import '@/assets/tailwind.css';
 /* Bạn có thể thêm các style tùy chỉnh nếu cần, nhưng Tailwind CSS đã xử lý phần lớn */
 </style>

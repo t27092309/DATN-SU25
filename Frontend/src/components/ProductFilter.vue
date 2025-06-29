@@ -138,5 +138,6 @@ export default {
 </script>
 
 <style scoped>
+@import '@/assets/tailwind.css';
 /* Không cần thay đổi phần style */
 </style>

@@ -1,33 +1,126 @@
 <?php
 
-use App\Http\Controllers\Api\BrandController;
-use App\Http\Controllers\Api\CouponController;
-use App\Http\Controllers\Api\ScentGroupController;
+use App\Http\Controllers\Api\Admin\BrandController as AdminBrandController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\API\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVariantController;
+use App\Http\Controllers\Api\Admin\AttributeController as AttributeController;
+use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueController;
+use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
+use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Client\CartItemController;
+use App\Http\Controllers\API\Client\CheckoutController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
-use App\Http\Controllers\API\ProductController;
-use App\Http\Controllers\API\ProductVariantController;
-
+use App\Http\Controllers\API\Client\UserProfileController;
+use App\Http\Controllers\API\Client\UserAddressController;
+use App\Http\Controllers\API\Client\LocationController;
 
 Route::middleware([CorsMiddleware::class])->group(function () {
-    // route admin
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('coupons', CouponController::class);
-    Route::apiResource('brands', BrandController::class);
-    Route::apiResource('products', ProductController::class);
-    Route::get('product-variants/trashed', [ProductVariantController::class, 'trashed']);
-    Route::put('product-variants/restore/{id}', [ProductVariantController::class, 'restore']);
-    Route::apiResource('product-variants', ProductVariantController::class);
-    Route::apiResource('scent-groups', ScentGroupController::class);
 
+    // route admin yêu cầu xác thực
+    Route::middleware('auth:sanctum')->group(function () {
+
+        // route giỏ hàng cho client
+        Route::apiResource('cart-items', CartItemController::class);
+
+        // route thanh toan cho Client
+        Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
+        Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
+
+        // Route đăng xuất
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        // Hồ sơ người dùng
+        Route::get('/user/profile', [UserProfileController::class, 'show']);
+        Route::put('/user/profile', [UserProfileController::class, 'update']);
+
+        // Địa chỉ người dùng
+        Route::get('/user/addresses', [UserAddressController::class, 'index']);
+        Route::post('/user/addresses', [UserAddressController::class, 'store']);
+        Route::put('/user/addresses/{id}', [UserAddressController::class, 'update']);
+        Route::delete('/user/addresses/{id}', [UserAddressController::class, 'destroy']);
+        Route::put('/user/addresses/{id}/set-default', [UserAddressController::class, 'setDefault']);
+
+        // Chọn địa chỉ
+        Route::get('/provinces', [LocationController::class, 'provinces']);
+        Route::get('/provinces/{province_code}/districts', [LocationController::class, 'districts']);
+        Route::get('/districts/{district_code}/wards', [LocationController::class, 'wards']);
+
+        // Route admin (yêu cầu quyền admin:full-access)
+        Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+            //categories
+            Route::get('categories/trashed', [AdminCategoryController::class, 'trashed']);
+            Route::put('categories/{id}/restore', [AdminCategoryController::class, 'restore']);
+            Route::delete('categories/{id}/force', [AdminCategoryController::class, 'forceDelete']);
+            Route::apiResource('categories', AdminCategoryController::class);
+
+            // coupons
+            Route::get('coupons/trashed', [AdminCouponController::class, 'trashed']);
+            Route::put('coupons/{id}/restore', [AdminCouponController::class, 'restore']);
+            Route::delete('coupons/{id}/force', [AdminCouponController::class, 'forceDelete']);
+            Route::apiResource('coupons', AdminCouponController::class);
+
+            // brands
+            Route::apiResource('brands', AdminBrandController::class);
+            // Soft Delete product
+            Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
+            Route::post('products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
+            Route::delete('products/{id}/force-delete', [AdminProductController::class, 'forceDelete'])->name('products.forceDelete');
+            Route::apiResource('products', AdminProductController::class);
+            // Route upload ảnh chính
+            Route::post('products/{product}/image', [AdminProductController::class, 'uploadImage']);
+            // Route upload ảnh phụ
+            Route::post('products/{product}/images', [AdminProductController::class, 'uploadImages']);
+            Route::delete('images/{imageId}', [AdminProductController::class, 'deleteImage']);
+
+            Route::get('product-variants/trashed', [AdminProductVariantController::class, 'trashed']);
+            Route::put('product-variants/restore/{id}', [AdminProductVariantController::class, 'restore']);
+            Route::apiResource('product-variants', AdminProductVariantController::class);
+
+            Route::post('products/{product}/variants/generate', [AdminProductVariantController::class, 'generateForProduct'])
+                ->name('admin.products.variants.generate');
+
+            Route::apiResource('attributes', AttributeController::class);
+            Route::get('attributes/{attribute}/values', [AttributeValueController::class, 'indexByAttribute'])
+                ->name('admin.attributes.values.index');
+            Route::post('attributes/{attribute}/values', [AttributeValueController::class, 'storeByAttribute']);
+            Route::put('attributes/{attribute}/values/{attributeValue}', [AttributeValueController::class, 'updateNested']);
+            Route::delete('attributes/{attribute}/values/{attributeValue}', [AttributeValueController::class, 'destroyNested']);
+
+            Route::apiResource('attribute-values', AttributeValueController::class);
+
+            // Nhóm scent-groups
+            Route::get('scent-groups/trashed', [AdminScentGroupController::class, 'trashed']);
+            Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
+            Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
+            Route::apiResource('scent-groups', AdminScentGroupController::class);
+
+        });
+    });
+
+
+    //Route xác thực
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    //Route test
     Route::get('/hello', function () {
         return response()->json([
             'message' => 'Hello from Laravel with manual CORS!',
         ]);
     });
 
-    Route::get('most-viewed-products-by-categories', [ProductController::class, 'getMostViewedProductsByCategories']);
+
+    // route client
+    Route::get('most-viewed-products-by-categories', [ClientProductController::class, 'getMostViewedProductsByCategories']);
+    Route::get('category-page-products', [ClientProductController::class, 'getCategoryPageProducts']);
+    //route chi tiết sản phẩm cliend
+    Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
+    //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
+    Route::get('/products/search', [ClientProductController::class, 'search']);
 });
 
 // use Illuminate\Support\Facades\Route;

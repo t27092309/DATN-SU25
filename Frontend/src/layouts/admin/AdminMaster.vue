@@ -64,90 +64,90 @@
             document.head.appendChild(script);
         });
 
-        // Khởi tạo Sparkline và Chart.js
-        const jqueryScript = document.createElement('script');
-        jqueryScript.src = 'https://code.jquery.com/jquery-3.7.1.min.js';
-        jqueryScript.onload = () => {
-            // Sparkline
-            $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
-                type: "line",
-                height: "70",
-                width: "100%",
-                lineWidth: "2",
-                lineColor: "#177dff",
-                fillColor: "rgba(23, 125, 255, 0.14)",
-            });
+        // // Khởi tạo Sparkline và Chart.js
+        // const jqueryScript = document.createElement('script');
+        // jqueryScript.src = 'https://code.jquery.com/jquery-3.7.1.min.js';
+        // jqueryScript.onload = () => {
+        //     // Sparkline
+        //     $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        //         type: "line",
+        //         height: "70",
+        //         width: "100%",
+        //         lineWidth: "2",
+        //         lineColor: "#177dff",
+        //         fillColor: "rgba(23, 125, 255, 0.14)",
+        //     });
 
-            $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
-                type: "line",
-                height: "70",
-                width: "100%",
-                lineWidth: "2",
-                lineColor: "#f3545d",
-                fillColor: "rgba(243, 84, 93, .14)",
-            });
+        //     $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
+        //         type: "line",
+        //         height: "70",
+        //         width: "100%",
+        //         lineWidth: "2",
+        //         lineColor: "#f3545d",
+        //         fillColor: "rgba(243, 84, 93, .14)",
+        //     });
 
-            $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
-                type: "line",
-                height: "70",
-                width: "100%",
-                lineWidth: "2",
-                lineColor: "#ffa534",
-                fillColor: "rgba(255, 165, 52, .14)",
-            });
-        };
-        document.head.appendChild(jqueryScript);
+        //     $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
+        //         type: "line",
+        //         height: "70",
+        //         width: "100%",
+        //         lineWidth: "2",
+        //         lineColor: "#ffa534",
+        //         fillColor: "rgba(255, 165, 52, .14)",
+        //     });
+        // };
+        // document.head.appendChild(jqueryScript);
 
         // Khởi tạo Chart.js
-        const chartScript = document.createElement('script');
-        chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js';
-        chartScript.onload = () => {
-            const ctxStats = document.getElementById('statisticsChart').getContext('2d');
-            new Chart(ctxStats, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [
-                        {
-                            label: 'Visitors',
-                            data: [1200, 1500, 1700, 1300, 1600, 1800],
-                            borderColor: '#177dff',
-                            fill: true,
-                            backgroundColor: 'rgba(23, 125, 255, 0.14)',
-                        },
-                        {
-                            label: 'Sales',
-                            data: [300, 500, 400, 600, 700, 800],
-                            borderColor: '#ffa534',
-                            fill: true,
-                            backgroundColor: 'rgba(255, 165, 52, 0.14)',
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+        // const chartScript = document.createElement('script');
+        // chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js';
+        // chartScript.onload = () => {
+        //     const ctxStats = document.getElementById('statisticsChart').getContext('2d');
+        //     new Chart(ctxStats, {
+        //         type: 'line',
+        //         data: {
+        //             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        //             datasets: [
+        //                 {
+        //                     label: 'Visitors',
+        //                     data: [1200, 1500, 1700, 1300, 1600, 1800],
+        //                     borderColor: '#177dff',
+        //                     fill: true,
+        //                     backgroundColor: 'rgba(23, 125, 255, 0.14)',
+        //                 },
+        //                 {
+        //                     label: 'Sales',
+        //                     data: [300, 500, 400, 600, 700, 800],
+        //                     borderColor: '#ffa534',
+        //                     fill: true,
+        //                     backgroundColor: 'rgba(255, 165, 52, 0.14)',
+        //                 }
+        //             ]
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false
+        //         }
+        //     });
 
-            const ctxDaily = document.getElementById('dailySalesChart').getContext('2d');
-            new Chart(ctxDaily, {
-                type: 'bar',
-                data: {
-                    labels: ['Mar 25', 'Mar 26', 'Mar 27', 'Mar 28', 'Mar 29'],
-                    datasets: [{
-                        label: 'Sales',
-                        data: [500, 700, 600, 800, 900],
-                        backgroundColor: '#177dff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        };
-        document.head.appendChild(chartScript);
+        //     const ctxDaily = document.getElementById('dailySalesChart').getContext('2d');
+        //     new Chart(ctxDaily, {
+        //         type: 'bar',
+        //         data: {
+        //             labels: ['Mar 25', 'Mar 26', 'Mar 27', 'Mar 28', 'Mar 29'],
+        //             datasets: [{
+        //                 label: 'Sales',
+        //                 data: [500, 700, 600, 800, 900],
+        //                 backgroundColor: '#177dff'
+        //             }]
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false
+        //         }
+        //     });
+        // };
+        // document.head.appendChild(chartScript);
     });
 </script>
 

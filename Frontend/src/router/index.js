@@ -17,11 +17,17 @@ const router = createRouter({
             component: NotFound,
         },
     ],
+        scrollBehavior(to, from, savedPosition) {
+        if (savedPosition) {
+            return savedPosition;
+        } else {
+            return { top: 0, behavior: 'smooth' };
+        }
+    }
 });
-
 router.afterEach((to) => {
-    const title = to.meta.title || "Trang mặc định";
-    document.title = title;
+    if (to.path.startsWith('/admin')) {
+        document.title = to.meta.title || "Trang Admin";
+    }
 });
-
 export default router;
