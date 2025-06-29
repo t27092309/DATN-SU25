@@ -14,95 +14,127 @@ class CartItemController extends Controller
 {
     // Lấy danh sách sản phẩm trong giỏ hàng
     // GET // http://localhost:8000/api/cart-items
-   public function index(Request $request)
-{
-    $user = $request->user();
+    public function index(Request $request)
+    {
+        $user = $request->user();
 
-    // Lấy giỏ hàng đang hoạt động và load các quan hệ cần thiết
-    $cart = Cart::with([
-        'items.variant.product',
-        'items.variant.attributeValues.attribute'
-    ])
-    ->where('user_id', $user->id)
-    ->where('status', 'active')
-    ->first();
+        // Lấy giỏ hàng đang hoạt động và load các quan hệ cần thiết
+        $cart = Cart::with([
+            'items.variant.product',
+            'items.variant.attributeValues.attribute',
+            'items.variant.product.variants.attributeValues.attribute',
+            'items.product.variants.attributeValues.attribute'
+        ])
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->first();
 
-    // Nếu giỏ hàng chưa tồn tại
-    if (!$cart) {
-        return response()->json([
-            'cart_id' => null,
-            'total_items' => 0,
-            'subtotal' => 0,
-            'items' => [],
-        ]);
-    }
+        // Nếu giỏ hàng chưa tồn tại
+        if (!$cart) {
+            return response()->json([
+                'cart_id' => null,
+                'total_items' => 0,
+                'subtotal' => 0,
+                'items' => [],
+            ]);
+        }
 
-    // Lấy danh sách item, sắp xếp giảm dần theo ID (mới nhất trước)
-    $items = $cart->items->sortByDesc('id')->map(function ($item) {
-        $productId = null;
-        $productName = 'Sản phẩm không xác định';
-        $productSlug = '';
-        $productImage = null;
-        $displayPrice = (float) $item->price; // Ép kiểu float
-        $priceDifference = 0.0;
-        $variantData = null;
+        // Lấy danh sách item, sắp xếp giảm dần theo ID (mới nhất trước)
+        $items = $cart->items->sortByDesc('id')->map(function ($item) {
+            $productId = null;
+            $productName = 'Sản phẩm không xác định';
+            $productSlug = '';
+            $productImage = null;
+            $displayPrice = (float) $item->price; // Ép kiểu float
+            $priceDifference = 0.0;
+            $variantData = null;
 
-        if ($item->variant) {
-            $variant = $item->variant;
-            $product = $variant->product;
+            if ($item->variant) {
+                $variant = $item->variant;
+                $product = $variant->product;
 
-            if ($product) {
+                if ($product) {
+                    $productId = $product->id;
+                    $productName = $product->name;
+                    $productSlug = $product->slug;
+                    $productImage = $product->image;
+                    $priceDifference = (float) ($variant->price - $product->price);
+                }
+
+                $variantData = [
+                    'id' => $variant->id,
+                    'name' => $this->getVariantName($variant),
+                    'sku' => $variant->sku,
+                    'price_difference' => round($priceDifference, 2),
+                    'attributes' => $variant->attributeValues->map(function ($attrValue) {
+                        return [
+                            'attribute_id' => $attrValue->attribute->id,
+                            'attribute_name' => $attrValue->attribute->name,
+                            'value_id' => $attrValue->id,
+                            'value' => $attrValue->value,
+                        ];
+                    })->values()->all(),
+                ];
+            } elseif ($item->product) {
+                $product = $item->product;
                 $productId = $product->id;
                 $productName = $product->name;
                 $productSlug = $product->slug;
                 $productImage = $product->image;
-                $priceDifference = (float) ($variant->price - $product->price);
             }
 
-            $variantData = [
-                'id' => $variant->id,
-                'name' => $this->getVariantName($variant),
-                'sku' => $variant->sku,
-                'price_difference' => round($priceDifference, 2),
-                'attributes' => $variant->attributeValues->map(function ($attrValue) {
+            $availableVariants = [];
+            $currentProduct = null;
+
+            if ($item->variant && $item->variant->product) {
+                $currentProduct = $item->variant->product;
+            } elseif ($item->product) {
+                $currentProduct = $item->product;
+            }
+
+            if ($currentProduct && $currentProduct->variants->isNotEmpty()) {
+                $availableVariants = $currentProduct->variants->map(function ($variant) {
                     return [
-                        'attribute_id' => $attrValue->attribute->id,
-                        'attribute_name' => $attrValue->attribute->name,
-                        'value_id' => $attrValue->id,
-                        'value' => $attrValue->value,
+                        'id' => $variant->id,
+                        'name' => $this->getVariantName($variant), // Sử dụng hàm helper
+                        'sku' => $variant->sku,
+                        'price' => (float) $variant->price,
+                        'stock' => $variant->stock,
+                        'attributes' => $variant->attributeValues->map(function ($attrValue) {
+                            return [
+                                'attribute_id' => $attrValue->attribute->id,
+                                'attribute_name' => $attrValue->attribute->name,
+                                'value_id' => $attrValue->id,
+                                'value' => $attrValue->value,
+                            ];
+                        })->values()->all(),
                     ];
-                })->values()->all(),
+                })->all();
+            }
+
+            return [
+                'id' => $item->id,
+                'product_id' => $productId,
+                'product_name' => $productName,
+                'slug' => $productSlug,
+                'price' => round($displayPrice, 2), // Ép kiểu float, làm tròn 2 chữ số
+                'quantity' => $item->quantity,
+                'thumbnail_url' => $productImage,
+                'variant' => $variantData,
+                'available_variants' => $availableVariants,
             ];
-        } elseif ($item->product) {
-            $product = $item->product;
-            $productId = $product->id;
-            $productName = $product->name;
-            $productSlug = $product->slug;
-            $productImage = $product->image;
-        }
+        });
 
-        return [
-            'id' => $item->id,
-            'product_id' => $productId,
-            'product_name' => $productName,
-            'slug' => $productSlug,
-            'price' => round($displayPrice, 2), // Ép kiểu float, làm tròn 2 chữ số
-            'quantity' => $item->quantity,
-            'thumbnail_url' => $productImage,
-            'variant' => $variantData,
-        ];
-    });
+        // Tính tổng tiền
+        $subtotal = $cart->items->sum(fn($item) => $item->price * $item->quantity);
 
-    // Tính tổng tiền
-    $subtotal = $cart->items->sum(fn($item) => $item->price * $item->quantity);
-
-    return response()->json([
-        'cart_id' => $cart->id,
-        'total_items' => $cart->items->sum('quantity'),
-        'subtotal' => round($subtotal, 2), // Làm tròn cho đẹp
-        'items' => $items->values(), // Reset lại key sau sort
-    ]);
-}
+        return response()->json([
+            'cart_id' => $cart->id,
+            'total_items' => $cart->items->sum('quantity'),
+            'subtotal' => round($subtotal, 2), // Làm tròn cho đẹp
+            'items' => $items->values(), // Reset lại key sau sort
+        ]);
+    }
 
 
     // Helper để hiển thị tên biến thể
