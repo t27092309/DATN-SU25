@@ -12,14 +12,14 @@ class ScentGroupController extends Controller
     // GET // http://localhost:8000/api/admin/scent-groups
     public function index()
     {
-        $scentGroups = ScentGroup::orderBy('id', 'desc')->paginate(15);
+        $scentGroups = ScentGroup::orderBy('id', 'desc')->get();
         return response()->json($scentGroups, 200);
     }
 
     // GET // http://localhost:8000/api/admin/scent-groups/trashed
     public function trashed()
     {
-        $trashed = ScentGroup::onlyTrashed()->orderBy('id', 'desc')->paginate(15);
+        $trashed = ScentGroup::onlyTrashed()->orderBy('id', 'desc')->get();
         return response()->json($trashed, 200);
     }
 

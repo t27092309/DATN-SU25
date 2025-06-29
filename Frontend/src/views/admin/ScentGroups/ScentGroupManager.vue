@@ -5,10 +5,15 @@
         <h3 class="fw-bold mb-3">Nhóm Hương</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home">
-            <a href="#"><i class="icon-home"></i></a>
+            <router-link :to="{ name: 'AdminDashboard' }">
+              <i class="icon-home"></i>
+            </router-link>
           </li>
           <li class="separator">
             <i class="icon-arrow-right"></i>
+          </li>
+          <li class="nav-item">
+            <a href="#">Nhóm Hương</a>
           </li>
         </ul>
       </div>
@@ -16,11 +21,17 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Quản lý nhóm hương</div>
+              <div class="card-title d-flex justify-content-between align-items-center">
+                Quản lý nhóm hương
+                <div class="d-flex gap-2">
+                  <router-link :to="{ name: 'ScentGroupTrash' }" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-trash"></i> Thùng rác
+                  </router-link>
+                </div>
+              </div>
             </div>
             <div class="card-body">
               <div class="row">
-                <!-- Form thêm nhóm hương -->
                 <div class="col-md-6 col-lg-4">
                   <form @submit.prevent="addScentGroup" class="mb-5">
                     <div class="form-group">
@@ -36,7 +47,9 @@
                         placeholder="Nhập tên nhóm hương"
                         required
                       />
-                      <small class="form-text text-muted">Ví dụ: Hương hoa, Hương gỗ</small>
+                      <small class="form-text text-muted"
+                        >Ví dụ: Hương hoa, Hương gỗ</small
+                      >
                     </div>
                     <div class="form-group">
                       <label for="color_code">Mã màu</label>
@@ -47,21 +60,27 @@
                         id="color_code"
                         required
                       />
-                      <small class="form-text text-muted">Chọn màu từ bảng màu</small>
+                      <small class="form-text text-muted"
+                        >Chọn màu từ bảng màu</small
+                      >
                     </div>
                     <div class="card-action">
-                      <button type="submit" class="btn btn-primary">Thêm nhóm hương</button>
+                      <button type="submit" class="btn btn-primary">
+                        Thêm nhóm hương
+                      </button>
                     </div>
-                    <p v-if="addMessage" :class="addMessageClass">{{ addMessage }}</p>
+                    <p v-if="addMessage" :class="addMessageClass">
+                      {{ addMessage }}
+                    </p>
                   </form>
                 </div>
 
-                <!-- Bảng hiển thị nhóm hương -->
                 <div class="col-md-6 col-lg-8">
                   <div class="table-responsive">
                     <table id="add-row" class="display table table-bordered">
                       <thead>
                         <tr>
+                          <th>ID</th>
                           <th>Tên</th>
                           <th>Mã màu</th>
                           <th>Ngày tạo</th>
@@ -71,6 +90,7 @@
                       </thead>
                       <tbody>
                         <tr v-for="scentGroup in scentGroups" :key="scentGroup.id">
+                          <td>{{ scentGroup.id }}</td>
                           <td>{{ scentGroup.name || "Không có" }}</td>
                           <td>
                             <span
@@ -82,14 +102,18 @@
                           <td>
                             {{
                               scentGroup.created_at
-                                ? new Date(scentGroup.created_at).toLocaleString()
+                                ? new Date(
+                                    scentGroup.created_at
+                                  ).toLocaleString()
                                 : "Không có"
                             }}
                           </td>
                           <td>
                             {{
                               scentGroup.updated_at
-                                ? new Date(scentGroup.updated_at).toLocaleString()
+                                ? new Date(
+                                    scentGroup.updated_at
+                                  ).toLocaleString()
                                 : "Không có"
                             }}
                           </td>
@@ -107,9 +131,9 @@
                               <button
                                 type="button"
                                 data-bs-toggle="tooltip"
-                                title="Xóa"
+                                title="Xóa mềm"
                                 class="btn btn-link btn-danger"
-                                @click="openDeleteModal(scentGroup.id)"
+                                @click="confirmSoftDeleteWithSwal(scentGroup.id)"
                               >
                                 <i class="fa fa-times"></i>
                               </button>
@@ -117,34 +141,19 @@
                           </td>
                         </tr>
                         <tr v-if="!scentGroups || scentGroups.length === 0">
-                          <td colspan="5" class="text-center">Không có nhóm hương nào</td>
+                          <td colspan="6" class="text-center">
+                            Không có nhóm hương nào.
+                          </td>
                         </tr>
                       </tbody>
                     </table>
-                    <p v-if="listMessage" :class="listMessageClass">{{ listMessage }}</p>
+                    <p v-if="listMessage" :class="listMessageClass">
+                      {{ listMessage }}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal xác nhận xóa -->
-    <div v-if="showDeleteModal" class="modal fade show" style="display: block">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Xác nhận xóa</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Bạn có chắc muốn xóa nhóm hương này?</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showDeleteModal = false">Hủy</button>
-            <button class="btn btn-danger" @click="confirmDelete">Xóa</button>
           </div>
         </div>
       </div>
@@ -154,11 +163,12 @@
 
 <script setup>
 import { onMounted, nextTick, ref, watch } from "vue";
-import { useRouter } from "vue-router"; // Import useRouter
+import { useRouter } from "vue-router";
 import axios from "axios";
 import slugify from "slugify";
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
-// Khai báo các biến reactive
+// Reactive variables
 const scentGroup = ref({
   name: "",
   color_code: "#000000",
@@ -168,11 +178,10 @@ const addMessage = ref("");
 const addMessageClass = ref("");
 const listMessage = ref("");
 const listMessageClass = ref("");
-const showDeleteModal = ref(false);
-const deleteId = ref(null);
 
-const router = useRouter(); // Khởi tạo router
+const router = useRouter();
 
+// Watch for name changes to slugify
 watch(
   () => scentGroup.value.name,
   (newName) => {
@@ -184,22 +193,29 @@ watch(
   }
 );
 
+// Fetch active scent groups
 const fetchScentGroups = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/admin/scent-groups");
-    console.log("Dữ liệu từ API:", response.data);
     scentGroups.value = Array.isArray(response.data) ? response.data : response.data.data || [];
     if (!scentGroups.value.length) {
       listMessage.value = "Không có nhóm hương nào.";
       listMessageClass.value = "text-info";
+    } else {
+      listMessage.value = ""; // Clear message if data is loaded
     }
+    // Re-initialize DataTables after data change
+    await destroyAndReinitializeDataTable();
+
   } catch (error) {
     listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!";
     listMessageClass.value = "text-danger";
     console.error("Lỗi khi tải danh sách:", error);
+    await destroyAndReinitializeDataTable(); // Still re-init even on error to clear table if needed
   }
 };
 
+// Handle adding a new scent group
 const addScentGroup = async () => {
   if (!scentGroup.value.name || !scentGroup.value.color_code) {
     addMessage.value = "Vui lòng nhập tên nhóm hương và chọn màu!";
@@ -215,12 +231,11 @@ const addScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    console.log("Phản hồi từ API:", response);
-    await fetchScentGroups();
     addMessage.value = response.data.message || "Thêm nhóm hương thành công!";
     addMessageClass.value = "text-success";
     scentGroup.value.name = "";
     scentGroup.value.color_code = "#000000";
+    await fetchScentGroups(); // Refresh the list
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
@@ -233,37 +248,74 @@ const addScentGroup = async () => {
   }
 };
 
+// Navigate to edit page
 const editScentGroup = (id) => {
-  console.log("Click chỉnh sửa, ID:", id);
   router.push(`/scent-group/edit/${id}`);
 };
 
-const openDeleteModal = (id) => {
-  deleteId.value = id;
-  showDeleteModal.value = true;
+// Function to handle soft delete with SweetAlert2
+const confirmSoftDeleteWithSwal = async (id) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Bạn có chắc muốn xóa mềm nhóm hương này?',
+      text: 'Hành động này sẽ chuyển nhóm hương vào thùng rác, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Có, xóa mềm!',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+      const response = await axios.delete(`http://localhost:8000/api/admin/scent-groups/${id}`);
+      await fetchScentGroups(); // Refresh the list after soft delete
+      Swal.fire({
+        title: response.data.message || 'Xóa mềm nhóm hương thành công!',
+        icon: 'success',
+        confirmButtonText: 'Đã hiểu!'
+      });
+    }
+  } catch (error) {
+    console.error('Lỗi khi xóa mềm nhóm hương:', error);
+    const errorMessage = error.response?.data?.message || 'Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.';
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: `Xảy ra lỗi: ${errorMessage}`,
+    });
+  }
 };
 
-const confirmDelete = async () => {
-  try {
-    const response = await axios.delete(`http://localhost:8000/api/admin/scent-groups/${deleteId.value}`);
-    await fetchScentGroups();
-    listMessage.value = response.data.message || "Xóa nhóm hương thành công!";
-    listMessageClass.value = "text-success";
-    showDeleteModal.value = false;
-    deleteId.value = null;
-  } catch (error) {
-    listMessage.value = error.response?.data?.message || "Có lỗi khi xóa nhóm hương!";
-    listMessageClass.value = "text-danger";
-    showDeleteModal.value = false;
+
+// Function to destroy and reinitialize DataTables
+let dataTableInstance = null;
+const destroyAndReinitializeDataTable = async () => {
+  if (dataTableInstance) {
+    dataTableInstance.destroy(); // Destroy the existing DataTable instance
+    dataTableInstance = null; // Clear the instance
+  }
+  await nextTick(); // Wait for Vue to render the updated table
+  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
+    dataTableInstance = jQuery("#add-row").DataTable({
+      pageLength: 10,
+      responsive: true,
+      destroy: true, // Ensure it can be reinitialized
+      drawCallback: () => {
+        jQuery('[data-bs-toggle="tooltip"]').tooltip(); // Re-initialize tooltips
+      },
+    });
+  } else {
+    console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
   }
 };
 
 onMounted(async () => {
-  await fetchScentGroups();
+  // Load scripts and stylesheets dynamically
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
-    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js", // Thêm Bootstrap JS cho tooltip
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
   ];
 
   const loadScript = (src) =>
@@ -272,7 +324,6 @@ onMounted(async () => {
       script.src = src;
       script.async = true;
       script.onload = () => {
-        console.log(`Loaded: ${src}`);
         resolve();
       };
       script.onerror = () => {
@@ -291,26 +342,16 @@ onMounted(async () => {
     link.href = "https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css";
     document.head.appendChild(link);
 
-    // Thêm Font Awesome
     const fontAwesomeLink = document.createElement("link");
     fontAwesomeLink.rel = "stylesheet";
     fontAwesomeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
     document.head.appendChild(fontAwesomeLink);
 
-    await nextTick();
-    if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
-      jQuery("#add-row").DataTable({
-        pageLength: 10,
-        responsive: true,
-        drawCallback: () => {
-          jQuery('[data-bs-toggle="tooltip"]').tooltip(); // Khởi tạo tooltip
-        },
-      });
-    } else {
-      console.error("DataTables không được tải đúng cách.");
-    }
+    // Initial fetch and DataTable initialization
+    await fetchScentGroups();
+
   } catch (error) {
-    console.error("Lỗi khi tải script:", error.message, error.stack);
+    console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
   }
 });
 </script>
@@ -361,9 +402,16 @@ onMounted(async () => {
 .btn-link.btn-danger:hover {
   color: #b02a37;
 }
+.btn-link.btn-success {
+  color: #28a745;
+}
+.btn-link.btn-success:hover {
+  color: #218838;
+}
 .form-button-action {
   display: flex;
   gap: 10px;
+  white-space: nowrap; /* Prevent buttons from wrapping */
 }
 .table {
   width: 100%;
@@ -393,6 +441,10 @@ onMounted(async () => {
   color: red;
   margin-top: 15px;
 }
+.text-info {
+  color: #17a2b8;
+  margin-top: 15px;
+}
 .mb-5 {
   margin-bottom: 3rem;
 }
@@ -408,16 +460,5 @@ onMounted(async () => {
 }
 .breadcrumbs li {
   margin-right: 10px;
-}
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-.modal-dialog {
-  margin: 100px auto;
-}
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
 }
 </style>
