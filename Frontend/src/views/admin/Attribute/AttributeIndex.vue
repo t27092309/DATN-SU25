@@ -10,7 +10,13 @@
         </router-link>
       </div>
       <div class="card-body">
-        <div v-if="attributes.length === 0" class="text-center text-muted py-4">
+        <div v-if="isLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+          <p class="mt-2 text-muted">Đang tải thuộc tính...</p>
+        </div>
+        <div v-else-if="attributes.length === 0" class="text-center text-muted py-4">
           Chưa có thuộc tính nào được tạo.
         </div>
         
@@ -41,6 +47,25 @@
             </div>
           </li>
         </ul>
+
+        <nav v-if="totalPages > 1 && !isLoading" aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">Trước</a>
+            </li>
+            <li
+              v-for="page in totalPages"
+              :key="page"
+              class="page-item"
+              :class="{ active: page === currentPage }"
+            >
+              <a class="page-link" href="#" @click.prevent="goToPage(page)">{{ page }}</a>
+            </li>
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)">Sau</a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
@@ -58,11 +83,17 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
-// Import Toast từ window.bootstrap vì tải qua CDN
+
 let liveToastInstance = null;
 
 const attributes = ref([]);
 const toast = ref({ show: false, message: '', type: '' });
+const isLoading = ref(false); // Added for loading state
+
+// Pagination state
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = ref(10); // Default items per page, adjust as needed
 
 const showToast = (message, type = 'success') => {
   toast.value.message = message;
@@ -86,10 +117,17 @@ const showToast = (message, type = 'success') => {
   });
 };
 
-const fetchAttributes = async () => {
+const fetchAttributes = async (page = 1) => {
+  isLoading.value = true; // Start loading
   try {
-    const response = await axios.get('/admin/attributes');
+    const response = await axios.get(`/admin/attributes?page=${page}&per_page=${perPage.value}`);
     attributes.value = response.data.data;
+    
+    // Update pagination state based on API response
+    currentPage.value = response.data.meta.current_page;
+    totalPages.value = response.data.meta.last_page;
+    perPage.value = response.data.meta.per_page;
+
   } catch (error) {
     console.error('Lỗi khi lấy attributes:', error);
     if (error.response && error.response.status === 401) {
@@ -97,15 +135,24 @@ const fetchAttributes = async () => {
     } else {
         showToast('Lỗi khi tải danh sách thuộc tính.', 'error');
     }
+  } finally {
+    isLoading.value = false; // End loading
   }
 };
 
 const deleteAttribute = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa thuộc tính này không? Thao tác này sẽ xóa tất cả các giá trị và liên kết của thuộc tính này.')) {
+    isLoading.value = true; // Start loading for deletion
     try {
       await axios.delete(`/admin/attributes/${id}`);
       showToast('Thuộc tính đã được xóa thành công!');
-      fetchAttributes();
+      // After deletion, re-fetch attributes for the current page
+      // Consider if the current page becomes empty after deletion,
+      // you might need to go to the previous page:
+      const newPage = attributes.value.length === 1 && currentPage.value > 1 
+                      ? currentPage.value - 1 
+                      : currentPage.value;
+      fetchAttributes(newPage); 
     } catch (error) {
       console.error('Lỗi khi xóa thuộc tính:', error);
       if (error.response && error.response.status === 401) {
@@ -113,12 +160,22 @@ const deleteAttribute = async (id) => {
       } else {
         showToast('Có lỗi xảy ra khi xóa thuộc tính.', 'error');
       }
+    } finally {
+      isLoading.value = false; // End loading
     }
   }
 };
 
+// Function to navigate to a specific page
+const goToPage = (page) => {
+  if (page > 0 && page <= totalPages.value && page !== currentPage.value) {
+    currentPage.value = page;
+    fetchAttributes(page);
+  }
+};
+
 onMounted(() => {
-  fetchAttributes();
+  fetchAttributes(); // Initial fetch on component mount
 });
 </script>
 
