@@ -2,7 +2,7 @@ import AdminLayout from "@/layouts/admin/AdminMaster.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import Datatables from "@/views/admin/Datatables.vue";
 
-//================= Product============================
+//================= Products ============================
 import Products from "@/views/admin/products/ProductsList.vue";
 import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
@@ -13,8 +13,11 @@ import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
 import CouponManager from "@/views/admin/Coupons/CouponManager.vue";
 import EditCoupon from "@/views/admin/Coupons/EditCoupon.vue";
+
 import ScentGroupManager from "@/views/admin/ScentGroups/ScentGroupManager.vue";
 import EditScentGroup from "@/views/admin/ScentGroups/EditScentGroup.vue";
+import ScentGroupTrash from "@/views/admin/ScentGroups/ScentGroupTrash.vue";
+
 import AttributeIndex from "@/views/admin/Attribute/AttributeIndex.vue";
 import AttributeForm from "@/views/admin/Attribute/AttributeForm.vue";
 import AttributeValueIndex from "@/views/admin/Attribute/AttributeValueIndex.vue";
@@ -155,6 +158,13 @@ export default [
         name: "EditScentGroup",
         component: EditScentGroup,
       },
+      {
+        path: 'scent-groups/trash',
+        name: 'ScentGroupTrash',
+        component: ScentGroupTrash,
+        meta: { title: 'Thùng Rác Nhóm Hương' }
+      },
+
     ],
   },
 ];

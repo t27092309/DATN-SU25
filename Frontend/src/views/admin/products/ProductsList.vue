@@ -170,12 +170,12 @@ const confirmDeleteProduct = async (id) => {
     try {
         const result = await Swal.fire({
             title: 'Bạn có chắc muốn xóa sản phẩm này?',
-            text: 'Hành động này sẽ xóa mềm sản phẩm, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?',
+            text: 'Hành động này sẽ xóa sản phẩm, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Có, xóa mềm!',
+            confirmButtonText: 'Có!',
             cancelButtonText: 'Hủy'
         });
 
@@ -183,7 +183,7 @@ const confirmDeleteProduct = async (id) => {
             await axios.delete(`http://localhost:8000/api/admin/products/${id}`);
             fetchProducts(pagination.value.current_page);
             Swal.fire({
-                title: 'Xóa mềm thành công!',
+                title: 'Xóa thành công!',
                 text: 'Sản phẩm đã được đánh dấu là đã xóa.',
                 icon: 'success',
                 confirmButtonText: 'Đã hiểu!'
