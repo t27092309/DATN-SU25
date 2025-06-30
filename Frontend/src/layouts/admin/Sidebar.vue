@@ -139,25 +139,20 @@
           <li class="nav-item">
             <a data-bs-toggle="collapse" href="#charts">
               <i class="far fa-chart-bar"></i>
-              <p>Charts</p>
+              <p>Hãng</p>
               <span class="caret"></span>
             </a>
             <div class="collapse" id="charts">
               <ul class="nav nav-collapse">
                 <li>
-                  <a href="charts/charts.html">
-                    <span class="sub-item">Chart Js</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="charts/sparkline.html">
-                    <span class="sub-item">Sparkline</span>
-                  </a>
+                  <router-link to="/hang">
+                    <span class="sub-item">Quản lý hãng</span>
+                  </router-link>
                 </li>
               </ul>
             </div>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a href="widgets.html">
               <i class="fas fa-desktop"></i>
               <p>Widgets</p>
@@ -221,7 +216,7 @@
                 </li>
               </ul>
             </div>
-          </li>
+          </li> -->
         </ul>
       </div>
     </div>

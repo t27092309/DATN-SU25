@@ -65,6 +65,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
             // brands
             Route::apiResource('brands', AdminBrandController::class);
+            Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
+            Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
+            Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+
             // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
             Route::post('products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');
@@ -97,7 +101,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
-
         });
     });
 
