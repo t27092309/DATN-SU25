@@ -75,7 +75,18 @@
             </div>
             <div class="mb-3">
               <label for="brandDescription" class="form-label">Mô tả</label>
-              <textarea class="form-control" id="brandDescription" rows="3" v-model="brand.description"></textarea>
+              <Editor
+                v-model="brand.description"
+                :init="{
+                  height: 300,
+                  menubar: true,
+                  base_url: '/tinymce', // Đường dẫn gốc đến thư mục tinymce
+                  suffix: '.min', // Sử dụng file nén
+                  external_plugins: null, // Vô hiệu hóa plugin từ CDN
+                  plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount', // Chuỗi plugin
+                  toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help'
+                }"
+              />
               <div v-if="errors.description" class="text-danger">{{ errors.description[0] }}</div>
             </div>
             <button type="submit" class="btn btn-success" :disabled="loadingUpdate">
@@ -94,6 +105,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import Swal from 'sweetalert2';
+import Editor from '@tinymce/tinymce-vue'; // Import component TinyMCE
 
 const route = useRoute();
 const router = useRouter();
@@ -187,7 +199,6 @@ const confirmRemoveLogo = () => {
     }
   });
 };
-
 
 // Hàm cập nhật thương hiệu
 const updateBrand = async () => {
