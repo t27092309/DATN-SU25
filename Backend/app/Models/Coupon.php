@@ -19,6 +19,8 @@ class Coupon extends Model
         'end_date',
         'min_order_amount',
         'max_discount',
+        'usage_limit',   
+        'per_user_limit',
     ];
 
     protected $dates = ['expires_at', 'start_date', 'end_date', 'deleted_at']; // Thêm deleted_at
