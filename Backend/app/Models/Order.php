@@ -10,10 +10,14 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-    'user_id',
-    'total_price',
-    'status',
-    'notes',
-    'coupon_id'
-];
+        'user_id',
+        'total_price',
+        'status',
+        'notes',
+        'coupon_id'
+    ];
+
+    public function address(){
+        return $this -> hasOne(OrderAddress::class);
+    }
 }
