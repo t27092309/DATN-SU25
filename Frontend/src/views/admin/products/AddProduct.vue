@@ -76,12 +76,14 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="brandSelect">Thương hiệu <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="brandSelect" v-model="product.brand_id">
+                                    <select class="form-select" id="brandSelect" v-model="product.brand_id"
+                                        v-if="brands.length > 0">
                                         <option value="">Chọn thương hiệu</option>
                                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                             {{ brand.name }}
                                         </option>
                                     </select>
+                                    <p v-else class="text-muted">Đang tải thương hiệu...</p>
                                     <small v-if="errors.brand_id" class="form-text text-danger">{{ errors.brand_id[0]
                                         }}</small>
                                 </div>
@@ -135,7 +137,8 @@
                                             class="position-relative">
                                             <img :src="image" alt="Gallery Image Preview"
                                                 style="max-width: 100px; height: 100px; object-fit: cover; border-radius: 5px;" />
-                                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                                            <button type="button"
+                                                class="btn btn-danger btn-sm position-absolute top-0 end-0"
                                                 style="--bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem;"
                                                 @click="removeGalleryImage(index)">X</button>
                                         </div>
@@ -376,11 +379,30 @@ const fetchCategory = async () => {
 
 const fetchBrand = async () => {
     try {
-        const { data } = await axios.get(`http://localhost:8000/api/admin/brands`);
-        brands.value = data.data;
+        // Your Postman result shows the data is directly an array, so no 'data.data' nesting.
+        const response = await axios.get('http://localhost:8000/api/admin/brands');
+        brands.value = response.data; // Assign the array of brands directly
+        console.log('Brands loaded successfully:', brands.value);
     } catch (error) {
         console.error('Lỗi khi tải thương hiệu:', error);
-        Swal.fire('Lỗi!', 'Không thể tải danh sách thương hiệu.', 'error');
+        let errorMessage = 'Không thể tải danh sách thương hiệu.';
+
+        if (error.response) {
+            // Server responded with an error status
+            if (error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else {
+                errorMessage = `Lỗi máy chủ: ${error.response.status}`;
+            }
+        } else if (error.request) {
+            // Request made, but no response received
+            errorMessage = 'Không có phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.';
+        } else {
+            // Something else happened
+            errorMessage = `Lỗi yêu cầu: ${error.message}`;
+        }
+
+        Swal.fire('Lỗi!', errorMessage, 'error');
     }
 };
 

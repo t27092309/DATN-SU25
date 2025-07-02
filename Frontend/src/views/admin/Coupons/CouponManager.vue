@@ -556,10 +556,6 @@ export default {
   margin-right: 10px;
 }
 
-.modal {
-  /* No need for background-color here if you set it on the modal-dialog or the inner div */
-}
-
 .modal-dialog {
   margin: 100px auto;
   z-index: 1050; /* Ensure modal is above other content */
