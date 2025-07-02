@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupContro
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
+use App\Http\Controllers\API\Client\ProductVariantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -25,11 +26,14 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // route giỏ hàng cho client
         Route::apiResource('cart-items', CartItemController::class);
+        Route::delete('cart-items/clear-selected', [CartItemController::class, 'clearSelected']);
 
         // route thanh toan cho Client
+        Route::get('/coupons/available', [CheckoutController::class, 'getAvailableCoupons']);
+        Route::post('checkout/order-items', [CheckoutController::class, 'getCheckoutItems']);
         Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
         Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
-
+        Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -97,7 +101,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
-
         });
     });
 

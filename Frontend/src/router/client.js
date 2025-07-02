@@ -8,6 +8,7 @@ import Cart from "@/views/client/Cart.vue";
 import Register from "@/views/client/account/Register.vue";
 import Login from "@/views/client/account/Login.vue";
 import Checkout from "@/views/client/Checkout.vue";
+import OrderConfirmation from "@/views/client/order/OrderConfirmation.vue";
 import SearchResult from "@/views/client/SearchResult.vue";
 //-----User--------
 import UserLayout from "@/layouts/UserLayout.vue";
@@ -47,6 +48,11 @@ const routes = [
         path: "thanh-toan",
         name: "ThanhToan",
         component: Checkout,
+      },
+      {
+        path: "dat-hang-thanh-cong",
+        name: "DatHangThanhCong",
+        component: OrderConfirmation,
       },
       {
         path: "dang-ky",
