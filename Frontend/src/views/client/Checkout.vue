@@ -188,6 +188,19 @@
         </div>
       </div>
 
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+        role="alert">
+        <span class="block sm:inline">{{ errorMessage }}</span>
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" @click="errorMessage = null">
+          <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20">
+            <title>Close</title>
+            <path
+              d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+          </svg>
+        </span>
+      </div>
+
       <div class="mt-8 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center">
         <p class="text-sm text-gray-500 mb-4 sm:mb-0 sm:mr-4">
           Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo
@@ -196,7 +209,8 @@
         <button
           class="bg-red-500 text-white px-8 py-3 rounded-md font-semibold hover:bg-red-600 transition duration-200"
           :disabled="loading || !canPlaceOrder" @click="placeOrder">
-          Đặt hàng
+          <span v-if="loading">Đang đặt hàng...</span>
+          <span v-else>Đặt hàng</span>
         </button>
       </div>
     </div>
@@ -226,8 +240,9 @@ const message = ref('');
 const usePoints = ref(false);
 const userPoints = ref(0);
 const isLoading = ref(false);
-const loading = ref(true);
+const loading = ref(false);
 const error = ref(null);
+const errorMessage = ref(null);
 
 const loadingAddress = ref(true);
 const addressError = ref(null);
@@ -374,60 +389,66 @@ const handleCouponSelection = (coupon) => {
 };
 
 async function fetchCheckoutItemsFromCart(itemIds) {
-  isLoading.value = true;
-  try {
-    const response = await api.post('checkout/order-items', { cart_item_ids: itemIds });
-    checkoutItems.value = response.data.items.map(item => {
-      // Đảm bảo item.product_variant tồn tại và có attribute_values
-      if (!item.product_variant || !item.product_variant.attribute_values) {
-        console.warn('Dữ liệu biến thể hoặc thuộc tính không hợp lệ cho item:', item);
-        return {
-          // Trả về một đối tượng mặc định hoặc xử lý lỗi phù hợp
-          id: item.id,
-          product: item.product || { name: 'Sản phẩm không rõ' },
-          quantity: item.quantity,
-          variant: {
-            id: item.product_variant?.id,
-            name: 'Mặc định', // Fallback nếu dữ liệu không có
-          },
-          subtotal: item.subtotal,
-        };
-      }
+    isLoading.value = true;
+    error.value = null; // Thêm dòng này để xóa lỗi cũ
+    try {
+        const response = await api.post('checkout/order-items', { cart_item_ids: itemIds });
+        checkoutItems.value = response.data.items.map(item => {
+            // Kiểm tra sự tồn tại của product_variant
+            if (!item.product_variant) {
+                console.warn('Item thiếu product_variant:', item);
+                return {
+                    id: item.id,
+                    product: item.product || { name: 'Sản phẩm không rõ' },
+                    quantity: item.quantity,
+                    variant: { id: null, name: 'Không có biến thể' }, // Fallback variant
+                    price: item.price,
+                    subtotal: item.subtotal,
+                    selected: item.selected,
+                };
+            }
 
-      const variantNameParts = item.product_variant.attribute_values.map(attrValue => {
-        // Sử dụng 'attribute.name' và 'value' như trong JSON response
-        const attrName = attrValue.attribute?.name; // Dùng optional chaining cho an toàn
-        const attrValueName = attrValue.value;      // Giá trị nằm ở trường 'value'
+            let variantName = 'Mặc định'; // Giá trị mặc định nếu không có thuộc tính
+            // Kiểm tra sự tồn tại và kiểu của attribute_values
+            if (item.product_variant.attribute_values && Array.isArray(item.product_variant.attribute_values)) {
+                const variantNameParts = item.product_variant.attribute_values.map(attrValue => {
+                    // Dùng optional chaining cho an toàn hơn khi truy cập attribute?.name
+                    const attrName = attrValue.attribute?.name;
+                    const attrValueName = attrValue.value; // Giá trị nằm ở trường 'value'
 
-        if (attrName && attrValueName) {
-          return `${attrName}: ${attrValueName}`;
-        } else if (attrValueName) {
-          return attrValueName; // Chỉ trả về giá trị nếu tên thuộc tính không có
-        }
-        return ''; // Trả về chuỗi rỗng nếu không có gì
-      }).filter(Boolean); // Lọc bỏ các chuỗi rỗng
+                    if (attrName && attrValueName) {
+                        return `${attrName}: ${attrValueName}`;
+                    } else if (attrValueName) {
+                        return attrValueName;
+                    }
+                    return '';
+                }).filter(Boolean); // Lọc bỏ các chuỗi rỗng
 
-      const variantName = variantNameParts.length > 0 ? variantNameParts.join(' / ') : 'Mặc định';
+                if (variantNameParts.length > 0) {
+                    variantName = variantNameParts.join(' / ');
+                }
+            }
 
-      return {
-        id: item.id,
-        product: item.product, // Giữ nguyên thông tin sản phẩm
-        quantity: item.quantity,
-        variant: {
-          id: item.product_variant.id,
-          name: variantName, // <-- Chuỗi tên biến thể đã được xây dựng đúng
-        },
-        price: item.price,
-        subtotal: item.subtotal,
-        selected: item.selected,
-      };
-    });
-  } catch (error) {
-    console.error('Lỗi khi lấy chi tiết giỏ hàng:', error);
-    // Xử lý lỗi (ví dụ: hiển thị thông báo cho người dùng)
-  } finally {
-    isLoading.value = false;
-  }
+            return {
+                id: item.id,
+                product: item.product, // Giữ nguyên thông tin sản phẩm
+                quantity: item.quantity,
+                variant: {
+                    id: item.product_variant.id,
+                    name: variantName, // <-- Chuỗi tên biến thể đã được xây dựng đúng
+                },
+                price: item.price,
+                subtotal: item.subtotal,
+                selected: item.selected,
+            };
+        });
+    } catch (err) {
+        console.error('Lỗi khi lấy chi tiết giỏ hàng:', err);
+        // Xử lý lỗi (ví dụ: hiển thị thông báo cho người dùng)
+        error.value = 'Không thể tải chi tiết giỏ hàng. Vui lòng thử lại.';
+    } finally {
+        isLoading.value = false;
+    }
 }
 
 // Ví dụ sửa trong hàm fetchCheckoutItemForBuyNow:
@@ -583,6 +604,7 @@ const placeOrder = async () => {
   }
 
   // Confirmation dialog
+  // Có thể cải thiện UI bằng một modal thay vì confirm() mặc định
   if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
     return;
   }
@@ -593,13 +615,14 @@ const placeOrder = async () => {
   try {
     const isBuyNow = route.query.buy_now === 'true';
 
+    // Xây dựng payload chung cho cả place-order và buy-now
     let orderData = {
-      shipping_method: 'Nhanh',
-      shipping_fee: shippingFee.value,
-      message: message.value, // This maps to 'notes' on backend
-      use_points: usePoints.value,
-      coupon_code: selectedCouponCode.value, // Add the selected coupon code here
       ...addressPayload,
+      notes: message.value, // THAY ĐỔI TỪ 'message' SANG 'notes'
+      coupon_code: selectedCouponCode.value,
+      payment_method: 'cash', // DÀNH CHO THANH TOÁN TIỀN MẶT
+      // Các trường backend tự tính toán như total_price, shipping_fee, use_points thì không cần gửi lên ở đây
+      // Backend sẽ tự xử lý logic giảm giá từ coupon và điểm
     };
 
     let response;
@@ -611,29 +634,46 @@ const placeOrder = async () => {
         loading.value = false;
         return;
       }
-      orderData.items = [{
-        product_variant_id: singleItem.variant.id,
-        quantity: singleItem.quantity,
-        price_at_order: singleItem.price // Record price at time of order
-      }];
-      response = await axios.post('/api/checkout/buy-now', orderData);
+      // Backend buy-now endpoint chỉ mong muốn variant_id và quantity
+      orderData.product_variant_id = singleItem.variant.id; // Thay vì orderData.items
+      orderData.quantity = singleItem.quantity;
+
+      // Xóa trường items không cần thiết nếu có
+      delete orderData.items;
+
+      response = await axios.post('checkout/buy-now', orderData); // URL CHÍNH XÁC
     } else {
       // Logic for standard cart checkout flow
-      orderData.cart_item_ids = checkoutItems.value.map(item => item.id); // Send cart item IDs
-      response = await axios.post('/api/checkout/place-order', orderData);
+      // Backend place-order endpoint không mong muốn cart_item_ids trong body request,
+      // nó tự xử lý từ giỏ hàng đang active của user
+      // Bạn đã fetch các item từ giỏ hàng để hiển thị, nhưng không cần gửi lại IDs lên
+      response = await axios.post('checkout/place-order', orderData); // URL CHÍNH XÁC
 
-      // Important: Clear selected cart items after successful order
-      await axios.delete('/api/cart-items/clear-selected', { data: { cart_item_ids: orderData.cart_item_ids } });
+      // Quan trọng: Xóa các mục đã chọn trong giỏ hàng sau khi đặt hàng thành công
+      // Lưu ý: API '/api/cart-items/clear-selected' có thể không cần thiết nếu backend tự xóa giỏ hàng
+      // sau khi tạo order. Nếu backend không tự xóa, hãy giữ đoạn này.
+      // Nếu bạn muốn xóa các item trong giỏ hàng ở frontend mà không cần gọi API riêng,
+      // bạn có thể quản lý state của giỏ hàng trong Pinia/Vuex và cập nhật tại đây.
+      // await axios.delete('/api/cart-items/clear-selected', { data: { cart_item_ids: orderData.cart_item_ids } });
+      // Hoặc nếu bạn muốn xóa tất cả các mục đã chọn, bạn có thể gọi một API xóa chung
+      // Ví dụ: await axios.post('/api/client/cart/clear-active'); // Nếu bạn có API này
     }
 
     // Show success message and redirect
-    alert('Đặt hàng thành công! Mã đơn hàng: ' + response.data.order_id);
-    router.push({ name: 'order-success', params: { orderId: response.data.order_id } });
+    // Backend trả về `response.data.message` và `response.data.payment_info.message`
+    alert(`${response.data.message} ${response.data.payment_info.message}`);
+    router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
 
   } catch (err) {
     console.error('Lỗi khi đặt hàng:', err);
     if (err.response && err.response.data && err.response.data.message) {
       errorMessage.value = `Lỗi đặt hàng: ${err.response.data.message}`;
+      // Nếu có lỗi validation, err.response.data.errors sẽ chứa chi tiết hơn
+      if (err.response.data.errors) {
+        for (const key in err.response.data.errors) {
+          errorMessage.value += `\n- ${err.response.data.errors[key].join(', ')}`;
+        }
+      }
     } else {
       errorMessage.value = 'Không thể đặt hàng. Vui lòng thử lại.';
     }
@@ -641,6 +681,7 @@ const placeOrder = async () => {
     loading.value = false; // Always set loading to false after the request
   }
 };
+
 
 
 // --- Lifecycle Hook ---

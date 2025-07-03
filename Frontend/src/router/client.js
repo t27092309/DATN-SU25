@@ -18,6 +18,7 @@ import Bank from "@/views/client/user/Bank.vue";
 import Orders from "@/views/client/user/Orders.vue";
 import CategoryProducts from "@/views/client/CategoryProducts.vue";
 import ProductDetail from "@/views/client/Product.vue";
+import OrderDetail from "@/views/client/order/OrderDetail.vue";
 
 const routes = [
   {
@@ -50,9 +51,10 @@ const routes = [
         component: Checkout,
       },
       {
-        path: "dat-hang-thanh-cong",
+        path: "dat-hang-thanh-cong/:ma_don_hang",
         name: "DatHangThanhCong",
         component: OrderConfirmation,
+        props: true,
       },
       {
         path: "dang-ky",
@@ -91,24 +93,30 @@ const routes = [
         redirect: { name: "Profile" },
         children: [
           {
-            path: "ho-so", // Path will be /user/profile
+            path: "ho-so",
             name: "Profile",
-            component: Profile, // A component for detailed profile
+            component: Profile,
           },
           {
-            path: "dia-chi", // Path will be /user/profile
+            path: "dia-chi",
             name: "Address",
-            component: Address, // A component for detailed profile
+            component: Address,
           },
           {
-            path: "ngan-hang", // Path will be /user/profile
+            path: "ngan-hang",
             name: "Bank",
-            component: Bank, // A component for detailed profile
+            component: Bank,
           },
           {
-            path: "don-hang", // Path will be /user/profile
+            path: "don-hang",
             name: "Orders",
-            component: Orders, // A component for detailed profile
+            component: Orders,
+          },
+          {
+            path: "chi-tiet-don-hang/:idDonHang",
+            name: "OrderDetail",
+            component: OrderDetail,
+            props: true,
           },
         ],
       },

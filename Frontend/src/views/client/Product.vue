@@ -430,7 +430,7 @@ const addToCart = async () => {
     }
 
     try {
-        const response = await axios.post('/api/cart-items', { // Đảm bảo đường dẫn API chính xác
+        const response = await axios.post('cart-items', { // Đảm bảo đường dẫn API chính xác
             product_variant_id: foundVariant.value.id,
             quantity: quantity.value
         });
