@@ -48,7 +48,7 @@
                                                 :disabled="availableVariant.stock < item.quantity"
                                                 :class="{ 'text-gray-400': availableVariant.stock < item.quantity }">
                                                 {{ truncateText(availableVariant.name, 30) }}
-                                                <span v-if="availableVariant.stock < item.quantity" >(Hết hàng: {{
+                                                <span v-if="availableVariant.stock < item.quantity">(Hết hàng: {{
                                                     availableVariant.stock }})
                                                 </span>
                                             </option>
@@ -133,10 +133,9 @@
                         <span class="text-gray-700 font-medium">Tổng cộng ({{ totalSelectedItemsInCart }} Sản
                             phẩm):</span>
                         <span class="text-red-500 font-bold text-xl ml-2">{{ formatCurrency(subtotalSelectedAmount)
-                            }}</span>
-                        <button
-                            class="bg-red-500 text-white font-semibold py-3 px-6 rounded-md ml-4 hover:bg-red-600">Mua
-                            Hàng</button>
+                        }}</span>
+                        <button class="bg-red-500 text-white font-semibold py-3 px-6 rounded-md ml-4 hover:bg-red-600"
+                            @click="handleCheckout">Mua Hàng</button>
                     </div>
                 </footer>
             </main>
@@ -147,6 +146,9 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router'; // Import useRouter from vue-router
+
+const router = useRouter(); // Khởi tạo router
 
 // --- Biến trạng thái ---
 const cartData = ref(null); // Lưu trữ toàn bộ dữ liệu giỏ hàng từ API
@@ -444,6 +446,32 @@ const handleRemoveSelectedItems = async () => {
     }
 };
 
+// --- Logic thanh toán ---
+/**
+ * Xử lý khi nhấn nút "Mua Hàng" để chuyển đến trang thanh toán
+ */
+const handleCheckout = () => {
+    if (selectedItems.value.size === 0) {
+        alert('Vui lòng chọn sản phẩm để mua hàng.');
+        return;
+    }
+
+    // Lấy danh sách ID của các cart item đã chọn
+    const selectedCartItemIds = Array.from(selectedItems.value);
+
+    // Chuyển hướng đến trang thanh toán
+    // Bạn cần xác định đường dẫn chính xác của trang thanh toán trong ứng dụng Vue của mình
+    // và cách trang thanh toán sẽ nhận các cart item IDs (ví dụ: qua query params)
+    router.push({
+        name: 'ThanhToan', // Đổi 'checkout' thành tên route của trang thanh toán của bạn
+        query: {
+            cart_item_ids: selectedCartItemIds.join(',') // Gửi các ID dưới dạng chuỗi ngăn cách bởi dấu phẩy
+        }
+    });
+
+    console.log('Chuyển đến trang thanh toán với các Cart Item IDs:', selectedCartItemIds);
+};
+
 
 // --- Lifecycle Hook ---
 // Khi component được mount, gọi hàm lấy dữ liệu giỏ hàng
@@ -453,9 +481,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '@/assets/tailwind.css';
 /* Không cần import tailwind.css nếu đã import global trong main.js */
-/* @import '@/assets/tailwind.css'; */
+@import '@/assets/tailwind.css';
 /* Bỏ comment dòng này nếu bạn import Tailwind CSS theo cách này */
 
 input[type='number']::-webkit-outer-spin-button,

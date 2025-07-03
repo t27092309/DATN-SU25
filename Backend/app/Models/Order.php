@@ -14,10 +14,53 @@ class Order extends Model
         'total_price',
         'status',
         'notes',
-        'coupon_id'
+        'coupon_id',
+        'payment_method',
+        'shipping_fee',
     ];
 
-    public function address(){
-        return $this -> hasOne(OrderAddress::class);
+    protected $casts = [
+        'total_price' => 'decimal:2',
+        'shipping_fee' => 'decimal:2',
+    ];
+
+    /**
+     * Get the user that owns the order.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the order items for the order.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the order address for the order.
+     */
+    public function orderAddress()
+    {
+        return $this->hasOne(OrderAddress::class); // Mối quan hệ 1-1
+    }
+
+    /**
+     * Get the payment associated with the order.
+     */
+    public function payment()
+    {
+        return $this->hasOne(Payment::class); // Mối quan hệ 1-1
+    }
+
+    /**
+     * Get the coupon that was applied to the order.
+     */
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }
