@@ -81,6 +81,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
             // brands
             Route::apiResource('brands', AdminBrandController::class);
+            Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
+            Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
+            Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+
             // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
             Route::post('products/{id}/restore', [AdminProductController::class, 'restore'])->name('products.restore');

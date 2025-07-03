@@ -23,6 +23,8 @@ class CouponRequest extends FormRequest
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'min_order_amount' => 'nullable|numeric|min:0',
             'max_discount' => 'nullable|numeric|min:0',
+            'usage_limit' => 'nullable|integer|min:1',
+            'per_user_limit' => 'nullable|integer|min:1',
         ];
     }
 

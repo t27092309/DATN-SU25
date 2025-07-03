@@ -8,9 +8,15 @@ import AddProduct from "@/views/admin/products/AddProduct.vue";
 import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
 import ProductTrash from "@/views/admin/products/ProductTrash.vue";
-import AttributeManager from "@/views/admin/Attribute/AttributeManager.vue";
+
+import AttributeIndex from "@/views/admin/Attribute/AttributeIndex.vue";
+import AttributeForm from "@/views/admin/Attribute/AttributeForm.vue";
+import AttributeValueIndex from "@/views/admin/Attribute/AttributeValueIndex.vue";
+import AttributeValueForm from "@/views/admin/AttributeValue/AttributeValueForm.vue";
+
 import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
+
 import CouponManager from "@/views/admin/Coupons/CouponManager.vue";
 import EditCoupon from "@/views/admin/Coupons/EditCoupon.vue";
 
@@ -18,10 +24,10 @@ import ScentGroupManager from "@/views/admin/ScentGroups/ScentGroupManager.vue";
 import EditScentGroup from "@/views/admin/ScentGroups/EditScentGroup.vue";
 import ScentGroupTrash from "@/views/admin/ScentGroups/ScentGroupTrash.vue";
 
-import AttributeIndex from "@/views/admin/Attribute/AttributeIndex.vue";
-import AttributeForm from "@/views/admin/Attribute/AttributeForm.vue";
-import AttributeValueIndex from "@/views/admin/Attribute/AttributeValueIndex.vue";
-import AttributeValueForm from "@/views/admin/AttributeValue/AttributeValueForm.vue";
+import BrandList from "@/views/admin/Brands/BrandList.vue";
+import BrandAdd from "@/views/admin/Brands/BrandAdd.vue";
+import BrandEdit from "@/views/admin/Brands/BrandEdit.vue";
+import BrandTrash from "@/views/admin/Brands/BrandTrash.vue";
 
 export default [
   {
@@ -137,6 +143,26 @@ export default [
         path: "/categories/edit/:id",
         name: "EditCategory",
         component: EditCategory,
+      },
+      {
+        path: "/hang",
+        name: "BrandList",
+        component: BrandList,
+      },
+      {
+        path: "/hang/them-moi",
+        name: "BrandAdd",
+        component: BrandAdd,
+      },
+      {
+        path: "/hang/sua/:id",
+        name: "BrandEdit",
+        component: BrandEdit,
+      },
+      {
+        path: "/hang/thung-rac",
+        name: "BrandTrash",
+        component: BrandTrash,
       },
       {
         path: "ma-giam-gia",

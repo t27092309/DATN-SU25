@@ -19,9 +19,9 @@ class Coupon extends Model
         'per_user_limit',
         'min_order_amount',
         'max_discount',
-        'start_date',
-        'end_date',
-        'is_active',
+        'usage_limit',   
+        'per_user_limit',
+
     ];
 
     protected $casts = [

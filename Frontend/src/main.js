@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
+import tinymce from 'tinymce/tinymce';
 import axios from 'axios'; // Import Axios
 import { useAuthStore } from './stores/auth'; // Import auth store
 
@@ -18,6 +19,10 @@ import { faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
 // 3. Thêm các icon vào thư viện Font Awesome
 library.add(faUser, faCog, faHome, faAddressBook, faFacebook, faTwitter, faShoppingCart);
 
+// Cấu hình TinyMCE sử dụng file cục bộ
+window.tinymce = tinymce;
+tinymce.baseURL = '/tinymce'; // Đặt đường dẫn gốc
+tinymce.suffix = '.min'; // Sử dụng file nén
 // --- Khởi tạo Vue App và Pinia ---
 const app = createApp(App);
 const pinia = createPinia();
