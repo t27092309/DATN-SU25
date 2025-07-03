@@ -36,6 +36,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
         Route::get('/payment-methods', [ClientPaymentMethodController::class, 'index']);
         Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
+        Route::post('/check-coupon', [CheckoutController::class, 'checkCoupon']);
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
