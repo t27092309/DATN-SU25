@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupContro
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
+use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
+use App\Http\Controllers\API\Client\PaymentMethodController as ClientPaymentMethodController;
+use App\Http\Controllers\API\Client\ProductVariantController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -25,11 +28,15 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // route giỏ hàng cho client
         Route::apiResource('cart-items', CartItemController::class);
+        Route::delete('cart-items/clear-selected', [CartItemController::class, 'clearSelected']);
 
         // route thanh toan cho Client
+        Route::get('/coupons/available', [CheckoutController::class, 'getAvailableCoupons']);
+        Route::post('checkout/order-items', [CheckoutController::class, 'getCheckoutItems']);
         Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
+        Route::get('/payment-methods', [ClientPaymentMethodController::class, 'index']);
         Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
-
+        Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -48,6 +55,15 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::get('/provinces', [LocationController::class, 'provinces']);
         Route::get('/provinces/{province_code}/districts', [LocationController::class, 'districts']);
         Route::get('/districts/{district_code}/wards', [LocationController::class, 'wards']);
+
+        // Theo dõi đơn hàng
+        Route::prefix('orders')->group(function () {
+            Route::get('/counts', [ClientOrderController::class, 'getOrderCounts']);
+            Route::get('/', [ClientOrderController::class, 'index']);
+            Route::get('{order}', [ClientOrderController::class, 'show']);
+            Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
+            Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
+        });
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {

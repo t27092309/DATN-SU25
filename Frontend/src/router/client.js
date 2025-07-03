@@ -8,6 +8,7 @@ import Cart from "@/views/client/Cart.vue";
 import Register from "@/views/client/account/Register.vue";
 import Login from "@/views/client/account/Login.vue";
 import Checkout from "@/views/client/Checkout.vue";
+import OrderConfirmation from "@/views/client/order/OrderConfirmation.vue";
 import SearchResult from "@/views/client/SearchResult.vue";
 //-----User--------
 import UserLayout from "@/layouts/UserLayout.vue";
@@ -17,6 +18,7 @@ import Bank from "@/views/client/user/Bank.vue";
 import Orders from "@/views/client/user/Orders.vue";
 import CategoryProducts from "@/views/client/CategoryProducts.vue";
 import ProductDetail from "@/views/client/Product.vue";
+import OrderDetail from "@/views/client/order/OrderDetail.vue";
 
 const routes = [
   {
@@ -47,6 +49,12 @@ const routes = [
         path: "thanh-toan",
         name: "ThanhToan",
         component: Checkout,
+      },
+      {
+        path: "dat-hang-thanh-cong/:ma_don_hang",
+        name: "DatHangThanhCong",
+        component: OrderConfirmation,
+        props: true,
       },
       {
         path: "dang-ky",
@@ -85,24 +93,30 @@ const routes = [
         redirect: { name: "Profile" },
         children: [
           {
-            path: "ho-so", // Path will be /user/profile
+            path: "ho-so",
             name: "Profile",
-            component: Profile, // A component for detailed profile
+            component: Profile,
           },
           {
-            path: "dia-chi", // Path will be /user/profile
+            path: "dia-chi",
             name: "Address",
-            component: Address, // A component for detailed profile
+            component: Address,
           },
           {
-            path: "ngan-hang", // Path will be /user/profile
+            path: "ngan-hang",
             name: "Bank",
-            component: Bank, // A component for detailed profile
+            component: Bank,
           },
           {
-            path: "don-hang", // Path will be /user/profile
+            path: "don-hang",
             name: "Orders",
-            component: Orders, // A component for detailed profile
+            component: Orders,
+          },
+          {
+            path: "chi-tiet-don-hang/:idDonHang",
+            name: "OrderDetail",
+            component: OrderDetail,
+            props: true,
           },
         ],
       },
