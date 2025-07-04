@@ -67,6 +67,7 @@ class DatabaseSeeder extends Seeder
 
             WarehouseStockSeeder::class,
             InventoryLogSeeder::class,
+            VietnamAdministrativeSeeder::class,
         ]);
     }
 }
