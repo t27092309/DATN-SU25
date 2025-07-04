@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             ScentGroupSeeder::class,
 
 
-            ShippingMethodSeeder::class,
+            // ShippingMethodSeeder::class,
             WarehouseSeeder::class,
             CouponSeeder::class,
 
@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
 
 
             OrderItemSeeder::class,
-            PaymentSeeder::class,
+            // PaymentSeeder::class,
 
             ShippingTrackingSeeder::class,
             OrderReturnSeeder::class,
