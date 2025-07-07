@@ -28,6 +28,7 @@ import BrandList from "@/views/admin/Brands/BrandList.vue";
 import BrandAdd from "@/views/admin/Brands/BrandAdd.vue";
 import BrandEdit from "@/views/admin/Brands/BrandEdit.vue";
 import BrandTrash from "@/views/admin/Brands/BrandTrash.vue";
+import CouponTrash from "@/views/admin/Coupons/CouponTrash.vue";
 
 export default [
   {
@@ -77,10 +78,10 @@ export default [
         },
       },
       {
-        path: 'products/trash', // Đường dẫn cho thùng rác
-        name: 'trashedProducts', // Tên route cho thùng rác
+        path: "products/trash", // Đường dẫn cho thùng rác
+        name: "trashedProducts", // Tên route cho thùng rác
         component: ProductTrash,
-        meta: { title: 'Thùng rác Sản phẩm' } // Tiêu đề cho trang thùng rác
+        meta: { title: "Thùng rác Sản phẩm" }, // Tiêu đề cho trang thùng rác
       },
       {
         path: "attributes",
@@ -175,6 +176,12 @@ export default [
         component: EditCoupon,
       },
       {
+        path: "/coupons/trash",
+        name: "CouponTrash",
+        component: CouponTrash,
+        meta: { title: "Thùng Rác Mã Giảm Giá" },
+      },
+      {
         path: "nhom-huong",
         name: "nhom-huong",
         component: ScentGroupManager,
@@ -185,12 +192,11 @@ export default [
         component: EditScentGroup,
       },
       {
-        path: 'scent-groups/trash',
-        name: 'ScentGroupTrash',
+        path: "scent-groups/trash",
+        name: "ScentGroupTrash",
         component: ScentGroupTrash,
-        meta: { title: 'Thùng Rác Nhóm Hương' }
+        meta: { title: "Thùng Rác Nhóm Hương" },
       },
-
     ],
   },
 ];

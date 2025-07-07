@@ -5,10 +5,15 @@
         <h3 class="fw-bold mb-3">Các mã giảm giá</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home">
-            <a href="#"><i class="icon-home"></i></a>
+            <router-link :to="{ name: 'AdminDashboard' }">
+              <i class="icon-home"></i>
+            </router-link>
           </li>
           <li class="separator">
             <i class="icon-arrow-right"></i>
+          </li>
+          <li class="nav-item">
+            <a href="#">Mã Giảm Giá</a>
           </li>
         </ul>
       </div>
@@ -16,7 +21,14 @@
         <div class="col-md-12">
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Quản lý mã giảm giá</div>
+              <div class="card-title d-flex justify-content-between align-items-center">
+                Quản lý mã giảm giá
+                <div class="d-flex gap-2">
+                  <router-link :to="{ name: 'CouponTrash' }" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-trash"></i> Thùng rác
+                  </router-link>
+                </div>
+              </div>
             </div>
             <div class="card-body">
               <div class="row">
@@ -92,44 +104,7 @@
                           <th style="width: 10%">Hành động</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <tr v-for="coupon in coupons" :key="coupon.id">
-                          <td>{{ coupon.code || 'Không có' }}</td>
-                          <td>{{ coupon.discount_type === 'percent' ? 'Phần trăm' : 'Cố định' }}</td>
-                          <td>
-                            {{ coupon.discount_value }}
-                            {{ coupon.discount_type === 'percent' ? '%' : 'VNĐ' }}
-                          </td>
-                          <td>
-                            {{ coupon.expires_at ? new Date(coupon.expires_at).toLocaleString() : 'Không có' }}
-                          </td>
-                          <td>
-                            <div class="form-button-action">
-                              <button
-                                type="button"
-                                data-bs-toggle="tooltip"
-                                title="Chỉnh sửa mã giảm giá"
-                                class="btn btn-link btn-primary btn-lg"
-                                @click="editCoupon(coupon.id)"
-                              >
-                                <i class="fa fa-edit"></i>
-                              </button>
-                              <button
-                                type="button"
-                                data-bs-toggle="tooltip"
-                                title="Xóa"
-                                class="btn btn-link btn-danger"
-                                @click="openDeleteModal(coupon.id)"
-                              >
-                                <i class="fa fa-times"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr v-if="!coupons || coupons.length === 0">
-                          <td colspan="5" class="text-center">Không có mã giảm giá nào</td>
-                        </tr>
-                      </tbody>
+                      <tbody></tbody>
                     </table>
                     <p v-if="listMessage" :class="listMessageClass">{{ listMessage }}</p>
                   </div>
@@ -140,223 +115,264 @@
         </div>
       </div>
     </div>
-
-    <!-- Modal xác nhận xóa -->
-    <div v-if="showDeleteModal" class="modal fade show" style="display: block">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Xác nhận xóa</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Bạn có chắc muốn xóa mã giảm giá này?</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showDeleteModal = false">Hủy</button>
-            <button class="btn btn-danger" @click="confirmDelete">Xóa</button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
-<script>
-import axios from 'axios';
-import slugify from 'slugify';
+<script setup>
+import { onMounted, nextTick, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import slugify from "slugify";
+import Swal from "sweetalert2";
 
-export default {
-  name: 'CouponManager',
-  data() {
-    return {
-      coupon: {
-        code: '',
-        discount_type: 'percent',
-        discount_value: '',
-        expires_at: '',
-      },
-      coupons: [],
-      addMessage: '',
-      addMessageClass: '',
-      listMessage: '',
-      listMessageClass: '',
-      showDeleteModal: false,
-      deleteId: null,
-      dataTable: null, // Store DataTable instance
-    };
-  },
-  watch: {
-    'coupon.code'(newCode) {
-      this.coupon.code = slugify(newCode, {
-        lower: true,
-        strict: true,
-        locale: 'vi',
-      });
-    },
-  },
-  mounted() {
-    this.loadScriptsAndInitializeTable();
-  },
-  methods: {
-    async loadScriptsAndInitializeTable() {
-      const scripts = [
-        'https://code.jquery.com/jquery-3.7.1.min.js',
-        'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
-        'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js', // For tooltips
-      ];
+// Reactive variables
+const coupon = ref({
+  code: "",
+  discount_type: "percent",
+  discount_value: "",
+  expires_at: "",
+});
+const coupons = ref([]);
+const addMessage = ref("");
+const addMessageClass = ref("");
+const listMessage = ref("");
+const listMessageClass = ref("");
 
-      const loadScript = (src) =>
-        new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = src;
-          script.async = true;
-          script.onload = () => {
-            console.log(`Loaded: ${src}`);
-            resolve();
-          };
-          script.onerror = () => {
-            console.error(`Failed to load: ${src}`);
-            reject(new Error(`Không thể tải script: ${src}`));
-          };
-          document.head.appendChild(script);
-        });
+const router = useRouter();
 
-      try {
-        // Load scripts sequentially
-        for (const src of scripts) {
-          await loadScript(src);
-        }
+// Watch for code changes to slugify
+watch(
+  () => coupon.value.code,
+  (newCode) => {
+    coupon.value.code = slugify(newCode, {
+      lower: true,
+      strict: true,
+      locale: "vi",
+    });
+  }
+);
 
-        // Load DataTables CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css';
-        document.head.appendChild(link);
-
-        // Load Font Awesome
-        const fontAwesomeLink = document.createElement('link');
-        fontAwesomeLink.rel = 'stylesheet';
-        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-        document.head.appendChild(fontAwesomeLink);
-
-        // Fetch coupons and initialize DataTable
-        await this.fetchCoupons();
-        this.initializeDataTable();
-      } catch (error) {
-        console.error('Lỗi khi tải script:', error.message);
-        this.listMessage = 'Có lỗi khi tải bảng mã giảm giá!';
-        this.listMessageClass = 'text-danger';
-      }
-    },
-    initializeDataTable() {
-      if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable) {
-        this.dataTable = jQuery('#add-row').DataTable({
-          pageLength: 10, // Default entries per page
-          lengthMenu: [10, 25, 50, 100], // Options for "Show entries"
-          searching: true, // Enable search
-          paging: true, // Enable pagination
-          info: true, // Show "Showing X to Y of Z entries"
-          responsive: true,
-          language: {
-            lengthMenu: 'Hiển thị _MENU_ mục',
-            search: 'Tìm kiếm:',
-            info: 'Hiển thị _START_ đến _END_ của _TOTAL_ mục',
-            paginate: {
-              previous: 'Trước',
-              next: 'Tiếp',
-            },
-            emptyTable: 'Không có mã giảm giá nào',
-          },
-          drawCallback: () => {
-            // Reinitialize Bootstrap tooltips after each draw
-            jQuery('[data-bs-toggle="tooltip"]').tooltip();
-          },
-        });
-      } else {
-        console.error('DataTables không được tải đúng cách.');
-        this.listMessage = 'Không thể khởi tạo bảng!';
-        this.listMessageClass = 'text-danger';
-      }
-    },
-    async fetchCoupons() {
-      try {
-        const response = await axios.get('http://localhost:8000/api/admin/coupons');
-        this.coupons = Array.isArray(response.data) ? response.data : response.data.data || [];
-        if (!this.coupons.length) {
-          this.listMessage = 'Không có mã giảm giá nào.';
-          this.listMessageClass = 'text-info';
-        }
-        // Refresh DataTable if initialized
-        if (this.dataTable) {
-          this.dataTable.clear().rows.add(this.coupons).draw();
-        }
-      } catch (error) {
-        console.error('Lỗi khi tải danh sách:', error);
-        this.listMessage = error.response?.data?.message || 'Có lỗi khi tải danh sách mã giảm giá!';
-        this.listMessageClass = 'text-danger';
-      }
-    },
-    async addCoupon() {
-      if (!this.coupon.code || !this.coupon.discount_type || !this.coupon.discount_value) {
-        this.addMessage = 'Vui lòng nhập mã, loại giảm giá và giá trị giảm giá!';
-        this.addMessageClass = 'text-danger';
-        return;
-      }
-      const payload = {
-        code: this.coupon.code,
-        discount_type: this.coupon.discount_type,
-        discount_value: parseFloat(this.coupon.discount_value), // Ensure numeric value
-        expires_at: this.coupon.expires_at || null,
-      };
-      console.log('Payload:', payload);
-      try {
-        const response = await axios.post('http://localhost:8000/api/admin/coupons', payload);
-        await this.fetchCoupons(); // Refresh list
-        this.addMessage = response.data.message || 'Thêm mã giảm giá thành công!';
-        this.addMessageClass = 'text-success';
-        this.coupon.code = '';
-        this.coupon.discount_type = 'percent';
-        this.coupon.discount_value = '';
-        this.coupon.expires_at = '';
-      } catch (error) {
-        console.error('Lỗi từ API:', error.response);
-        const errors = error.response?.data?.errors;
-        this.addMessage = errors
-          ? Object.values(errors).flat().join(' ')
-          : error.response?.data?.message || 'Có lỗi khi thêm mã giảm giá!';
-        this.addMessageClass = 'text-danger';
-      }
-    },
-    editCoupon(id) {
-      this.$router.push(`/coupons/edit/${id}`);
-    },
-    openDeleteModal(id) {
-      this.deleteId = id;
-      this.showDeleteModal = true;
-    },
-    async confirmDelete() {
-      try {
-        const response = await axios.delete(`http://localhost:8000/api/admin/coupons/${this.deleteId}`);
-        await this.fetchCoupons(); // Refresh list
-        this.listMessage = response.data.message || 'Xóa mã giảm giá thành công!';
-        this.listMessageClass = 'text-success';
-        this.showDeleteModal = false;
-        this.deleteId = null;
-      } catch (error) {
-        this.listMessage = error.response?.data?.message || 'Có lỗi khi xóa mã giảm giá!';
-        this.listMessageClass = 'text-danger';
-        this.showDeleteModal = false;
-      }
-    },
-  },
-  beforeDestroy() {
-    // Clean up DataTable instance
-    if (this.dataTable) {
-      this.dataTable.destroy();
+// Fetch active coupons
+const fetchCoupons = async () => {
+  try {
+    const response = await axios.get("http://localhost:8000/api/admin/coupons");
+    coupons.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    if (!coupons.value.length) {
+      listMessage.value = "Không có mã giảm giá nào.";
+      listMessageClass.value = "text-info";
+    } else {
+      listMessage.value = "";
     }
-  },
+    await destroyAndReinitializeDataTable();
+  } catch (error) {
+    listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách mã giảm giá!";
+    listMessageClass.value = "text-danger";
+    console.error("Lỗi khi tải danh sách:", error);
+    await destroyAndReinitializeDataTable();
+  }
 };
+
+// Handle adding a new coupon
+const addCoupon = async () => {
+  if (!coupon.value.code || !coupon.value.discount_type || !coupon.value.discount_value) {
+    addMessage.value = "Vui lòng nhập mã, loại giảm giá và giá trị giảm giá!";
+    addMessageClass.value = "text-danger";
+    return;
+  }
+  try {
+    const response = await axios.post(
+      "http://localhost:8000/api/admin/coupons",
+      {
+        code: coupon.value.code,
+        discount_type: coupon.value.discount_type,
+        discount_value: parseFloat(coupon.value.discount_value),
+        expires_at: coupon.value.expires_at || null,
+      },
+      { validateStatus: (status) => status >= 200 && status < 300 }
+    );
+    addMessage.value = response.data.message || "Thêm mã giảm giá thành công!";
+    addMessageClass.value = "text-success";
+    coupon.value.code = "";
+    coupon.value.discount_type = "percent";
+    coupon.value.discount_value = "";
+    coupon.value.expires_at = "";
+    await fetchCoupons();
+  } catch (error) {
+    console.error("Lỗi từ API:", error.response);
+    const errors = error.response?.data?.errors;
+    if (errors) {
+      addMessage.value = Object.values(errors).flat().join(" ");
+    } else {
+      addMessage.value = error.response?.data?.message || "Có lỗi khi thêm mã giảm giá!";
+    }
+    addMessageClass.value = "text-danger";
+  }
+};
+
+// Navigate to edit page
+const editCoupon = (id) => {
+  router.push(`/coupons/edit/${id}`);
+};
+
+// Handle soft delete with SweetAlert2
+const confirmSoftDeleteWithSwal = async (id) => {
+  try {
+    const result = await Swal.fire({
+      title: "Bạn có chắc muốn xóa mềm mã giảm giá này?",
+      text: "Hành động này sẽ chuyển mã giảm giá vào thùng rác, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Có, xóa mềm!",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      const response = await axios.delete(`http://localhost:8000/api/admin/coupons/${id}`);
+      await fetchCoupons();
+      Swal.fire({
+        title: response.data.message || "Xóa mềm mã giảm giá thành công!",
+        icon: "success",
+        confirmButtonText: "Đã hiểu!",
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi khi xóa mềm mã giảm giá:", error);
+    const errorMessage =
+      error.response?.data?.message || "Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.";
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi!",
+      text: `Xảy ra lỗi: ${errorMessage}`,
+    });
+  }
+};
+
+// Function to destroy and reinitialize DataTables
+let dataTableInstance = null;
+const destroyAndReinitializeDataTable = async () => {
+  if (dataTableInstance) {
+    dataTableInstance.destroy();
+    dataTableInstance = null;
+  }
+  await nextTick();
+  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
+    dataTableInstance = jQuery("#add-row").DataTable({
+      pageLength: 10,
+      lengthMenu: [10, 25, 50, 100],
+      searching: true,
+      paging: true,
+      info: true,
+      responsive: true,
+      language: {
+        lengthMenu: "Hiển thị _MENU_ mục",
+        search: "Tìm kiếm:",
+        info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+        paginate: {
+          previous: "Trước",
+          next: "Tiếp",
+        },
+        emptyTable: "Không có mã giảm giá nào",
+      },
+      columns: [
+        { data: "code", defaultContent: "Không có" },
+        {
+          data: "discount_type",
+          render: (data) => (data === "percent" ? "Phần trăm" : "Cố định"),
+        },
+        {
+          data: "discount_value",
+          render: (data, type, row) => `${data} ${row.discount_type === "percent" ? "%" : "VNĐ"}`,
+        },
+        {
+          data: "expires_at",
+          render: (data) => (data ? new Date(data).toLocaleString() : "Không có"),
+        },
+        {
+          data: null,
+          render: (data, type, row) => `
+            <div class="form-button-action">
+              <button type="button" data-bs-toggle="tooltip" title="Chỉnh sửa mã giảm giá" class="btn btn-link btn-primary btn-lg" data-id="${row.id}">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button type="button" data-bs-toggle="tooltip" title="Xóa mềm" class="btn btn-link btn-danger" data-id="${row.id}">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          `,
+        },
+      ],
+      data: coupons.value,
+      drawCallback: () => {
+        jQuery('[data-bs-toggle="tooltip"]').tooltip();
+        jQuery("#add-row")
+          .find(".btn-primary")
+          .off("click")
+          .on("click", (e) => {
+            const id = jQuery(e.currentTarget).data("id");
+            editCoupon(id);
+          });
+        jQuery("#add-row")
+          .find(".btn-danger")
+          .off("click")
+          .on("click", (e) => {
+            const id = jQuery(e.currentTarget).data("id");
+            confirmSoftDeleteWithSwal(id);
+          });
+      },
+    });
+  } else {
+    console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
+    listMessage.value = "Không thể khởi tạo bảng!";
+    listMessageClass.value = "text-danger";
+  }
+};
+
+onMounted(async () => {
+  const scripts = [
+    "https://code.jquery.com/jquery-3.7.1.min.js",
+    "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
+  ];
+
+  const loadScript = (src) =>
+    new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = () => {
+        console.log(`Loaded: ${src}`);
+        resolve();
+      };
+      script.onerror = () => {
+        console.error(`Failed to load: ${src}`);
+        reject(new Error(`Không thể tải script: ${src}`));
+      };
+      document.head.appendChild(script);
+    });
+
+  try {
+    for (const src of scripts) {
+      await loadScript(src);
+    }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css";
+    document.head.appendChild(link);
+
+    const fontAwesomeLink = document.createElement("link");
+    fontAwesomeLink.rel = "stylesheet";
+    fontAwesomeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
+    document.head.appendChild(fontAwesomeLink);
+
+    await fetchCoupons();
+  } catch (error) {
+    console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
+    listMessage.value = "Có lỗi khi tải bảng mã giảm giá!";
+    listMessageClass.value = "text-danger";
+  }
+});
 </script>
 
 <style scoped>
@@ -424,6 +440,10 @@ export default {
   color: red;
   margin-top: 15px;
 }
+.text-info {
+  color: #17a2b8;
+  margin-top: 15px;
+}
 .mb-5 {
   margin-bottom: 3rem;
 }
@@ -440,18 +460,6 @@ export default {
 .breadcrumbs li {
   margin-right: 10px;
 }
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-.modal-dialog {
-  margin: 100px auto;
-}
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-}
-/* Style for DataTables controls */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
   margin-bottom: 15px;
