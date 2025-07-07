@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\AttributeController as AttributeController;
 use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
 use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
@@ -68,6 +69,14 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+            //route quản lí đơn hàng bên admin
+            Route::prefix('orders')->controller(OrderController::class)->group(function () {
+                Route::get('/', 'index');
+                Route::get('{order}', 'show');
+                Route::put('{order}/status', 'updateStatus');
+                Route::put('{order}/note', 'updateNote');
+                Route::get('{order}/payments', 'getPayments');
+            });
             //categories
             Route::get('categories/trashed', [AdminCategoryController::class, 'trashed']);
             Route::put('categories/{id}/restore', [AdminCategoryController::class, 'restore']);
