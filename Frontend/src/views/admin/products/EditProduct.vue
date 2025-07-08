@@ -289,7 +289,7 @@ const getImageUrl = (imagePath) => {
         return imagePath;
     }
     // Otherwise, construct the URL from storage path
-    return imagePath ? `http://localhost:8000/storage/${imagePath}` : null;
+    return imagePath ? `${imagePath}` : null;
 };
 
 const onFileChange = (e) => {

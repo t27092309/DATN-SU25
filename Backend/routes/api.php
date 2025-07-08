@@ -150,3 +150,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 //         'message' => 'Hello from Laravel with manual CORS!',
 //     ]);
 // });
+
+// --- Thêm đoạn code này vào cuối file routes/api.php ---
+Route::get('/debug-config', function () {
+    return response()->json([
+        'env_app_url' => env('APP_URL'),
+        'config_url' => config('filesystems.disks.public.url'),
+    ]);
+});

@@ -55,7 +55,7 @@
                                     <td>{{ (pagination.current_page - 1) * pagination.per_page + index + 1 }}</td>
                                     <td>{{ product.name }}</td>
                                     <td>
-                                        <img :src="product.image" :alt="product.name"
+                                        <img :src="product.image"
                                             style="width: 150px; height: auto; object-fit: cover;">
                                     </td>
                                     <td>{{ formatCurrency(product.price) }}</td>
@@ -104,126 +104,127 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
-import Swal from 'sweetalert2';
+    import { onMounted, ref } from 'vue';
+    import { useRoute } from 'vue-router';
+    import axios from 'axios';
+    import Swal from 'sweetalert2';
 
-const route = useRoute();
+    const route = useRoute();
 
-const products = ref([]);
-const pagination = ref({});
+    const products = ref([]);
+    const pagination = ref({});
 
-const fetchProducts = async (page = 1) => {
-    try {
-        const response = await axios.get(`http://localhost:8000/api/admin/products?page=${page}`);
+    const fetchProducts = async (page = 1) => {
+        try {
+            const response = await axios.get(`http://localhost:8000/api/admin/products?page=${page}`);
 
-        products.value = response.data.data;
+            products.value = response.data.data;
+            console.log(products.value);
+    
+            pagination.value = {
+                current_page: response.data.meta.current_page,
+                last_page: response.data.meta.last_page,
+                from: response.data.meta.from,
+                to: response.data.meta.to,
+                per_page: response.data.meta.per_page,
+                total: response.data.meta.total,
+                prev_page_url: response.data.links.prev,
+                next_page_url: response.data.links.next,
+            };
 
-        pagination.value = {
-            current_page: response.data.meta.current_page,
-            last_page: response.data.meta.last_page,
-            from: response.data.meta.from,
-            to: response.data.meta.to,
-            per_page: response.data.meta.per_page,
-            total: response.data.meta.total,
-            prev_page_url: response.data.links.prev,
-            next_page_url: response.data.links.next,
-        };
-
-        window.scrollTo(0, 0);
-    } catch (error) {
-        console.error('Lỗi khi tải sản phẩm:', error);
-        products.value = [];
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi!',
-            text: 'Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.',
-        });
-    }
-};
-
-const getGenderDisplay = (gender) => {
-    switch (gender) {
-        case 'male':
-            return 'Nam';
-        case 'female':
-            return 'Nữ';
-        case 'unisex':
-            return 'Unisex';
-        default:
-            return 'Không xác định';
-    }
-};
-
-const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) {
-        return '0 VNĐ';
-    }
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND',
-    }).format(amount);
-};
-
-const confirmDeleteProduct = async (id) => {
-    try {
-        const result = await Swal.fire({
-            title: 'Bạn có chắc muốn xóa sản phẩm này?',
-            text: 'Hành động này sẽ xóa sản phẩm, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Có!',
-            cancelButtonText: 'Hủy'
-        });
-
-        if (result.isConfirmed) {
-            await axios.delete(`http://localhost:8000/api/admin/products/${id}`);
-            fetchProducts(pagination.value.current_page);
+            window.scrollTo(0, 0);
+        } catch (error) {
+            console.error('Lỗi khi tải sản phẩm:', error);
+            products.value = [];
             Swal.fire({
-                title: 'Xóa thành công!',
-                text: 'Sản phẩm đã được đánh dấu là đã xóa.',
-                icon: 'success',
-                confirmButtonText: 'Đã hiểu!'
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.',
             });
         }
-    } catch (error) {
-        console.error('Lỗi khi xóa sản phẩm:', error);
-        const errorMessage = error.response?.data?.message || 'Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.';
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi!',
-            text: `Xảy ra lỗi khi xóa sản phẩm: ${errorMessage}`,
-        });
-    }
-};
+    };
 
-onMounted(() => {
-    fetchProducts();
-});
+    const getGenderDisplay = (gender) => {
+        switch (gender) {
+            case 'male':
+                return 'Nam';
+            case 'female':
+                return 'Nữ';
+            case 'unisex':
+                return 'Unisex';
+            default:
+                return 'Không xác định';
+        }
+    };
+
+    const formatCurrency = (amount) => {
+        if (amount === null || amount === undefined) {
+            return '0 VNĐ';
+        }
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
+
+    const confirmDeleteProduct = async (id) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Bạn có chắc muốn xóa sản phẩm này?',
+                text: 'Hành động này sẽ xóa sản phẩm, bạn có thể khôi phục nó sau này. Bạn vẫn muốn tiếp tục?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Có!',
+                cancelButtonText: 'Hủy'
+            });
+
+            if (result.isConfirmed) {
+                await axios.delete(`http://localhost:8000/api/admin/products/${id}`);
+                fetchProducts(pagination.value.current_page);
+                Swal.fire({
+                    title: 'Xóa thành công!',
+                    text: 'Sản phẩm đã được đánh dấu là đã xóa.',
+                    icon: 'success',
+                    confirmButtonText: 'Đã hiểu!'
+                });
+            }
+        } catch (error) {
+            console.error('Lỗi khi xóa sản phẩm:', error);
+            const errorMessage = error.response?.data?.message || 'Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.';
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: `Xảy ra lỗi khi xóa sản phẩm: ${errorMessage}`,
+            });
+        }
+    };
+
+    onMounted(() => {
+        fetchProducts();
+    });
 </script>
 
 <style scoped>
-.custom-hover-link {
-    color: #198754;
-}
+    .custom-hover-link {
+        color: #198754;
+    }
 
-.custom-hover-link:hover {
-    color: white !important;
-}
+    .custom-hover-link:hover {
+        color: white !important;
+    }
 
-.custom-hover-secondary {
-    color: #6c757d;
-}
+    .custom-hover-secondary {
+        color: #6c757d;
+    }
 
-.custom-hover-secondary:hover {
-    color: white !important;
-    background-color: #6c757d;
-}
+    .custom-hover-secondary:hover {
+        color: white !important;
+        background-color: #6c757d;
+    }
 
-img {
-    border-radius: 5px;
-}
+    img {
+        border-radius: 5px;
+    }
 </style>

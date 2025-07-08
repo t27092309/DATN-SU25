@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
+
 
 class ProductDetailResource extends JsonResource
 {
@@ -19,7 +21,7 @@ class ProductDetailResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'image' => $this->image,
+            'image' => $this->image ? config('app.url') . '/' . ltrim(Storage::url($this->image), '/') : 'https://via.placeholder.com/600x600.png',
             'gender' => $this->gender,
             'price' => $this->price,
             'view' => $this->views,
