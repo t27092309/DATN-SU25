@@ -62,7 +62,6 @@ class ProductController extends Controller
             $products = $category->products()
                 ->with(['brand', 'images', 'variants', 'category'])
                 ->orderByDesc('views')
-                ->limit(10)
                 ->get();
 
             $data[] = [
@@ -77,10 +76,35 @@ class ProductController extends Controller
         ]);
     }
     // trang chi tiết sản phẩm
-     //http://127.0.0.1:8000/api/products/31
-    public function getdetailproducts($id)
+
+    public function showBySlug($slug)
     {
-        $product = Product::with(['usageProfile', 'scentProfiles', 'variants', 'images'])->findOrFail($id);
+        //http://localhost:8000/api/detailproducts/đường dẫn slug
+        $product = Product::with([
+            'brand',
+            'category',
+            'usageProfile',
+            'scentProfiles.scentGroup',
+            'variants.attributeValues.attribute',
+            'images',
+        ])->where('slug', $slug)->firstOrFail();
+
         return new ProductDetailResource($product);
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('keyword');
+
+        $products = Product::where(function ($q1) use ($query) {
+            $q1->where('name', 'like', '%' . $query . '%')
+                ->orWhere('description', 'like', '%' . $query . '%')
+                ->orWhere('slug', 'like', '%' . $query . '%');
+        })
+            ->orderByDesc('views') // sắp xếp views cao nhất lên đầu
+            ->with(['brand', 'category']) // nếu dùng resource cần quan hệ
+            ->get();
+
+        return ProductResource::collection($products);
     }
 }

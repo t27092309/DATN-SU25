@@ -6,26 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('cart_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cart_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_variant_id')->constrained();
+
+            // Thêm product_id cho sản phẩm không có biến thể
+            $table->foreignId('product_id')->nullable()->constrained()->onDelete('cascade');
+
+            // Giữ lại product_variant_id cho sản phẩm có biến thể
+            $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
+
             $table->integer('quantity');
             $table->timestamps();
+
         });
-        
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('cart_items');
     }
 };
+
+

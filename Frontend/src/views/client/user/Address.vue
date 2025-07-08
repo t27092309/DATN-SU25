@@ -92,21 +92,36 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label for="update_province" class="block text-gray-700 text-sm font-bold mb-2">Tỉnh/Thành phố:</label>
-              <input type="text" id="update_province" v-model="currentAddress.province"
+              <select id="update_province" v-model="selectedProvinceCode" @change="fetchDistricts"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required />
+                required>
+                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                <option v-for="province in provinces" :key="province.code" :value="province.code">
+                  {{ province.name }}
+                </option>
+              </select>
             </div>
             <div>
               <label for="update_district" class="block text-gray-700 text-sm font-bold mb-2">Quận/Huyện:</label>
-              <input type="text" id="update_district" v-model="currentAddress.district"
+              <select id="update_district" v-model="selectedDistrictCode" @change="fetchWards"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required />
+                required :disabled="!selectedProvinceCode">
+                <option value="">-- Chọn Quận/Huyện --</option>
+                <option v-for="district in districts" :key="district.code" :value="district.code">
+                  {{ district.name }}
+                </option>
+              </select>
             </div>
             <div>
               <label for="update_ward" class="block text-gray-700 text-sm font-bold mb-2">Phường/Xã:</label>
-              <input type="text" id="update_ward" v-model="currentAddress.ward"
+              <select id="update_ward" v-model="selectedWardCode"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400"
-                required />
+                required :disabled="!selectedDistrictCode">
+                <option value="">-- Chọn Phường/Xã --</option>
+                <option v-for="ward in wards" :key="ward.code" :value="ward.code">
+                  {{ ward.name }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -128,7 +143,7 @@
               class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-200 ease-in-out">
               Hủy
             </button>
-            <button type="submit" @click.prevent="saveUpdatedAddress" saveUpdatedAddress :disabled="isUpdatingAddress"
+            <button type="submit" :disabled="isUpdatingAddress"
               class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 ease-in-out shadow-md"
               :class="{ 'opacity-50 cursor-not-allowed': isUpdatingAddress }">
               <span v-if="!isUpdatingAddress">Cập nhật Địa Chỉ</span> <span v-else>Đang cập nhật...</span>
@@ -140,7 +155,7 @@
 
     <div v-if="showAddModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div ref="addModalRef"
-        class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-100 transition-all duration-300 ease-out">
+        class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl transform scale-100 transition-all duration-300 ease-out">
         <h3 class="text-2xl font-semibold mb-6 text-gray-800">Thêm Địa chỉ Mới</h3>
         <form @submit.prevent="saveNewAddress">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -166,21 +181,36 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label for="add_province" class="block text-gray-700 text-sm font-bold mb-2">Tỉnh/Thành phố:</label>
-              <input type="text" id="add_province" v-model="newAddress.province"
+              <select id="add_province" v-model="selectedProvinceCode" @change="fetchDistricts"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-400"
-                required />
+                required>
+                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                <option v-for="province in provinces" :key="province.code" :value="province.code">
+                  {{ province.name }}
+                </option>
+              </select>
             </div>
             <div>
               <label for="add_district" class="block text-gray-700 text-sm font-bold mb-2">Quận/Huyện:</label>
-              <input type="text" id="add_district" v-model="newAddress.district"
+              <select id="add_district" v-model="selectedDistrictCode" @change="fetchWards"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-400"
-                required />
+                required :disabled="!selectedProvinceCode">
+                <option value="">-- Chọn Quận/Huyện --</option>
+                <option v-for="district in districts" :key="district.code" :value="district.code">
+                  {{ district.name }}
+                </option>
+              </select>
             </div>
             <div>
               <label for="add_ward" class="block text-gray-700 text-sm font-bold mb-2">Phường/Xã:</label>
-              <input type="text" id="add_ward" v-model="newAddress.ward"
+              <select id="add_ward" v-model="selectedWardCode"
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-400"
-                required />
+                required :disabled="!selectedDistrictCode">
+                <option value="">-- Chọn Phường/Xã --</option>
+                <option v-for="ward in wards" :key="ward.code" :value="ward.code">
+                  {{ ward.name }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -230,109 +260,97 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import axios from 'axios';
 
 // --- Dữ liệu để hiển thị ---
-const addresses = ref([]); // Khởi tạo mảng rỗng để chứa dữ liệu thật từ API
-
-// --- Trạng thái loading ---
+const addresses = ref([]);
 const isLoading = ref(false);
 
 // --- Quản lý trạng thái Modal ---
 const showUpdateModal = ref(false);
-const currentAddress = ref({});
+const currentAddress = ref({}); // Địa chỉ hiện tại đang được chỉnh sửa
 
 const showDeleteConfirmModal = ref(false);
 const addressToDeleteId = ref(null);
 
 const showAddModal = ref(false);
-const isSavingAddress = ref(false); // Biến mới để kiểm soát trạng thái lưu
-const isUpdatingAddress = ref(false); // Biến mới để kiểm soát trạng thái cập nhật
+const isSavingAddress = ref(false);
+const isUpdatingAddress = ref(false);
 
+// --- Dữ liệu cho Form Thêm Địa chỉ Mới ---
 const newAddress = ref({
-  // Đảm bảo tên trường khớp với tên cột trong Laravel model
-  recipient_name: '',
-  phone_number: '',
-  address_line: '',
-  ward: '',
-  district: '',
-  province: '',
-  set_as_default: false,
+    recipient_name: '',
+    phone_number: '',
+    address_line: '',
+    is_default: false,
+    is_return_address: false, // Đảm bảo có các trường này nếu dùng trong form
+    is_pickup_address: false, // Đảm bảo có các trường này nếu dùng trong form
 });
+
+// --- Dữ liệu và logic cho dropdown địa lý ---
+const provinces = ref([]);
+const districts = ref([]);
+const wards = ref([]);
+const selectedProvinceCode = ref('');
+const selectedDistrictCode = ref('');
+const selectedWardCode = ref('');
 
 // --- Ref tới phần tử DOM của modal (để kiểm tra click outside) ---
 const updateModalRef = ref(null);
 const addModalRef = ref(null);
 const deleteConfirmModalRef = ref(null);
 
-
 // --- Hàm tải dữ liệu địa chỉ từ API thật ---
 const fetchAddresses = async () => {
-  isLoading.value = true; // Bắt đầu loading
-  try {
-    // 1. Lấy token từ localStorage
-    const token = localStorage.getItem('authToken');
+    isLoading.value = true;
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.warn('Authentication token not found. Please log in.');
+            return;
+        }
+        const response = await fetch('http://localhost:8000/api/user/addresses', {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
 
-    // 2. Kiểm tra xem có token không. Nếu không có, có nghĩa là chưa đăng nhập hoặc token đã hết hạn/bị xóa.
-    if (!token) {
-      console.warn('Không tìm thấy token xác thực. Vui lòng đăng nhập.');
-      // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-      // router.push('/login');
-      isLoading.value = false; // Ngừng loading
-      return; // Dừng hàm lại
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error: Invalid or expired token.');
+                alert('Your session has expired or is invalid. Please log in again.');
+                localStorage.removeItem('authToken');
+                return;
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch addresses');
+        }
+
+        const data = await response.json();
+        addresses.value = data;
+        console.log('Addresses loaded:', addresses.value);
+    } catch (error) {
+        console.error("Error fetching addresses:", error);
+        alert('An error occurred while loading addresses. Please try again later: ' + error.message);
+    } finally {
+        isLoading.value = false;
     }
-
-    const response = await fetch('http://localhost:8000/api/user/addresses', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 3. Thêm Authorization token vào header
-        'Authorization': `Bearer ${token}` // Sử dụng token đã lấy từ localStorage
-      },
-      // Nếu bạn đang dùng Laravel Sanctum (cookie-based SPA auth)
-      // và API của bạn nằm cùng domain/subdomain, bạn cũng cần thêm:
-      // credentials: 'include'
-      // Tuy nhiên, nếu bạn đã thiết lập axios.defaults.withCredentials = true
-      // cho toàn bộ ứng dụng Axios của mình thì không cần thêm dòng này ở đây.
-    });
-
-    if (!response.ok) {
-      // Xử lý các lỗi phản hồi từ server
-      if (response.status === 401 || response.status === 403) {
-        // Đây là lỗi "Unauthenticated" hoặc "Unauthorized"
-        console.error('Lỗi xác thực: Token không hợp lệ hoặc đã hết hạn.');
-        alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-        localStorage.removeItem('authToken'); // Xóa token đã hết hạn
-        // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-        // router.push('/login');
-        return; // Dừng hàm
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch addresses');
-    }
-
-    const data = await response.json();
-    addresses.value = data; // Gán dữ liệu thật từ API vào biến phản ứng
-    console.log('Địa chỉ đã được tải:', addresses.value);
-  } catch (error) {
-    console.error("Lỗi khi tải địa chỉ:", error);
-    alert('Đã xảy ra lỗi khi tải danh sách địa chỉ. Vui lòng thử lại sau: ' + error.message);
-  } finally {
-    isLoading.value = false; // Kết thúc loading dù thành công hay thất bại
-  }
 };
 
 // --- Logic xử lý click ra ngoài để đóng modal ---
 const handleClickOutside = (event, modalRef, closeModalCallback) => {
-  if (modalRef.value && !modalRef.value.contains(event.target)) {
-    closeModalCallback();
-  }
+    if (modalRef.value && !modalRef.value.contains(event.target)) {
+        closeModalCallback();
+    }
 };
 
 const setupClickOutsideListener = (modalRef, closeModalCallback) => {
-  const handler = (event) => handleClickOutside(event, modalRef, closeModalCallback);
-  document.addEventListener('mousedown', handler);
-  return () => document.removeEventListener('mousedown', handler);
+    const handler = (event) => handleClickOutside(event, modalRef, closeModalCallback);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
 };
 
 let cleanupUpdateListener = null;
@@ -340,281 +358,395 @@ let cleanupAddListener = null;
 let cleanupDeleteListener = null;
 
 // --- Lifecycle Hooks ---
-onMounted(() => {
-  fetchAddresses(); // Gọi hàm tải dữ liệu khi component được mount
+onMounted(async () => {
+    await fetchAddresses(); // Tải địa chỉ người dùng
+    await fetchProvinces(); // **QUAN TRỌNG: Tải tất cả tỉnh/thành phố ngay khi component được mount**
 });
 
 onBeforeUnmount(() => {
-  if (cleanupUpdateListener) cleanupUpdateListener();
-  if (cleanupAddListener) cleanupAddListener();
-  if (cleanupDeleteListener) cleanupDeleteListener();
+    if (cleanupUpdateListener) cleanupUpdateListener();
+    if (cleanupAddListener) cleanupAddListener();
+    if (cleanupDeleteListener) cleanupDeleteListener();
 });
 
+// --- Hàm tải danh sách Tỉnh/Thành phố ---
+const fetchProvinces = async () => {
+    try {
+        const response = await axios.get('http://localhost:8000/api/provinces');
+        provinces.value = response.data;
+    } catch (error) {
+        console.error("Error fetching provinces:", error);
+        provinces.value = []; // Đảm bảo làm rỗng nếu có lỗi
+        alert('Could not load provinces. Please try again.');
+    }
+};
+
+// --- Hàm tải danh sách Quận/Huyện dựa trên Tỉnh/Thành phố đã chọn ---
+const fetchDistricts = async () => {
+    // Reset districts và wards nếu không có tỉnh được chọn
+    if (!selectedProvinceCode.value) {
+        districts.value = [];
+        wards.value = [];
+        selectedDistrictCode.value = '';
+        selectedWardCode.value = '';
+        return;
+    }
+    try {
+        const response = await axios.get(`http://localhost:8000/api/provinces/${selectedProvinceCode.value}/districts`);
+        districts.value = response.data;
+    } catch (error) {
+        console.error("Error fetching districts:", error);
+        districts.value = []; // Xóa danh sách nếu có lỗi
+        selectedDistrictCode.value = '';
+        selectedWardCode.value = '';
+        alert('Could not load districts. Please try again.');
+    }
+};
+
+// --- Hàm tải danh sách Phường/Xã dựa trên Quận/Huyện đã chọn ---
+const fetchWards = async () => {
+    // Reset wards nếu không có huyện được chọn
+    if (!selectedDistrictCode.value) {
+        wards.value = [];
+        selectedWardCode.value = '';
+        return;
+    }
+    try {
+        const response = await axios.get(`http://localhost:8000/api/districts/${selectedDistrictCode.value}/wards`);
+        wards.value = response.data;
+    } catch (error) {
+        console.error("Error fetching wards:", error);
+        wards.value = []; // Xóa danh sách nếu có lỗi
+        selectedWardCode.value = '';
+        alert('Could not load wards. Please try again.');
+    }
+};
+
+// --- Watchers để tự động gọi API khi mã code thay đổi ---
+// Sử dụng `immediate: false` để tránh chạy khi khởi tạo và `async/await` để đảm bảo đồng bộ
+watch(selectedProvinceCode, async (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+        selectedDistrictCode.value = ''; // Reset district
+        selectedWardCode.value = '';      // Reset ward
+        districts.value = [];             // Clear districts list
+        wards.value = [];                 // Clear wards list
+        if (newVal) {
+            await fetchDistricts(); // Chờ fetch hoàn thành
+        }
+    }
+}, { immediate: false });
+
+watch(selectedDistrictCode, async (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+        selectedWardCode.value = '';      // Reset ward
+        wards.value = [];                 // Clear wards list
+        if (newVal) {
+            await fetchWards(); // Chờ fetch hoàn thành
+        }
+    }
+}, { immediate: false });
+
 // --- Xử lý sự kiện thêm địa chỉ mới ---
-const openAddAddressModal = () => {
-  newAddress.value = {
-    recipient_name: '',
-    phone_number: '',
-    address_line: '',
-    ward: '',
-    district: '',
-    province: '',
-    set_as_default: false,
-  };
-  showAddModal.value = true;
-  cleanupAddListener = setupClickOutsideListener(addModalRef, () => showAddModal.value = false);
+const openAddAddressModal = async () => {
+    resetNewAddressForm();
+    showAddModal.value = true;
+    cleanupAddListener = setupClickOutsideListener(addModalRef, () => showAddModal.value = false);
+    // fetchProvinces() đã được gọi trong onMounted, không cần gọi lại ở đây
+    // nếu bạn muốn đảm bảo dữ liệu mới nhất, có thể gọi lại: await fetchProvinces();
+};
+
+const resetNewAddressForm = () => {
+    newAddress.value = {
+        recipient_name: '',
+        phone_number: '',
+        address_line: '',
+        is_default: false,
+        is_return_address: false,
+        is_pickup_address: false,
+    };
+    selectedProvinceCode.value = '';
+    selectedDistrictCode.value = '';
+    selectedWardCode.value = '';
+    // Không cần reset provinces ở đây vì nó được quản lý bởi onMounted hoặc openAddAddressModal
+    districts.value = [];
+    wards.value = [];
 };
 
 const saveNewAddress = async () => {
-  // Ngăn chặn gửi nhiều lần nếu đang trong quá trình lưu
-  if (isSavingAddress.value) {
-    return;
-  }
-
-  isSavingAddress.value = true; // Bắt đầu quá trình lưu, vô hiệu hóa nút
-  try {
-    // 1. Lấy token từ localStorage
-    const token = localStorage.getItem('authToken'); // Lấy token đã lưu sau khi đăng nhập
-
-    // 2. Kiểm tra xem có token không. Nếu không có, không thể thêm địa chỉ mới.
-    if (!token) {
-      console.warn('Không tìm thấy token xác thực. Vui lòng đăng nhập để thêm địa chỉ.');
-      alert('Bạn cần đăng nhập để thêm địa chỉ mới.');
-      // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-      // router.push('/login');
-      return; // Dừng hàm lại
+    if (isSavingAddress.value) {
+        return;
     }
+    isSavingAddress.value = true;
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.warn('Authentication token not found. Please log in to add an address.');
+            alert('You need to log in to add a new address.');
+            return;
+        }
 
-    const response = await fetch('http://localhost:8000/api/user/addresses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 3. Thêm Authorization token vào header
-        'Authorization': `Bearer ${token}` // Sử dụng token đã lấy từ localStorage
-      },
-      body: JSON.stringify(newAddress.value)
-    });
+        const provinceName = provinces.value.find(p => p.code === selectedProvinceCode.value)?.name || '';
+        const districtName = districts.value.find(d => d.code === selectedDistrictCode.value)?.name || '';
+        const wardName = wards.value.find(w => w.code === selectedWardCode.value)?.name || '';
 
-    if (!response.ok) {
-      // Xử lý các lỗi phản hồi từ server
-      if (response.status === 401 || response.status === 403) {
-        // Đây là lỗi "Unauthenticated" hoặc "Unauthorized"
-        console.error('Lỗi xác thực khi thêm địa chỉ: Token không hợp lệ hoặc đã hết hạn.');
-        alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-        localStorage.removeItem('authToken'); // Xóa token đã hết hạn
-        // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-        // router.push('/login');
-        return; // Dừng hàm
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to add new address');
+        const dataToSend = {
+            recipient_name: newAddress.value.recipient_name,
+            phone_number: newAddress.value.phone_number,
+            address_line: newAddress.value.address_line,
+            ward: wardName,
+            district: districtName,
+            province: provinceName,
+            is_default: newAddress.value.is_default,
+            is_return_address: newAddress.value.is_return_address,
+            is_pickup_address: newAddress.value.is_pickup_address,
+        };
+
+        const response = await fetch('http://localhost:8000/api/user/addresses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(dataToSend)
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error adding address: Invalid or expired token.');
+                alert('Your session has expired or is invalid. Please log in again.');
+                localStorage.removeItem('authToken');
+                return;
+            }
+            const errorData = await response.json();
+            if (errorData.errors) {
+                let errorMessages = '';
+                for (const key in errorData.errors) {
+                    errorMessages += errorData.errors[key].join(', ') + '\n';
+                }
+                throw new Error(errorMessages);
+            }
+            throw new Error(errorData.message || 'Failed to add new address');
+        }
+
+        await fetchAddresses();
+        showAddModal.value = false;
+        alert('New address added successfully!');
+    } catch (error) {
+        console.error("Error adding new address:", error);
+        alert('An error occurred while adding the new address. Please try again: ' + error.message);
+    } finally {
+        isSavingAddress.value = false;
+        if (cleanupAddListener) cleanupAddListener();
     }
-
-    await fetchAddresses(); // Tải lại danh sách địa chỉ sau khi thêm thành công
-
-    showAddModal.value = false;
-    alert('Địa chỉ mới đã được thêm thành công!');
-  } catch (error) {
-    console.error("Lỗi khi thêm địa chỉ mới:", error);
-    alert('Đã xảy ra lỗi khi thêm địa chỉ mới. Vui lòng thử lại: ' + error.message);
-  } finally {
-    if (cleanupAddListener) cleanupAddListener();
-  }
 };
 
 // --- Xử lý sự kiện cập nhật địa chỉ ---
-const updateAddress = (addressId) => {
-  const addressToUpdate = addresses.value.find((addr) => addr.id === addressId);
-  if (addressToUpdate) {
-    currentAddress.value = {
-      ...JSON.parse(JSON.stringify(addressToUpdate)),
-      // Đảm bảo tên trường khớp với Laravel model, xử lý tương thích ngược nếu cần
-      recipient_name: addressToUpdate.recipient_name, // Chắc chắn dùng recipient_name
-      address_line: addressToUpdate.address_line,     // Chắc chắn dùng address_line
-    };
-    showUpdateModal.value = true;
-    cleanupUpdateListener = setupClickOutsideListener(updateModalRef, () => showUpdateModal.value = false);
-  }
+const updateAddress = async (addressId) => {
+    const addressToUpdate = addresses.value.find((addr) => addr.id === addressId);
+
+    if (addressToUpdate) {
+        // Clone đối tượng để tránh thay đổi trực tiếp addresses.value
+        currentAddress.value = { ...JSON.parse(JSON.stringify(addressToUpdate)) };
+
+        showUpdateModal.value = true;
+        // Đảm bảo lắng nghe click outside
+        cleanupUpdateListener = setupClickOutsideListener(updateModalRef, () => showUpdateModal.value = false);
+
+        // **Bước 1: Reset các lựa chọn và dữ liệu liên quan để đảm bảo sạch sẽ**
+        selectedProvinceCode.value = '';
+        selectedDistrictCode.value = '';
+        selectedWardCode.value = '';
+        districts.value = []; // Xóa dữ liệu cũ của districts
+        wards.value = [];     // Xóa dữ liệu cũ của wards
+
+        // **Bước 2: Tìm và set selectedProvinceCode**
+        // provinces.value đã có dữ liệu do được fetch trong onMounted
+        const foundProvince = provinces.value.find(p => p.name === currentAddress.value.province);
+        if (foundProvince) {
+            selectedProvinceCode.value = foundProvince.code;
+
+            // **Bước 3: Tải districts DỰA TRÊN `selectedProvinceCode` MỚI SET**
+            // Gọi tường minh `await fetchDistricts()` để đảm bảo dữ liệu sẵn sàng.
+            // Watcher cũng sẽ kích hoạt nhưng việc await ở đây đảm bảo tuần tự trong hàm này.
+            await fetchDistricts();
+
+            // **Bước 4: Tìm và set selectedDistrictCode**
+            const foundDistrict = districts.value.find(d => d.name === currentAddress.value.district);
+            if (foundDistrict) {
+                selectedDistrictCode.value = foundDistrict.code;
+
+                // **Bước 5: Tải wards DỰA TRÊN `selectedDistrictCode` MỚI SET**
+                // Gọi tường minh `await fetchWards()` để đảm bảo dữ liệu sẵn sàng.
+                await fetchWards();
+
+                // **Bước 6: Tìm và set selectedWardCode**
+                const foundWard = wards.value.find(w => w.name === currentAddress.value.ward);
+                if (foundWard) {
+                    selectedWardCode.value = foundWard.code;
+                }
+            }
+        }
+    }
 };
 
 // --- Xử lý sự kiện lưu địa chỉ đã cập nhật ---
 const saveUpdatedAddress = async () => {
-  // Ngăn chặn gửi nhiều lần nếu đang trong quá trình cập nhật
-  if (isUpdatingAddress.value) {
-    return;
-  }
-
-  isUpdatingAddress.value = true; // Bắt đầu quá trình cập nhật, vô hiệu hóa nút
-  try {
-    // 1. Lấy token xác thực từ localStorage
-    const token = localStorage.getItem('authToken'); // Đảm bảo khóa là 'authToken'
-
-    // 2. Kiểm tra xem có token không. Nếu không, người dùng chưa được xác thực.
-    if (!token) {
-      console.warn('Không tìm thấy token xác thực. Vui lòng đăng nhập để cập nhật địa chỉ.');
-      alert('Bạn cần đăng nhập để cập nhật địa chỉ.');
-      // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập nếu cần
-      // router.push('/login');
-      return; // Dừng hàm lại
+    if (isUpdatingAddress.value) {
+        return;
     }
 
-    // currentAddress.value đang được truy cập ở đây
-    const response = await fetch(`http://localhost:8000/api/user/addresses/${currentAddress.value.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 3. Đính kèm token vào tiêu đề Authorization
-        'Authorization': `Bearer ${token}`
-      },
-      // Đảm bảo rằng currentAddress.value chứa dữ liệu form cập nhật
-      body: JSON.stringify(currentAddress.value)
-    });
+    isUpdatingAddress.value = true;
+    try {
+        const token = localStorage.getItem('authToken');
 
-    if (!response.ok) {
-      // Xử lý các lỗi phản hồi từ API
-      if (response.status === 401 || response.status === 403) {
-        // Lỗi xác thực (Unauthenticated) hoặc không có quyền (Unauthorized)
-        console.error('Lỗi xác thực khi cập nhật địa chỉ: Token không hợp lệ hoặc đã hết hạn.');
-        alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-        localStorage.removeItem('authToken'); // Xóa token cũ
-        // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-        // router.push('/login');
-        return; // Dừng xử lý
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update address');
+        if (!token) {
+            console.warn('Authentication token not found. Please log in to update address.');
+            alert('You need to log in to update an address.');
+            return;
+        }
+
+        // Lấy tên đầy đủ của tỉnh, huyện, xã từ code đã chọn hiện tại
+        const provinceName = provinces.value.find(p => p.code === selectedProvinceCode.value)?.name || '';
+        const districtName = districts.value.find(d => d.code === selectedDistrictCode.value)?.name || '';
+        const wardName = wards.value.find(w => w.code === selectedWardCode.value)?.name || '';
+
+        // Tạo đối tượng dữ liệu cập nhật
+        const dataToSend = {
+            ...currentAddress.value, // Giữ lại các trường khác
+            ward: wardName, // Gửi tên phường/xã
+            district: districtName, // Gửi tên quận/huyện
+            province: provinceName, // Gửi tên tỉnh/thành phố
+        };
+
+        const response = await fetch(`http://localhost:8000/api/user/addresses/${currentAddress.value.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(dataToSend)
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error updating address: Invalid or expired token.');
+                alert('Your session has expired or is invalid. Please log in again.');
+                localStorage.removeItem('authToken');
+                return;
+            }
+            const errorData = await response.json();
+            if (errorData.errors) {
+                let errorMessages = '';
+                for (const key in errorData.errors) {
+                    errorMessages += errorData.errors[key].join(', ') + '\n';
+                }
+                throw new Error(errorMessages);
+            }
+            throw new Error(errorData.message || 'Failed to update address');
+        }
+
+        await fetchAddresses();
+
+        showUpdateModal.value = false;
+        alert('Address updated successfully!');
+    } catch (error) {
+        console.error("Error updating address:", error);
+        alert('An error occurred while updating the address. Please try again: ' + error.message);
+    } finally {
+        isUpdatingAddress.value = false;
+        if (cleanupUpdateListener) cleanupUpdateListener();
     }
-
-    // Nếu cập nhật thành công, tải lại danh sách địa chỉ để phản ánh thay đổi
-    await fetchAddresses();
-
-    showUpdateModal.value = false; // Đóng modal cập nhật
-    alert('Địa chỉ đã được cập nhật thành công!');
-  } catch (error) {
-    console.error("Lỗi khi cập nhật địa chỉ:", error);
-    alert('Đã xảy ra lỗi khi cập nhật địa chỉ. Vui lòng thử lại: ' + error.message);
-  } finally {
-    // Luôn dọn dẹp listener, dù thành công hay thất bại
-    if (cleanupUpdateListener) cleanupUpdateListener();
-  }
 };
 
 // --- Xử lý sự kiện xóa địa chỉ ---
 const deleteAddress = (addressId) => {
-  addressToDeleteId.value = addressId;
-  showDeleteConfirmModal.value = true;
-  cleanupDeleteListener = setupClickOutsideListener(deleteConfirmModalRef, () => showDeleteConfirmModal.value = false);
+    addressToDeleteId.value = addressId;
+    showDeleteConfirmModal.value = true;
+    cleanupDeleteListener = setupClickOutsideListener(deleteConfirmModalRef, () => showDeleteConfirmModal.value = false);
 };
 
 // --- Xử lý sự kiện xác nhận xóa địa chỉ ---
 const confirmDeleteAddress = async () => {
-  try {
-    // 1. Get the authentication token from localStorage
-    const token = localStorage.getItem('authToken'); // Make sure the key matches what you use to save the token
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.warn('Authentication token not found. Please log in to delete an address.');
+            alert('You need to be logged in to delete an address.');
+            return;
+        }
 
-    // 2. Check if a token exists. If not, the user isn't authenticated.
-    if (!token) {
-      console.warn('Authentication token not found. Please log in to delete an address.');
-      alert('You need to be logged in to delete an address.');
-      // Optional: Redirect the user to the login page if needed
-      // router.push('/login');
-      return; // Stop the function here
+        const response = await fetch(`http://localhost:8000/api/user/addresses/${addressToDeleteId.value}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error when deleting address: Invalid or expired token.');
+                alert('Your session has expired or is invalid. Please log in again.');
+                localStorage.removeItem('authToken');
+                return;
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete address');
+        }
+
+        await fetchAddresses();
+
+        showDeleteConfirmModal.value = false;
+        alert('Address deleted successfully!');
+    } catch (error) {
+        console.error("Error deleting address:", error);
+        alert('An error occurred while deleting the address. Please try again: ' + error.message);
+    } finally {
+        addressToDeleteId.value = null;
+        if (cleanupDeleteListener) cleanupDeleteListener();
     }
-
-    const response = await fetch(`http://localhost:8000/api/user/addresses/${addressToDeleteId.value}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 3. Attach the token to the Authorization header
-        'Authorization': `Bearer ${token}` // Use the retrieved token
-      }
-    });
-
-    if (!response.ok) {
-      // Handle API response errors
-      if (response.status === 401 || response.status === 403) {
-        // This is an "Unauthenticated" or "Unauthorized" error
-        console.error('Authentication error when deleting address: Token invalid or expired.');
-        alert('Your session has expired or is invalid. Please log in again.');
-        localStorage.removeItem('authToken'); // Clear the expired token
-        // Optional: Redirect the user to the login page
-        // router.push('/login');
-        return; // Stop processing
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to delete address');
-    }
-
-    // If deletion is successful, refetch the addresses to update the UI
-    await fetchAddresses();
-
-    showDeleteConfirmModal.value = false; // Close the confirmation modal
-    alert('Address deleted successfully!');
-  } catch (error) {
-    console.error("Error deleting address:", error);
-    alert('An error occurred while deleting the address. Please try again: ' + error.message);
-  } finally {
-    addressToDeleteId.value = null; // Clear the ID of the address to delete
-    if (cleanupDeleteListener) cleanupDeleteListener(); // Clean up the listener
-  }
 };
 
 // --- Xử lý sự kiện thiết lập địa chỉ mặc định ---
 const setDefaultAddress = async (addressId) => {
-  try {
-    // 1. Lấy token xác thực từ localStorage
-    const token = localStorage.getItem('authToken'); // Đảm bảo khóa là 'authToken'
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            console.warn('Authentication token not found. Please log in to set default address.');
+            alert('You need to be logged in to set a default address.');
+            return;
+        }
 
-    // 2. Kiểm tra xem có token không. Nếu không, người dùng chưa được xác thực.
-    if (!token) {
-      console.warn('Không tìm thấy token xác thực. Vui lòng đăng nhập để thiết lập địa chỉ mặc định.');
-      alert('Bạn cần đăng nhập để thiết lập địa chỉ mặc định.');
-      // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập nếu cần
-      // router.push('/login');
-      return; // Dừng hàm lại
+        const response = await fetch(`http://localhost:8000/api/user/addresses/${addressId}/set-default`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.error('Authentication error setting default address: Invalid or expired token.');
+                alert('Your session has expired or is invalid. Please log in again.');
+                localStorage.removeItem('authToken');
+                return;
+            }
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to set default address');
+        }
+
+        await fetchAddresses();
+
+        // alert('Default address updated successfully!');
+    } catch (error) {
+        console.error("Error setting default address:", error);
+        alert('An error occurred while setting the default address. Please try again: ' + error.message);
     }
-
-    // URL API cho việc thiết lập địa chỉ mặc định
-    // Đảm bảo method là 'PUT' như trong route Laravel của bạn
-    const response = await fetch(`http://localhost:8000/api/user/addresses/${addressId}/set-default`, {
-      method: 'PUT', // Đã sửa từ 'POST' thành 'PUT' để khớp với route Laravel
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 3. Đính kèm token vào tiêu đề Authorization
-        'Authorization': `Bearer ${token}`
-      },
-      // Thường thì request setDefault không cần body nếu chỉ truyền ID qua URL
-      // body: JSON.stringify({}) // Bạn có thể gửi body rỗng nếu backend yêu cầu
-    });
-
-    if (!response.ok) {
-      // Xử lý các lỗi phản hồi từ API
-      if (response.status === 401 || response.status === 403) {
-        // Lỗi xác thực (Unauthenticated) hoặc không có quyền (Unauthorized)
-        console.error('Lỗi xác thực khi thiết lập địa chỉ mặc định: Token không hợp lệ hoặc đã hết hạn.');
-        alert('Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
-        localStorage.removeItem('authToken'); // Xóa token cũ
-        // Tùy chọn: Chuyển hướng người dùng về trang đăng nhập
-        // router.push('/login');
-        return; // Dừng xử lý
-      }
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to set default address');
-    }
-
-    // Nếu thiết lập mặc định thành công, tải lại danh sách địa chỉ để phản ánh thay đổi
-    await fetchAddresses();
-
-    alert('Địa chỉ mặc định đã được cập nhật thành công!');
-  } catch (error) {
-    console.error("Lỗi khi thiết lập mặc định:", error);
-    alert('Đã xảy ra lỗi khi thiết lập địa chỉ mặc định. Vui lòng thử lại: ' + error.message);
-  }
-  // Không có finally block vì không có cleanup đặc biệt nào
 };
 </script>
 

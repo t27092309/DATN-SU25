@@ -29,8 +29,8 @@ project-root/
 ```bash
 cd backend
 
-# Cài thư viện PHP
-composer install
+# Cài thư viện PHP(chạy lệnh này là dc, thiếu j nó tự cài vào ko cần chạy lệnh cài sanctum hôm trước nữa)
+composer install(chạy trong terminal laragon cho nhanh)
 
 # Tạo file .env từ template
 cp .env.example .env
@@ -41,7 +41,7 @@ php artisan key:generate
 # Thiết lập DB trong file .env
 # Sau đó chạy migrate + seed (nếu có)
 php artisan migrate --seed
-
+php artisan db:seed --class=VietnamAdministrativeSeeder
 # Chạy server Laravel
 php artisan serve
 
@@ -80,3 +80,52 @@ Laravel đang chạy
 
 Có dữ liệu trong database
 
+```mermaid
+erDiagram
+    PRODUCTS ||--o{ PRODUCT_VARIANTS : "has"
+    PRODUCT_VARIANTS ||--o{ PRODUCT_VARIANT_ATTRIBUTE_VALUE : "has"
+    ATTRIBUTES ||--o{ PRODUCT_VARIANT_ATTRIBUTE_VALUE : "defined by"
+    ATTRIBUTE_VALUES ||--o{ PRODUCT_VARIANT_ATTRIBUTE_VALUE : "selected as"
+    ATTRIBUTES ||--o{ ATTRIBUTE_VALUES : "has values"
+
+    PRODUCTS {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR slug
+        DECIMAL price
+        -- ... other product general fields
+    }
+
+    PRODUCT_VARIANTS {
+        BIGINT id PK
+        BIGINT product_id FK
+        VARCHAR sku UK
+        DECIMAL price
+        INT stock
+        INT sold
+        ENUM status
+        VARCHAR barcode UK
+        VARCHAR description
+        -- ... other variant specific fields
+    }
+
+    ATTRIBUTES {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR slug UK
+    }
+
+    ATTRIBUTE_VALUES {
+        BIGINT id PK
+        BIGINT attribute_id FK
+        VARCHAR value
+    }
+
+    PRODUCT_VARIANT_ATTRIBUTE_VALUE {
+        BIGINT id PK
+        BIGINT product_variant_id FK
+        BIGINT attribute_id FK
+        BIGINT attribute_value_id FK
+        VARCHAR unique_constraint_on_variant_attribute "UK(product_variant_id, attribute_id)"
+    }
+    ```
