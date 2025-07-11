@@ -20,7 +20,7 @@ class OrderController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-public function index(Request $request)
+    public function index(Request $request)
     {
         $user = $request->user();
 
@@ -37,7 +37,7 @@ public function index(Request $request)
         // Bổ sung logic tìm kiếm (nếu bạn muốn tìm kiếm theo tên sản phẩm hoặc ID đơn hàng)
         $search = $request->query('search');
         if ($search) {
-            $ordersQuery->where(function($query) use ($search) {
+            $ordersQuery->where(function ($query) use ($search) {
                 // Tìm kiếm theo ID đơn hàng (chuyển sang số nếu có thể)
                 if (is_numeric($search)) {
                     $query->orWhere('id', (int) $search);
@@ -52,12 +52,12 @@ public function index(Request $request)
 
         // Eager load các mối quan hệ cần thiết để giảm số lượng truy vấn DB
         $orders = $ordersQuery->with([
-                            'orderItems.productVariant.product',
-                            'orderAddress',
-                            'payment'
-                        ])
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10); // Phân trang cho các đơn hàng
+            'orderItems.productVariant.product',
+            'orderAddress',
+            'payments'
+        ])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // Phân trang cho các đơn hàng
 
         // Format dữ liệu nếu cần thiết (ví dụ: định dạng tiền tệ)
         $formattedOrders = $orders->getCollection()->map(function ($order) {
@@ -90,14 +90,14 @@ public function index(Request $request)
 
         // Tìm đơn hàng theo ID và đảm bảo nó thuộc về người dùng hiện tại
         $order = Order::where('id', $orderId)
-                      ->where('user_id', $user->id)
-                      ->with([
-                          'orderItems.productVariant.product',
-                          'orderItems.productVariant.attributeValues.attribute', // Tải chi tiết thuộc tính
-                          'orderAddress',
-                          'payment'
-                      ])
-                      ->first();
+            ->where('user_id', $user->id)
+            ->with([
+                'orderItems.productVariant.product',
+                'orderItems.productVariant.attributeValues.attribute', // Tải chi tiết thuộc tính
+                'orderAddress',
+                'payment'
+            ])
+            ->first();
 
         if (!$order) {
             return response()->json(['message' => 'Đơn hàng không tồn tại hoặc bạn không có quyền truy cập.'], Response::HTTP_NOT_FOUND);
@@ -174,7 +174,7 @@ public function index(Request $request)
             'items' => $items,
         ];
     }
-     public function getOrderCounts(Request $request)
+    public function getOrderCounts(Request $request)
     {
         $user = Auth::user();
 
@@ -217,7 +217,6 @@ public function index(Request $request)
             $order->save();
 
             return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             // Ghi log lỗi để dễ dàng debug
             \Log::error('Lỗi khi đánh dấu đơn hàng đã giao: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
@@ -269,7 +268,6 @@ public function index(Request $request)
             DB::commit(); // Hoàn thành Transaction
 
             return response()->json(['message' => 'Đơn hàng đã được hủy thành công.'], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             DB::rollBack(); // Hoàn tác Transaction nếu có lỗi
             \Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
