@@ -84,6 +84,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
             Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
             Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+            Route::post('upload-image', [AdminBrandController::class, 'uploadImage']);
 
             // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
@@ -149,3 +150,5 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 //         'message' => 'Hello from Laravel with manual CORS!',
 //     ]);
 // });
+
+Route::middleware([CorsMiddleware::class])->post('admin/upload-image', [AdminBrandController::class, 'uploadImage']);
