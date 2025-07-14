@@ -34,10 +34,6 @@ class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     * POST /api/admin/products
-     */
     public function store(Request $request)
     {
         $rules = [
@@ -47,16 +43,21 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
-            // --- Cập nhật: Validation cho ảnh thư viện (gallery images) ---
             'gallery_images' => 'nullable|array', // Allows an array of files
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:4096', // Each file in the array
-            // -------------------------------------------------------------
             'has_variants' => 'required|boolean',
+            'scent_groups' => 'nullable|array', // New: Validation for scent groups
+            'scent_groups.*.id' => 'required|exists:scent_groups,id',
+            'scent_groups.*.strength' => 'required|integer|min:1|max:5',
         ];
 
-        // Thêm quy tắc validation tùy thuộc vào loại sản phẩm (có/không biến thể)
+        // Add validation rules depending on product type (with/without variants)
         if ($request->boolean('has_variants')) {
             $rules['variants'] = 'required|array|min:1';
+            // Validate that attribute values for variants are unique within a product
+            // This is a complex rule that might need a custom validation if you want to ensure
+            // combinations like (Red, Small) are unique across all variants of THIS product.
+            // For now, unique SKU is sufficient.
             $rules['variants.*.sku'] = 'required|string|max:255|unique:product_variants,sku';
             $rules['variants.*.price'] = 'required|numeric|min:0';
             $rules['variants.*.stock'] = 'required|integer|min:0';
@@ -66,26 +67,30 @@ class ProductController extends Controller
         } else {
             $rules['price'] = 'required|numeric|min:0';
             $rules['stock'] = 'required|integer|min:0';
+            // Add a rule for SKU of the default variant if needed
+            // For a default variant, you might want to generate SKU automatically,
+            // so no need to validate from request for this case.
         }
 
         try {
-            // Thực hiện Validation
+            // Perform Validation
             $validatedData = $request->validate($rules, [
                 'name.required' => 'Tên sản phẩm là bắt buộc.',
                 'name.unique' => 'Tên sản phẩm này đã tồn tại.',
+                'description.string' => 'Mô tả phải là văn bản.',
+                'gender.required' => 'Giới tính là bắt buộc.',
+                'gender.in' => 'Giới tính không hợp lệ.',
                 'category_id.required' => 'Danh mục là bắt buộc.',
                 'category_id.exists' => 'Danh mục không hợp lệ.',
                 'brand_id.required' => 'Thương hiệu là bắt buộc.',
                 'brand_id.exists' => 'Thương hiệu không hợp lệ.',
-                'gender.required' => 'Giới tính là bắt buộc.',
-                'gender.in' => 'Giới tính không hợp lệ.',
                 'image.image' => 'Tệp ảnh chính phải là hình ảnh.',
                 'image.mimes' => 'Định dạng ảnh chính không hợp lệ. Chỉ chấp nhận: jpeg, png, jpg, gif, svg.',
-                'image.max' => 'Kích thước ảnh chính không được vượt quá 4MB.',
+                'image.max' => 'Kích thước ảnh chính không được vượt quá 2MB.', // Corrected from 4MB as per rule
                 'gallery_images.array' => 'Thư viện ảnh phải là một mảng.',
                 'gallery_images.*.image' => 'Mỗi tệp trong thư viện ảnh phải là một hình ảnh.',
                 'gallery_images.*.mimes' => 'Mỗi tệp trong thư viện ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
-                'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 2MB.',
+                'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 4MB.', // Corrected from 2MB as per rule
                 'has_variants.required' => 'Loại sản phẩm là bắt buộc.',
                 'has_variants.boolean' => 'Loại sản phẩm không hợp lệ.',
                 'price.required' => 'Giá sản phẩm là bắt buộc.',
@@ -95,7 +100,7 @@ class ProductController extends Controller
                 'stock.integer' => 'Tồn kho phải là số nguyên.',
                 'stock.min' => 'Tồn kho không được âm.',
 
-                // Validation cho biến thể
+                // Validation for variants
                 'variants.required' => 'Bạn phải tạo ít nhất một biến thể cho sản phẩm có biến thể.',
                 'variants.array' => 'Dữ liệu biến thể không hợp lệ.',
                 'variants.min' => 'Bạn phải tạo ít nhất một biến thể.',
@@ -114,6 +119,15 @@ class ProductController extends Controller
                 'variants.*.attribute_values.array' => 'Giá trị thuộc tính biến thể phải là một mảng.',
                 'variants.*.attribute_values.min' => 'Biến thể phải có ít nhất một giá trị thuộc tính.',
                 'variants.*.attribute_values.*.exists' => 'Giá trị thuộc tính không hợp lệ.',
+
+                // Validation for scent groups
+                'scent_groups.array' => 'Dữ liệu nhóm hương không hợp lệ.',
+                'scent_groups.*.id.required' => 'ID nhóm hương là bắt buộc.',
+                'scent_groups.*.id.exists' => 'ID nhóm hương không hợp lệ.',
+                'scent_groups.*.strength.required' => 'Độ mạnh nhóm hương là bắt buộc.',
+                'scent_groups.*.strength.integer' => 'Độ mạnh nhóm hương phải là số nguyên.',
+                'scent_groups.*.strength.min' => 'Độ mạnh nhóm hương phải từ 1 trở lên.',
+                'scent_groups.*.strength.max' => 'Độ mạnh nhóm hương tối đa là 5.',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -123,51 +137,54 @@ class ProductController extends Controller
         }
 
         DB::beginTransaction();
-        $uploadedFilePaths = []; // Mảng để theo dõi tất cả các đường dẫn file đã tải lên
+        $uploadedFilePaths = []; // Array to track all uploaded file paths
 
         try {
-            // Xử lý ảnh chính
+            // Handle main product image upload
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('products/main_images', 'public');
-                $uploadedFilePaths[] = $imagePath; // Thêm vào danh sách để cleanup nếu lỗi
+                $uploadedFilePaths[] = $imagePath;
             }
 
-            // Tạo dữ liệu sản phẩm
+            // Create product data
             $productData = [
                 'name' => $validatedData['name'],
-                'slug' => Str::slug($validatedData['name']), // Tự động tạo slug từ tên sản phẩm
+                'slug' => Str::slug($validatedData['name']),
                 'description' => $validatedData['description'] ?? null,
                 'gender' => $validatedData['gender'],
                 'category_id' => $validatedData['category_id'],
                 'brand_id' => $validatedData['brand_id'],
                 'image' => $imagePath,
                 'has_variants' => $validatedData['has_variants'],
+                // Price and stock for product table should be null if has_variants is true,
+                // as they will be managed by variants.
+                // Otherwise, they are directly taken from the request for the default variant.
                 'price' => !$validatedData['has_variants'] ? ($validatedData['price'] ?? 0) : null,
                 'stock' => !$validatedData['has_variants'] ? ($validatedData['stock'] ?? 0) : null,
             ];
 
             $product = Product::create($productData);
 
-            // --- Xử lý Thư viện ảnh (Gallery Images) ---
+            // Handle gallery images upload
             if ($request->hasFile('gallery_images')) {
                 foreach ($request->file('gallery_images') as $file) {
                     $galleryImagePath = $file->store('products/gallery_images', 'public');
-                    $uploadedFilePaths[] = $galleryImagePath; // Thêm vào danh sách
+                    $uploadedFilePaths[] = $galleryImagePath;
                     $product->images()->create([
-                        'image_url' => $galleryImagePath, // Sử dụng 'image_path' thay vì 'image_url' nếu cột là 'image_path'
+                        'image_url' => $galleryImagePath,
                     ]);
                 }
             }
-            // ------------------------------------------
 
-            // Xử lý biến thể
-            if ($validatedData['has_variants'] && isset($validatedData['variants'])) {
+            // --- Handle Variants ---
+            if ($validatedData['has_variants']) {
+                // If product has variants, create them based on the request
                 foreach ($validatedData['variants'] as $variantData) {
                     $variantImagePath = null;
                     if (isset($variantData['image']) && $variantData['image'] instanceof \Illuminate\Http\UploadedFile) {
-                        $variantImagePath = $variantData['image']->store('product_variants/images', 'public'); // Thư mục rõ ràng hơn
-                        $uploadedFilePaths[] = $variantImagePath; // Thêm vào danh sách
+                        $variantImagePath = $variantData['image']->store('product_variants/images', 'public');
+                        $uploadedFilePaths[] = $variantImagePath;
                     }
 
                     $variant = $product->variants()->create([
@@ -181,22 +198,49 @@ class ProductController extends Controller
                         'description' => $variantData['description'] ?? null,
                     ]);
 
-                    // Sử dụng sync để đảm bảo mối quan hệ many-to-many được cập nhật đúng
                     $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
+            } else {
+                // If product DOES NOT have variants, create a single default variant
+                // Use the product's price and stock for this default variant
+                // Generate a unique SKU for the default variant, e.g., using product slug
+                $defaultSku = Str::slug($validatedData['name']) . '-' . Str::random(5);
+
+                $product->variants()->create([
+                    'sku' => $defaultSku,
+                    'price' => $validatedData['price'] ?? 0, // Use product's price
+                    'stock' => $validatedData['stock'] ?? 0, // Use product's stock
+                    'image' => $imagePath, // Use main product image for default variant
+                    'sold' => 0,
+                    'status' => 'available',
+                    'barcode' => null,
+                    'description' => null, // Or can copy product description if desired
+                ]);
             }
+            // --- End Handle Variants ---
+
+            // --- Handle Scent Groups ---
+            if (isset($validatedData['scent_groups']) && is_array($validatedData['scent_groups'])) {
+                $scentGroupSyncData = [];
+                foreach ($validatedData['scent_groups'] as $scentGroup) {
+                    $scentGroupSyncData[$scentGroup['id']] = ['strength' => $scentGroup['strength']];
+                }
+                $product->scentGroups()->sync($scentGroupSyncData);
+            }
+            // --- End Handle Scent Groups ---
 
             DB::commit();
-            // Tải các mối quan hệ để trả về dữ liệu đầy đủ
-            $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute']);
+            // Load relationships to return full data
+            $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute', 'scentGroups']); // Load scentGroups
 
             return response()->json([
                 'message' => 'Sản phẩm đã được thêm thành công!',
-                'data' => new ProductDetailResource($product) // Đảm bảo ProductDetailResource được import
+                'data' => new ProductDetailResource($product)
             ], 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            // Xóa tất cả các file đã tải lên nếu có lỗi xảy ra
+            // Delete all uploaded files if an error occurs
             foreach ($uploadedFilePaths as $path) {
                 if (Storage::disk('public')->exists($path)) {
                     Storage::disk('public')->delete($path);
