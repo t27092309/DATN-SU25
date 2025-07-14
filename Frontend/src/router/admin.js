@@ -30,6 +30,9 @@ import BrandEdit from "@/views/admin/Brands/BrandEdit.vue";
 import BrandTrash from "@/views/admin/Brands/BrandTrash.vue";
 import CouponTrash from "@/views/admin/Coupons/CouponTrash.vue";
 
+import OrderList from "@/views/admin/Orders/OrderList.vue";
+import ShippingMethodList from "@/views/admin/ShippingMethod/ShippingMethodList.vue";
+
 export default [
   {
     path: "/admin",
@@ -197,6 +200,16 @@ export default [
         component: ScentGroupTrash,
         meta: { title: "Thùng Rác Nhóm Hương" },
       },
+      {
+        path: "don-hang",
+        name: "DanhSachDonHang",
+        component: OrderList,
+      },
+      {
+        path: "don-vi-van-chuyen",
+        name: "DonViVanChuyen",
+        component: ShippingMethodList,
+      }
     ],
   },
 ];

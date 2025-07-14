@@ -19,7 +19,7 @@ class OrderResource extends JsonResource
             'shipping_fee'  => $this->shipping_fee,
             'notes'         => $this->notes,
             'created_at'    => $this->created_at?->toDateTimeString(),
-
+            'created_at_human' => $this->created_at?->diffForHumans(), // Thời gian tương đối (ví dụ: "5 phút trước")
             'address'       => new OrderAddressResource($this->whenLoaded('orderAddress')),
             'items'         => OrderItemResource::collection($this->whenLoaded('orderItems')),
             'payments'      => PaymentResource::collection($this->whenLoaded('payments')),

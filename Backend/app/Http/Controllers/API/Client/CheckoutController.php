@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Payment; // Đảm bảo đã import
+use App\Models\Payment;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderAddress;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
 use App\Models\UserAddress;
+use App\Models\ShippingMethod; // Import the ShippingMethod model
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,7 +35,6 @@ class CheckoutController extends Controller
     {
         $user = $request->user();
 
-        // Log đầu vào của request
         Log::info('getCheckoutItems: Request received.', ['user_id' => $user->id, 'request_data' => $request->all()]);
 
         $request->validate([
@@ -54,7 +54,6 @@ class CheckoutController extends Controller
             ->with(['variant.product', 'variant.attributeValues.attribute'])
             ->get();
 
-        // Log kết quả truy vấn CartItem
         Log::info('getCheckoutItems: Fetched cart items.', ['count' => $checkoutItems->count(), 'items_data' => $checkoutItems->toArray()]);
 
 
@@ -67,7 +66,6 @@ class CheckoutController extends Controller
         foreach ($checkoutItems as $item) {
             $variant = $item->variant;
 
-            // Log thông tin biến thể trước khi kiểm tra điều kiện
             Log::info('getCheckoutItems: Processing cart item ID ' . $item->id, [
                 'variant_id' => $variant->id ?? 'N/A',
                 'quantity_in_cart' => $item->quantity,
@@ -126,7 +124,6 @@ class CheckoutController extends Controller
             ];
         }
 
-        // Log dữ liệu cuối cùng trước khi trả về
         Log::info('getCheckoutItems: Successfully formatted items.', ['count' => count($formattedItems), 'items' => $formattedItems]);
 
         return response()->json(['items' => $formattedItems]);
@@ -185,6 +182,20 @@ class CheckoutController extends Controller
         ]);
     }
 
+    /**
+     * Lấy danh sách các phương thức vận chuyển đang hoạt động.
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getActiveShippingMethods()
+    {
+        $shippingMethods = ShippingMethod::where('is_active', true)->get();
+
+        if ($shippingMethods->isEmpty()) {
+            return response()->json(['message' => 'Không có phương thức vận chuyển nào khả dụng.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json(['shipping_methods' => $shippingMethods]);
+    }
 
     /**
      * Xử lý đặt hàng từ giỏ hàng.
@@ -225,6 +236,7 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:500',
             'coupon_code' => 'nullable|string',
             'payment_method' => 'required|string|in:' . implode(',', $allowedPaymentMethods),
+            'shipping_method_id' => 'required|exists:shipping_methods,id,is_active,1', // Validate selected shipping method
         ]);
 
         // LOG 3: Kiểm tra dữ liệu đã được validate
@@ -267,8 +279,20 @@ class CheckoutController extends Controller
             // LOG 7: Tổng tiền sản phẩm trước khi tính phí ship/voucher
             Log::info('Tổng tiền sản phẩm (totalItemsPrice): ' . $totalItemsPrice);
 
-            $shippingFee = 0; // Cần thay thế bằng logic tính phí vận chuyển thực tế
-            // Ví dụ: $shippingFee = $this->calculateShippingFee($addressData, $totalItemsPrice);
+            // Fetch the selected shipping method
+            $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])
+                                            ->where('is_active', true)
+                                            ->first();
+
+            if (!$shippingMethod) {
+                DB::rollBack();
+                Log::warning('Phương thức vận chuyển không hợp lệ hoặc không hoạt động: ' . ($validated['shipping_method_id'] ?? 'N/A'));
+                return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $shippingFee = $shippingMethod->price; // Use price from selected shipping method
+            Log::info('Phí vận chuyển: ' . $shippingFee . ' từ phương thức: ' . $shippingMethod->name);
+
 
             $coupon = null;
             $couponDiscount = 0;
@@ -305,6 +329,7 @@ class CheckoutController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'coupon_id' => $coupon?->id, // Lưu ID coupon nếu có
                 'shipping_fee' => $shippingFee,
+                'shipping_method_id' => $shippingMethod->id, // Store shipping method ID
                 'discount_amount' => $couponDiscount, // Lưu số tiền giảm giá đã áp dụng
             ]);
 
@@ -375,7 +400,7 @@ class CheckoutController extends Controller
 
 
             // Cập nhật trạng thái đơn hàng dựa trên kết quả thanh toán từ processPayment
-            if ($paymentResult['status'] === Payment::PAYMENT_STATUS_PAID || $paymentResult['status'] === 'completed') { // <-- THÊM ĐIỀU KIỆN 'completed' VÀO ĐÂY
+            if ($paymentResult['status'] === Payment::PAYMENT_STATUS_PAID || $paymentResult['status'] === 'completed') {
                 $order->update(['status' => Order::STATUS_PROCESSING]); // Đã thanh toán, chuyển sang xử lý
             } elseif ($paymentResult['status'] === Payment::PAYMENT_STATUS_PENDING) {
                 $order->update(['status' => Order::STATUS_PENDING]); // COD hoặc thanh toán đang chờ xử lý
@@ -406,13 +431,6 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Phương thức giải quyết dữ liệu địa chỉ (không thay đổi)
-     * @param \App\Models\User $user
-     * @param array $validatedData
-     * @return array|\Illuminate\Http\JsonResponse
-     */
-
-    /**
      * Xử lý chức năng "Mua ngay".
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -435,7 +453,8 @@ class CheckoutController extends Controller
             'province' => 'nullable|string|max:100',
             'coupon_code' => 'nullable|string',
             'notes' => 'nullable|string',
-            'payment_method' => 'required|string|in:' . implode(',', $allowedPaymentMethods), // Cập nhật validation
+            'payment_method' => 'required|string|in:' . implode(',', $allowedPaymentMethods),
+            'shipping_method_id' => 'required|exists:shipping_methods,id,is_active,1', // Validate selected shipping method
         ]);
 
         $addressData = $this->resolveAddressData($user, $validated);
@@ -449,35 +468,47 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Sản phẩm không đủ tồn kho hoặc không có sẵn.'], Response::HTTP_BAD_REQUEST);
         }
 
-        $total = $variant->price * $validated['quantity'];
-        $shippingFee = 0; // Có thể tính phí vận chuyển ở đây
+        $totalItemsPrice = $variant->price * $validated['quantity'];
+
+        // Fetch the selected shipping method
+        $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])
+                                        ->where('is_active', true)
+                                        ->first();
+
+        if (!$shippingMethod) {
+            return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);
+        }
+        $shippingFee = $shippingMethod->price; // Use price from selected shipping method
 
         $coupon = null;
         $couponDiscount = 0;
-        $finalTotal = $total;
+        $finalTotal = $totalItemsPrice; // Start with item price
 
         if (!empty($validated['coupon_code'])) {
-            $couponResult = $this->applyCoupon($validated['coupon_code'], $total, $user);
-            if ($couponResult instanceof \Illuminate\Http\JsonResponse) {
-                return $couponResult; // Return error response from applyCoupon
+            try {
+                $couponResult = $this->applyCoupon($validated['coupon_code'], $totalItemsPrice, $user);
+                $coupon = $couponResult['coupon'];
+                $couponDiscount = $couponResult['discount'];
+                $finalTotal = max(0, $totalItemsPrice - $couponDiscount);
+            } catch (Exception $e) {
+                return response()->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
             }
-            $coupon = $couponResult['coupon'];
-            $couponDiscount = $couponResult['discount'];
-            $finalTotal = max(0, $total - $couponDiscount);
         }
 
-        $finalTotal += $shippingFee;
+        $finalTotal += $shippingFee; // Add shipping fee to the total
 
         DB::beginTransaction();
         try {
             $order = Order::create([
                 'user_id' => $user->id,
                 'total_price' => $finalTotal,
-                'status' => 'pending',
+                'status' => Order::STATUS_PENDING,
                 'notes' => $validated['notes'] ?? null,
                 'coupon_id' => $coupon?->id,
                 'payment_method' => $validated['payment_method'],
                 'shipping_fee' => $shippingFee,
+                'shipping_method_id' => $shippingMethod->id, // Store shipping method ID
+                'discount_amount' => $couponDiscount,
             ]);
 
             $variantName = $variant->product->name;
@@ -517,12 +548,14 @@ class CheckoutController extends Controller
             $paymentResult = $this->processPayment($order, $validated['payment_method'], $finalTotal);
 
             // Cập nhật trạng thái đơn hàng dựa trên kết quả thanh toán
-            if ($paymentResult['status'] === 'completed') {
-                $order->update(['status' => 'processing']);
+            if ($paymentResult['status'] === Payment::PAYMENT_STATUS_PAID || $paymentResult['status'] === 'completed') {
+                $order->update(['status' => Order::STATUS_PROCESSING]);
+            } elseif ($paymentResult['status'] === Payment::PAYMENT_STATUS_PENDING) {
+                $order->update(['status' => Order::STATUS_PENDING]);
             } elseif ($paymentResult['status'] === 'redirect') {
-                $order->update(['status' => 'pending_payment']);
+                $order->update(['status' => Order::STATUS_PENDING_PAYMENT]);
             } else {
-                $order->update(['status' => 'payment_failed']);
+                $order->update(['status' => Order::STATUS_PAYMENT_FAILED]);
                 DB::rollBack();
                 return response()->json(['message' => $paymentResult['message']], Response::HTTP_BAD_REQUEST);
             }
@@ -559,7 +592,7 @@ class CheckoutController extends Controller
         try {
             switch ($paymentMethod) {
                 case 'cash':
-                    $paymentStatus = 'paid'; // COD được coi là "paid" ngay khi đơn hàng được tạo thành công
+                    $paymentStatus = Payment::PAYMENT_STATUS_PAID; // COD được coi là "paid" ngay khi đơn hàng được tạo thành công
                     $paidAt = now();
                     $message = 'Thanh toán khi nhận hàng (COD). Đơn hàng sẽ được xử lý.';
                     break;
@@ -570,17 +603,17 @@ class CheckoutController extends Controller
                     // $momoService = new MomoPaymentService();
                     // $momoResponse = $momoService->createPayment($order->id, $amount, $order->order_code);
                     // if ($momoResponse['status'] === 'success') {
-                    //     $transactionId = $momoResponse['transactionId'];
-                    //     $redirectUrl = $momoResponse['payUrl'];
-                    //     $paymentDetails = $momoResponse['rawResponse']; // Lưu toàn bộ response từ Momo
-                    //     $message = 'Đang chuyển hướng đến cổng thanh toán Momo...';
-                    //     $paymentStatus = 'pending'; // Hoặc 'awaiting_payment'
+                    //    $transactionId = $momoResponse['transactionId'];
+                    //    $redirectUrl = $momoResponse['payUrl'];
+                    //    $paymentDetails = $momoResponse['rawResponse']; // Lưu toàn bộ response từ Momo
+                    //    $message = 'Đang chuyển hướng đến cổng thanh toán Momo...';
+                    //    $paymentStatus = Payment::PAYMENT_STATUS_PENDING; // Hoặc 'awaiting_payment'
                     // } else {
-                    //     $message = 'Lỗi khi tạo yêu cầu thanh toán Momo: ' . $momoResponse['message'];
-                    //     $paymentStatus = 'failed';
+                    //    $message = 'Lỗi khi tạo yêu cầu thanh toán Momo: ' . $momoResponse['message'];
+                    //    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
                     // }
                     // Tạm thời để pending và message cho momo
-                    $paymentStatus = 'pending';
+                    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
                     $message = 'Thanh toán qua Momo đang được phát triển.';
                     break;
 
@@ -590,23 +623,23 @@ class CheckoutController extends Controller
                     // $vnpayService = new VnPayPaymentService();
                     // $vnpayResponse = $vnpayService->createPayment($order->id, $amount, $order->order_code);
                     // if ($vnpayResponse['status'] === 'success') {
-                    //     $transactionId = $vnpayResponse['transactionId'];
-                    //     $redirectUrl = $vnpayResponse['payUrl'];
-                    //     $paymentDetails = $vnpayResponse['rawResponse']; // Lưu toàn bộ response từ VnPay
-                    //     $message = 'Đang chuyển hướng đến cổng thanh toán VNPAY...';
-                    //     $paymentStatus = 'pending';
+                    //    $transactionId = $vnpayResponse['transactionId'];
+                    //    $redirectUrl = $vnpayResponse['payUrl'];
+                    //    $paymentDetails = $vnpayResponse['rawResponse']; // Lưu toàn bộ response từ VnPay
+                    //    $message = 'Đang chuyển hướng đến cổng thanh toán VNPAY...';
+                    //    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
                     // } else {
-                    //     $message = 'Lỗi khi tạo yêu cầu thanh toán VNPAY: ' . $vnpayResponse['message'];
-                    //     $paymentStatus = 'failed';
+                    //    $message = 'Lỗi khi tạo yêu cầu thanh toán VNPAY: ' . $vnpayResponse['message'];
+                    //    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
                     // }
                     // Tạm thời để pending và message cho vnpay
-                    $paymentStatus = 'pending';
+                    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
                     $message = 'Thanh toán qua VNPAY đang được phát triển.';
                     break;
 
                 default:
                     $message = 'Phương thức thanh toán không hợp lệ.';
-                    $paymentStatus = 'failed';
+                    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
                     break;
             }
 
@@ -622,7 +655,7 @@ class CheckoutController extends Controller
             ]);
 
             $result = [
-                'status' => ($payment->payment_status === 'paid' || $payment->payment_status === 'pending') ? 'completed' : 'failed', // "completed" cho cả paid và pending (nếu có redirect)
+                'status' => ($payment->payment_status === Payment::PAYMENT_STATUS_PAID || $payment->payment_status === Payment::PAYMENT_STATUS_PENDING) ? 'completed' : 'failed', // "completed" cho cả paid và pending (nếu có redirect)
                 'message' => $message,
                 'payment_status' => $payment->payment_status,
                 'payment_method' => $payment->payment_method,

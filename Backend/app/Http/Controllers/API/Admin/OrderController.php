@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaymentResource;
+
 class OrderController extends Controller
 {
-    
+
     //  GET /api/admin/orders
     //  Lấy danh sách đơn hàng có phân trang, lọc theo trạng thái, tìm kiếm user/name/id
-     
+
     public function index(Request $request)
     {
         $query = Order::with(['user', 'orderItems.productVariant', 'orderAddress', 'payments'])
@@ -21,6 +22,12 @@ class OrderController extends Controller
                 $q->where('id', $request->search)
                     ->orWhereHas('user', function ($sub) use ($request) {
                         $sub->where('name', 'like', '%' . $request->search . '%');
+                    })
+                    ->orWhereHas('user', function ($sub) use ($request) {
+                        $sub->where('phone_number', 'like', '%' . $request->search . '%'); // Tìm kiếm theo SĐT của User
+                    })
+                    ->orWhereHas('orderAddress', function ($sub) use ($request) {
+                        $sub->where('phone_number', 'like', '%' . $request->search . '%'); // Tìm kiếm theo SĐT trong OrderAddress
                     });
             })
             ->latest();
@@ -43,9 +50,9 @@ class OrderController extends Controller
         return new OrderResource($order);
     }
 
-   
-     //PUT /api/admin/orders/{order}/status
-     //Cập nhật trạng thái đơn hàng
+
+    //PATCH /api/admin/orders/{order}/status
+    //Cập nhật trạng thái đơn hàng
 
     public function updateStatus(Request $request, Order $order)
     {
@@ -57,15 +64,16 @@ class OrderController extends Controller
         $order->save();
 
         return response()->json([
+            'success' => true,
             'message' => 'Trạng thái đơn hàng đã được cập nhật.',
             'data' => new OrderResource($order->fresh(['user', 'orderItems.productVariant', 'orderAddress', 'payments']))
         ]);
     }
 
-    
-     // PUT /api/admin/orders/{order}/note
-     // Cập nhật ghi chú đơn hàng
-    
+
+    // PUT /api/admin/orders/{order}/note
+    // Cập nhật ghi chú đơn hàng
+
     public function updateNote(Request $request, Order $order)
     {
         $request->validate([
@@ -81,10 +89,10 @@ class OrderController extends Controller
         ]);
     }
 
-    
-     // GET /api/admin/orders/{order}/payments
-     // Lấy danh sách thanh toán của đơn hàng
-     
+
+    // GET /api/admin/orders/{order}/payments
+    // Lấy danh sách thanh toán của đơn hàng
+
     public function getPayments(Order $order)
     {
         $order->load('payments');

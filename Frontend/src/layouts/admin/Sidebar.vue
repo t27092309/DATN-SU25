@@ -115,27 +115,27 @@
               </ul>
             </div>
           </li>
-          <!-- <li class="nav-item">
-            <a data-bs-toggle="collapse" href="#maps">
-              <i class="fas fa-map-marker-alt"></i>
-              <p>Maps</p>
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#submenu">
+              <i class="fas fa-th-list"></i>
+              <p>Đơn hàng</p>
               <span class="caret"></span>
             </a>
-            <div class="collapse" id="maps">
+            <div class="collapse" id="submenu">
               <ul class="nav nav-collapse">
                 <li>
-                  <a href="maps/googlemaps.html">
-                    <span class="sub-item">Google Maps</span>
-                  </a>
+                  <router-link to="/admin/don-hang">
+                    <span class="sub-item">Quản lí đơn hàng</span>
+                  </router-link>
                 </li>
                 <li>
-                  <a href="maps/jsvectormap.html">
-                    <span class="sub-item">Jsvectormap</span>
-                  </a>
+                  <router-link to="/admin/don-vi-van-chuyen">
+                    <span class="sub-item">Quản lí đơn vị vận chuyển</span>
+                  </router-link>
                 </li>
               </ul>
             </div>
-          </li> -->
+          </li>
           <li class="nav-item">
             <a data-bs-toggle="collapse" href="#charts">
               <i class="far fa-chart-bar"></i>

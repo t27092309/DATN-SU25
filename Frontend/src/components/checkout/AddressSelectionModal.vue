@@ -1,6 +1,7 @@
 <template>
-  <div v-if="isVisible" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto relative transform transition-all duration-300 scale-100 opacity-100">
+  <div v-if="isVisible"
+       class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4"
+       @click.self="closeModal"> <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto relative transform transition-all duration-300 scale-100 opacity-100">
       <div class="p-6">
         <h3 class="text-xl font-semibold mb-4 text-gray-800">Chọn hoặc Thêm Địa chỉ</h3>
 
@@ -39,7 +40,8 @@
         </div>
 
         <div v-else-if="currentTab === 'new'" class="space-y-4 max-h-80 overflow-y-auto pr-2">
-          <form @submit.prevent="saveAddress"> <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <form @submit.prevent="saveAddress">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label for="modal_recipient_name" class="block text-gray-700 text-sm font-bold mb-2">Tên người nhận:</label>
                 <input type="text" id="modal_recipient_name" v-model="internalNewAddressDetails.recipient_name"
