@@ -4,7 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import AddressSelectionModal from '@/components/checkout/AddressSelectionModal.vue';
 import VoucherSelectionModal from '@/components/checkout/VoucherSelectionModal.vue';
-import PaymentMethodSelectionModal from '@/components/checkout/PaymentMethodSelectionModal.vue'; // Import modal mới
+import PaymentMethodSelectionModal from '@/components/checkout/PaymentMethodSelectionModal.vue';
+// NEW: Import the new ShippingMethodSelectionModal
+import ShippingMethodSelectionModal from '@/components/checkout/ShippingMethodSelectionModal.vue';
 
 const api = axios;
 
@@ -39,25 +41,30 @@ const useNewAddressForm = ref(false);
 const showAddressModal = ref(false);
 
 const selectedCouponCode = ref(null);
-const shippingFee = ref(22200);
-const voucherDiscount = ref(0); // Biến này sẽ lưu số tiền giảm giá thực tế
+const voucherDiscount = ref(0);
 const showVoucherModal = ref(false);
 const availableCoupons = ref([]);
 const voucherErrorMessage = ref(null);
 const isCheckingVoucher = ref(null);
 
+// --- Shipping Method State (UPDATED for modal integration) ---
+const shippingMethods = ref([]); // Store all available methods (fetched once or when modal opens)
+const selectedShippingMethodId = ref(null); // The ID of the currently chosen method
+const showShippingMethodModal = ref(false); // Controls modal visibility
+const loadingShippingMethods = ref(false); // To show loading state
+const shippingMethodsError = ref(null); // To show error state
+
 // --- Payment Method State ---
 const showPaymentMethodModal = ref(false);
-const selectedPaymentMethod = ref('cash'); // Mặc định là thanh toán khi nhận hàng (COD)
+const selectedPaymentMethod = ref('cash');
 
-// Danh sách các phương thức thanh toán có thể được lấy từ API hoặc định nghĩa cứng
 const paymentMethods = ref([
   { code: 'cash', name: 'Thanh toán khi nhận hàng (COD)' },
   { code: 'momo', name: 'Momo' },
   { code: 'vnpay', name: 'VNPay' },
 ]);
 
-// --- Utility Functions (giữ nguyên) ---
+// --- Utility Functions ---
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined || isNaN(amount)) {
     return '₫0';
@@ -95,8 +102,13 @@ const totalAmountBeforeShippingAndVoucher = computed(() => {
   return checkoutItems.value.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
 });
 
+// UPDATED: Dynamic shipping fee based on selected method (using 'price' from API)
+const shippingFee = computed(() => {
+  const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
+  return selectedMethod ? parseFloat(selectedMethod.price) : 0; // Use 'price'
+});
+
 const usedPointsAmount = computed(() => {
-  // Đảm bảo usedPointsAmount không vượt quá tổng tiền sau khi đã trừ voucher và phí vận chuyển
   const maxUsablePoints = totalAmountBeforeShippingAndVoucher.value + shippingFee.value - voucherDiscount.value;
   return usePoints.value ? Math.min(userPoints.value, Math.max(0, maxUsablePoints)) : 0;
 });
@@ -106,7 +118,7 @@ const finalTotalAmount = computed(() => {
   if (usePoints.value) {
     total -= usedPointsAmount.value;
   }
-  return Math.max(0, total); // Đảm bảo tổng tiền không âm
+  return Math.max(0, total);
 });
 
 const selectedAddress = computed(() => {
@@ -123,88 +135,104 @@ const hasNewAddressDetails = computed(() => {
 });
 
 const canPlaceOrder = computed(() => {
-  // Có địa chỉ và có sản phẩm
-  return (useNewAddressForm.value && hasNewAddressDetails.value || (!useNewAddressForm.value && selectedAddressId.value !== null)) && checkoutItems.value.length > 0;
+  return (useNewAddressForm.value && hasNewAddressDetails.value || (!useNewAddressForm.value && selectedAddressId.value !== null)) &&
+           checkoutItems.value.length > 0 &&
+           selectedShippingMethodId.value !== null; // Ensure a shipping method is selected
 });
 
+// UPDATED: Estimated delivery dates based on selected shipping method (using new fields from API)
 const estimatedDeliveryDate = computed(() => {
-  const today = new Date();
-  const deliveryDate = new Date(today);
-  deliveryDate.setDate(today.getDate() + 2);
-  const endDate = new Date(today);
-  endDate.setDate(today.getDate() + 4);
-  return `${deliveryDate.getDate()} Tháng ${deliveryDate.getMonth() + 1} - ${endDate.getDate()} Tháng ${endDate.getMonth() + 1}`;
+    const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
+    if (selectedMethod && selectedMethod.delivery_time_min !== undefined && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
+        const today = new Date();
+        const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric' });
+
+        if (selectedMethod.delivery_time_unit === 'hours') {
+            // For hourly deliveries, provide a direct range in hours
+            return `Trong vòng ${selectedMethod.delivery_time_min} - ${selectedMethod.delivery_time_max} giờ`;
+        } else if (selectedMethod.delivery_time_unit === 'days') {
+            const deliveryStartDate = new Date(today);
+            deliveryStartDate.setDate(today.getDate() + selectedMethod.delivery_time_min);
+            const deliveryEndDate = new Date(today);
+            deliveryEndDate.setDate(today.getDate() + selectedMethod.delivery_time_max);
+            return `${formatter.format(deliveryStartDate)} - ${formatter.format(deliveryEndDate)}`;
+        }
+    }
+    return 'Chưa xác định';
 });
 
+// UPDATED: Delivery Guarantee Date (using new fields from API)
 const deliveryGuaranteeDate = computed(() => {
-  const today = new Date();
-  const guaranteeDate = new Date(today);
-  guaranteeDate.setDate(today.getDate() + 4);
-  return `${guaranteeDate.getDate()} Tháng ${guaranteeDate.getMonth() + 1} ${guaranteeDate.getFullYear()}`;
+    const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
+    if (selectedMethod && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
+        const today = new Date();
+        let guaranteeDaysOffset = 0;
+
+        if (selectedMethod.delivery_time_unit === 'days') {
+            guaranteeDaysOffset = selectedMethod.delivery_time_max + 1; // E.g., if max is 3 days, guarantee by 4th day
+        } else if (selectedMethod.delivery_time_unit === 'hours') {
+            // For hourly, a common approach is end of next day for guarantee
+            // Adjust this logic if your guarantee is different (e.g., specific hour)
+            guaranteeDaysOffset = 1; // Guarantee by end of next day
+        }
+
+        const guaranteeDate = new Date(today);
+        guaranteeDate.setDate(today.getDate() + guaranteeDaysOffset);
+
+        const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' });
+        return formatter.format(guaranteeDate);
+    }
+    return 'Chưa xác định';
 });
 
 
 // --- Data Fetching Functions ---
-
 const fetchAvailableCoupons = async () => {
   try {
     const response = await axios.get('coupons/available');
     availableCoupons.value = response.data;
   } catch (err) {
     console.error('Error fetching available coupons:', err);
-    // Handle error, e.g., show a message to the user
   }
 };
 
 const openVoucherSelectionModal = () => {
-  fetchAvailableCoupons(); // Fetch coupons every time the modal is opened
+  fetchAvailableCoupons();
   showVoucherModal.value = true;
 };
 
 const handleCouponSelection = async (coupon) => {
   voucherErrorMessage.value = null;
-  voucherDiscount.value = 0; // Reset voucher discount
-  selectedCouponCode.value = null; // Reset selected coupon code
+  voucherDiscount.value = 0;
+  selectedCouponCode.value = null;
 
   if (coupon) {
-    // Nếu voucher được chọn KHÔNG đủ điều kiện theo logic của modal (frontend),
-    // thì hiển thị lỗi đã tính toán sẵn và không gọi API backend.
     if (!coupon.isEligible) {
       voucherErrorMessage.value = coupon.ineligibilityReason || 'Voucher không đủ điều kiện sử dụng.';
-      // Đặt lại các giá trị liên quan đến voucher
       selectedCouponCode.value = null;
       voucherDiscount.value = 0;
-      return; // Dừng xử lý
+      return;
     }
 
     isCheckingVoucher.value = true;
     try {
       const payload = {
         coupon_code: coupon.code,
-        total_amount: totalAmountBeforeShippingAndVoucher.value, // Gửi tổng tiền để backend kiểm tra min_spend
-        // Gửi thông tin sản phẩm để backend kiểm tra tính áp dụng
+        total_amount: totalAmountBeforeShippingAndVoucher.value,
         order_items: checkoutItems.value.map(item => ({
           product_id: item.product.id,
           product_variant_id: item.variant.id,
           quantity: item.quantity,
           price: item.price,
-          // Thêm các ID danh mục của sản phẩm nếu cần (backend của bạn cần cung cấp)
-          // categories: item.product?.categories?.map(cat => cat.id)
         })),
       };
 
-      // GỌI API BACKEND ĐỂ KIỂM TRA LẠI CUỐI CÙNG (ví dụ: giới hạn sử dụng toàn hệ thống, v.v.)
-      const response = await axios.post('check-coupon', payload); // <-- Đảm bảo URL này là '/api/check-coupon'
+      const response = await axios.post('check-coupon', payload);
 
-      // === ĐIỀU CHỈNH LỚN Ở ĐÂY ===
-      // Kiểm tra nếu response có chứa thông tin coupon và discount_amount
       if (response.data && response.data.coupon && response.data.coupon.discount_amount !== undefined) {
-        selectedCouponCode.value = response.data.coupon.code; // Lấy code từ backend response
-        voucherDiscount.value = response.data.coupon.discount_amount; // Lấy giá trị giảm giá chính xác từ backend
-        // voucherErrorMessage.value = null; // Xóa lỗi nếu có
-        // console.log("Voucher applied. Discount:", voucherDiscount.value); // Để kiểm tra
+        selectedCouponCode.value = response.data.coupon.code;
+        voucherDiscount.value = response.data.coupon.discount_amount;
       } else {
-        // Trường hợp backend không trả về cấu trúc mong muốn hoặc coupon không hợp lệ
         voucherErrorMessage.value = response.data.message || 'Voucher không hợp lệ hoặc không áp dụng được.';
         selectedCouponCode.value = null;
         voucherDiscount.value = 0;
@@ -216,19 +244,17 @@ const handleCouponSelection = async (coupon) => {
       } else {
         voucherErrorMessage.value = 'Không thể kiểm tra voucher. Vui lòng thử lại.';
       }
-      // Đặt lại voucher nếu có lỗi xảy ra
       selectedCouponCode.value = null;
       voucherDiscount.value = 0;
     } finally {
       isCheckingVoucher.value = false;
-      showVoucherModal.value = false; // Đóng modal sau khi chọn/kiểm tra
+      showVoucherModal.value = false;
     }
   } else {
-    // Người dùng bỏ chọn voucher (hoặc không chọn gì)
     selectedCouponCode.value = null;
     voucherDiscount.value = 0;
     voucherErrorMessage.value = null;
-    showVoucherModal.value = false; // Đóng modal
+    showVoucherModal.value = false;
   }
 };
 
@@ -237,43 +263,33 @@ async function fetchCheckoutItemsFromCart(itemIds) {
   error.value = null;
   try {
     const response = await api.post('checkout/order-items', { cart_item_ids: itemIds });
-    
-    // Kiểm tra xem response.data.items có tồn tại và là mảng không
+
     if (!response.data || !Array.isArray(response.data.items)) {
       throw new Error('Cấu trúc dữ liệu không hợp lệ từ server.');
     }
 
     checkoutItems.value = response.data.items.map(item => {
-      // Backend đã trả về item.variant, không còn item.product_variant
-      // và đã định dạng product_name, thumbnail_url, variant.name cho bạn.
-
-      // Loại bỏ kiểm tra item.product_variant vì nó không còn tồn tại
-      // và logic tạo variantName cũng không cần thiết ở đây nữa.
-
       return {
         id: item.id,
-        // product_id và product_name đã có sẵn trực tiếp trong item
-        product: { 
-            id: item.product_id, // Nếu bạn cần đối tượng product, hãy tạo nó
+        product: {
+            id: item.product_id,
             name: item.product_name,
-            thumbnail_url: item.thumbnail_url // Thêm thumbnail_url vào đây nếu bạn muốn nó trong 'product' object
+            thumbnail_url: item.thumbnail_url
         },
         quantity: item.quantity,
         variant: {
           id: item.variant.id,
-          name: item.variant.name, // Lấy tên biến thể đã được backend định dạng
-          sku: item.variant.sku,   // Lấy SKU
+          name: item.variant.name,
+          sku: item.variant.sku,
         },
-        price: item.price, // Giá của biến thể
+        price: item.price,
         subtotal: item.subtotal,
-        // selected: item.selected, // Thuộc tính này không thấy trong log backend, cân nhắc xóa hoặc đảm bảo nó có.
       };
     });
   } catch (err) {
     console.error('Lỗi khi lấy chi tiết giỏ hàng:', err);
-    // Bạn có thể kiểm tra lỗi HTTP status code để hiển thị thông báo cụ thể hơn
     if (err.response && err.response.data && err.response.data.message) {
-      error.value = err.response.data.message; // Hiển thị thông báo lỗi từ backend
+      error.value = err.response.data.message;
     } else {
       error.value = 'Không thể tải chi tiết giỏ hàng. Vui lòng thử lại.';
     }
@@ -332,7 +348,7 @@ async function fetchCheckoutItemForBuyNow(variantId, quantity) {
   }
 }
 
-const fetchUserAddresses = async () => {
+async function fetchUserAddresses() {
   loadingAddress.value = true;
   addressError.value = null;
   try {
@@ -346,19 +362,19 @@ const fetchUserAddresses = async () => {
       selectedAddressId.value = userAddresses.value[0].id;
       useNewAddressForm.value = false;
     } else {
-      useNewAddressForm.value = true; // Nếu không có địa chỉ nào, buộc dùng form mới
+      useNewAddressForm.value = true;
     }
   } catch (err) {
     console.error('Error fetching user addresses:', err);
     addressError.value = 'Không thể tải địa chỉ của bạn. Vui lòng thử lại.';
     userAddresses.value = [];
-    useNewAddressForm.value = true; // Xảy ra lỗi cũng buộc dùng form mới
+    useNewAddressForm.value = true;
   } finally {
     loadingAddress.value = false;
   }
-};
+}
 
-const fetchUserPoints = async () => {
+async function fetchUserPoints() {
   try {
     const response = await axios.get('/api/user/points');
     userPoints.value = response.data.points || 0;
@@ -366,9 +382,38 @@ const fetchUserPoints = async () => {
     console.error('Lỗi khi tải điểm của người dùng:', err);
     userPoints.value = 0;
   }
+}
+
+// NEW: Fetch all shipping methods and set a default if available
+async function fetchAndSetDefaultShippingMethods() {
+    loadingShippingMethods.value = true;
+    shippingMethodsError.value = null;
+    try {
+        // Fetch from the new API endpoint
+        const response = await axios.get('/shipping-methods');
+        // UPDATED: Adjust based on your API response structure (direct array under 'shipping_methods')
+        shippingMethods.value = response.data.shipping_methods;
+
+        // Set a default selected method if none is chosen and methods are available
+        if (shippingMethods.value.length > 0 && !selectedShippingMethodId.value) {
+            selectedShippingMethodId.value = shippingMethods.value[0].id;
+        }
+    } catch (err) {
+        console.error('Error fetching shipping methods:', err);
+        shippingMethodsError.value = 'Không thể tải các phương thức vận chuyển.';
+    } finally {
+        loadingShippingMethods.value = false;
+    }
+}
+
+// Handler for when a shipping method is selected in the modal
+const handleShippingMethodSelected = (methodId) => {
+  selectedShippingMethodId.value = methodId;
+  showShippingMethodModal.value = false; // Close the modal
 };
 
-// --- Address Selection Handler from Modal (giữ nguyên) ---
+
+// --- Address Selection Handler from Modal ---
 const handleAddressSelection = (payload) => {
   if (payload.type === 'existing') {
     selectedAddressId.value = payload.id;
@@ -381,19 +426,19 @@ const handleAddressSelection = (payload) => {
     useNewAddressForm.value = true;
     selectedAddressId.value = null;
   }
-  showAddressModal.value = false; // Đóng modal sau khi chọn
+  showAddressModal.value = false;
 };
 
 // --- Payment Method Selection Handler ---
 const handlePaymentMethodSelection = (methodCode) => {
   selectedPaymentMethod.value = methodCode;
-  showPaymentMethodModal.value = false; // Đóng modal sau khi chọn
+  showPaymentMethodModal.value = false;
 };
 
 
 // --- Order Placement ---
 const placeOrder = async () => {
-  errorMessage.value = null; // Clear any previous error messages
+  errorMessage.value = null;
 
   if (checkoutItems.value.length === 0) {
     errorMessage.value = 'Vui lòng chọn sản phẩm để thanh toán.';
@@ -403,7 +448,6 @@ const placeOrder = async () => {
   let addressPayload = {};
   let addressChosenSuccessfully = false;
 
-  // Validate and set address payload
   if (useNewAddressForm.value) {
     const { recipient_name, phone_number, address_line, ward, district, province } = newAddressDetails.value;
     if (!recipient_name || !phone_number || !address_line || !ward || !district || !province) {
@@ -433,7 +477,12 @@ const placeOrder = async () => {
     return;
   }
 
-  // Confirmation dialog
+  // NEW: Validate shipping method
+  if (!selectedShippingMethodId.value) {
+    errorMessage.value = 'Vui lòng chọn phương thức vận chuyển.';
+    return;
+  }
+
   if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
     return;
   }
@@ -445,9 +494,10 @@ const placeOrder = async () => {
 
     let orderData = {
       ...addressPayload,
+      shipping_method_id: selectedShippingMethodId.value, // Send selected shipping method ID
       notes: message.value,
       coupon_code: selectedCouponCode.value,
-      payment_method: selectedPaymentMethod.value, // GỬI PHƯƠNG THỨC THANH TOÁN ĐÃ CHỌN LÊN BACKEND
+      payment_method: selectedPaymentMethod.value,
     };
 
     let response;
@@ -463,19 +513,14 @@ const placeOrder = async () => {
 
       response = await axios.post('checkout/buy-now', orderData);
     } else {
-      // Backend place-order endpoint sẽ tự xử lý từ giỏ hàng đang active của user
       response = await axios.post('checkout/place-order', orderData);
     }
 
-    // Xử lý kết quả từ backend
-    // `response.data.payment_info` sẽ chứa `status` và `redirect_url` (nếu có)
     const paymentInfo = response.data.payment_info;
 
     if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.redirect_url) {
-      // Chuyển hướng người dùng đến cổng thanh toán
       window.location.href = paymentInfo.redirect_url;
     } else {
-      // Hiển thị thông báo thành công và chuyển hướng đến trang xác nhận đơn hàng
       alert(`${response.data.message} ${paymentInfo?.message || ''}`);
       router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
     }
@@ -524,11 +569,11 @@ onMounted(async () => {
 
   await Promise.all([
     fetchUserAddresses(),
-    fetchUserPoints()
+    fetchUserPoints(),
+    fetchAndSetDefaultShippingMethods() // NEW: Fetch and set default shipping methods
   ]);
 });
 
-// Watcher to handle initial state if no addresses are fetched
 watch(userAddresses, (newAddresses) => {
   if (newAddresses.length === 0 && !selectedAddressId.value) {
     useNewAddressForm.value = true;
@@ -611,8 +656,10 @@ watch(userAddresses, (newAddresses) => {
       <div class="grid grid-cols-4 items-center">
         <div class="col-span-1 text-gray-500">Phương thức vận chuyển:</div>
         <div class="col-span-2">
-          <span class="font-medium">Nhanh</span>
-          <button class="ml-2 text-blue-500 hover:underline">Thay Đổi</button>
+          <span class="font-medium">
+            {{ shippingMethods.find(m => m.id === selectedShippingMethodId)?.name || 'Chưa chọn' }}
+          </span>
+          <button @click="showShippingMethodModal = true" class="ml-2 text-blue-500 hover:underline">Thay Đổi</button>
           <p class="text-xs text-gray-500 mt-1">Dự kiến nhận hàng: {{ estimatedDeliveryDate }}</p>
           <p class="text-xs text-gray-500 mt-1">
             <span class="text-red-500">Voucher trị giá ₫15.000</span> nếu đơn hàng được giao đến bạn sau ngày {{
@@ -636,18 +683,6 @@ watch(userAddresses, (newAddresses) => {
         <input type="text" v-model="message" placeholder="Lưu ý cho chúng tôi"
           class="flex-grow border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
       </div>
-      <div class="flex items-center mb-4">
-        <button class="flex items-center text-blue-500 hover:underline text-sm">
-          Hoặc chọn Hóa Tốc để
-          <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 9.293a1 1 0 00-1.414 1.414L10 13.414l3.707-3.707a1 1 0 00-1.414-1.414L10 10.586l-1.293-1.293z">
-            </path>
-          </svg>
-          <span class="font-semibold ml-1">Cam kết nhận hàng trong Hôm nay</span>
-        </button>
-      </div>
-
       <div class="flex items-center mb-4 text-sm text-gray-500">
         Được đồng kiểm.
         <span class="ml-1 cursor-pointer text-blue-400" title="Chi tiết về đồng kiểm">
@@ -763,6 +798,13 @@ watch(userAddresses, (newAddresses) => {
       :selected-address-id="selectedAddressId" :new-address-details="newAddressDetails"
       :use-new-address-form="useNewAddressForm" @update:is-visible="showAddressModal = $event"
       @addressSelected="handleAddressSelection" />
+
+    <ShippingMethodSelectionModal
+      :is-visible="showShippingMethodModal"
+      :current-selected-method-id="selectedShippingMethodId"
+      @update:is-visible="showShippingMethodModal = $event"
+      @methodSelected="handleShippingMethodSelected"
+    />
   </div>
 </template>
 

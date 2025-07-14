@@ -8,6 +8,7 @@ use App\Http\Controllers\API\Admin\ProductVariantController as AdminProductVaria
 use App\Http\Controllers\Api\Admin\AttributeController as AttributeController;
 use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueController;
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
+use App\Http\Controllers\Api\Admin\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\API\Admin\AuthController;
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
@@ -33,6 +34,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // route thanh toan cho Client
         Route::get('/coupons/available', [CheckoutController::class, 'getAvailableCoupons']);
+        Route::get('/shipping-methods', [CheckoutController::class, 'getActiveShippingMethods']);
         Route::post('checkout/order-items', [CheckoutController::class, 'getCheckoutItems']);
         Route::post('checkout/place-order', [CheckoutController::class, 'placeOrder']);
         Route::get('/payment-methods', [ClientPaymentMethodController::class, 'index']);
@@ -73,10 +75,13 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::prefix('orders')->controller(OrderController::class)->group(function () {
                 Route::get('/', 'index');
                 Route::get('{order}', 'show');
-                Route::put('{order}/status', 'updateStatus');
+                Route::patch('{order}/status', 'updateStatus');
                 Route::put('{order}/note', 'updateNote');
                 Route::get('{order}/payments', 'getPayments');
             });
+
+            Route::apiResource('shipping-methods', AdminShippingMethodController::class);
+
             //categories
             Route::get('categories/trashed', [AdminCategoryController::class, 'trashed']);
             Route::put('categories/{id}/restore', [AdminCategoryController::class, 'restore']);
@@ -94,6 +99,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
             Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
             Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+            Route::post('upload-image', [AdminBrandController::class, 'uploadImage']);
 
             // Soft Delete product
             Route::get('products/trashed', [AdminProductController::class, 'trashed'])->name('products.trashed');
@@ -159,3 +165,5 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 //         'message' => 'Hello from Laravel with manual CORS!',
 //     ]);
 // });
+
+Route::middleware([CorsMiddleware::class])->post('admin/upload-image', [AdminBrandController::class, 'uploadImage']);
