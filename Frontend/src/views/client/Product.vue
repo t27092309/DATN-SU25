@@ -75,8 +75,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-else-if="!product.variants || product.variants.length === 0"
-                            class="mb-8 text-gray-600">
+                        <div v-else-if="!product.variants || product.variants.length === 0" class="mb-8 text-gray-600">
                             Sản phẩm này không có biến thể.
                         </div>
 
@@ -148,9 +147,8 @@
                     <div v-else class="text-center text-gray-500">Không có thông tin mùi hương.</div>
 
                     <div class="text-center mb-6">
-                        <img src="https://i.imgur.com/fragrantica-logo-placeholder.png" alt="Fragrantica Logo"
-                            class="mx-auto h-8 mb-2" />
-                        <span class="font-semibold text-gray-700 text-lg">FRAGRANTICA</span>
+                        <img src="https://images.squarespace-cdn.com/content/v1/66cd2d1126334f6c9a85c86c/cdb4a6fd-e771-4696-aaf7-8a08210bf7d5/fragrantica-logo-svg.png"
+                            alt="Fragrantica Logo" class="mx-auto h-8 mb-2" />
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div>
@@ -355,7 +353,7 @@ const findMatchingVariant = () => {
 
     const matchingVariant = product.value.variants.find(variant => {
         if (!variant.attributes || variant.attributes.length === 0) {
-             return false;
+            return false;
         }
 
         return currentSelectedAttrSlugs.every(attrSlug => {
