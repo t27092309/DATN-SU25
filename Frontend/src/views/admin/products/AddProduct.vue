@@ -59,7 +59,7 @@
                                         </div>
                                     </div>
                                     <small v-if="errors.gender" class="form-text text-danger">{{ errors.gender[0]
-                                        }}</small>
+                                    }}</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-4">
@@ -85,7 +85,7 @@
                                     </select>
                                     <p v-else class="text-muted">Đang tải thương hiệu...</p>
                                     <small v-if="errors.brand_id" class="form-text text-danger">{{ errors.brand_id[0]
-                                        }}</small>
+                                    }}</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-4">
@@ -99,7 +99,7 @@
                                     <input type="file" class="form-control" id="image" @change="onFileChangeMainImage"
                                         accept="image/*" />
                                     <small v-if="errors.image" class="form-text text-danger">{{ errors.image[0]
-                                        }}</small>
+                                    }}</small>
                                 </div>
                                 <div v-if="imageUrlPreview" class="mt-2">
                                     <label>Ảnh xem trước:</label><br />
@@ -148,6 +148,57 @@
                         </div>
                         <hr />
 
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label>Nhóm hương</label>
+                                    <ScentGroupSelector
+                                        v-model:selected-scent-group-ids="product.selected_scent_group_ids"
+                                        v-model:scent-groups-data="product.scent_groups_data"
+                                        :all-scent-groups="allScentGroupsForDisplay" />
+                                    <small v-if="errors.scent_groups" class="form-text text-danger">{{
+                                        errors.scent_groups[0] }}</small>
+                                </div>
+                                <div v-if="sortedScentProfiles.length > 0" class="mt-3">
+                                    <h6>Mức độ hương:</h6>
+                                    <div class="scent-strength-bars">
+                                        <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
+                                            class="scent-bar-item mb-2 d-flex align-items-center">
+                                            <span class="scent-name me-2" :style="{
+                                                'min-width': '120px',
+                                                'max-width': '120px',
+                                                'white-space': 'nowrap',
+                                                'overflow': 'hidden',
+                                                'text-overflow': 'ellipsis',
+                                            }">{{ scent.scent_group_name }}:</span>
+                                            <div class="progress flex-grow-1" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                    :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
+                                                    :aria-valuenow="scent.strength" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                    <span
+                                                        :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
+                                                        {{ scent.strength }}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <label>Thông tin sử dụng sản phẩm</label>
+                                <UsageProfile v-model:usage-profile-data="product.usage_profile" />
+                                <small v-if="errors['usage_profile.spring_percent']" class="form-text text-danger">
+                                    {{ errors['usage_profile.spring_percent'][0] }}
+                                </small>
+                            </div>
+                        </div>
+                        <hr />
                         <div class="row mt-4">
                             <div class="col-12">
                                 <div class="form-group">
@@ -175,7 +226,7 @@
                                     <input type="number" class="form-control" id="simplePrice"
                                         placeholder="Nhập giá sản phẩm" v-model="product.price" min="0" />
                                     <small v-if="errors.price" class="form-text text-danger">{{ errors.price[0]
-                                        }}</small>
+                                    }}</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -184,7 +235,7 @@
                                     <input type="number" class="form-control" id="simpleStock"
                                         placeholder="Nhập số lượng tồn kho" v-model="product.stock" min="0" />
                                     <small v-if="errors.stock" class="form-text text-danger">{{ errors.stock[0]
-                                        }}</small>
+                                    }}</small>
                                 </div>
                             </div>
                         </div>
@@ -299,13 +350,15 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import router from '@/router';
 import Swal from 'sweetalert2';
 
-// Hàm generateSlug có thể nằm trong một file utils/slugUtils.js và được import.
+import ScentGroupSelector from '@/components/admin/product/ScentGroupSelector.vue';
+import UsageProfile from '@/components/admin/product/UsageProfile.vue';
+
 const generateSlug = (text) => {
     if (!text) return '';
     return text
@@ -322,8 +375,8 @@ const generateSlug = (text) => {
 const route = useRoute();
 const categories = ref([]);
 const brands = ref([]);
-const attributes = ref([]); // Danh sách tất cả thuộc tính và giá trị từ API
-const selectedAttributeValues = ref({}); // Đối tượng lưu trữ các giá trị thuộc tính ĐÃ CHỌN, ví dụ: { 1: [{id:101, value:'Đỏ'}], 2: [{id:201, value:'S'}] }
+const attributes = ref([]);
+const selectedAttributeValues = ref({});
 
 const product = ref({
     name: '',
@@ -333,34 +386,78 @@ const product = ref({
     category_id: '',
     brand_id: '',
     has_variants: false,
-    price: '', // Cho sản phẩm đơn giản
-    stock: '', // Cho sản phẩm đơn giản
-    variants: [], // Mảng các biến thể được tạo tự động và nhập dữ liệu
+    price: '',
+    stock: '',
+    variants: [],
+
+    selected_scent_group_ids: [],
+    scent_groups_data: {},
+    usage_profile: {
+        spring_percent: 0,
+        summer_percent: 0,
+        autumn_percent: 0,
+        winter_percent: 0,
+        suitable_day: 0,
+        suitable_night: 0,
+        longevity_hours: 0.0,
+        sillage_range_m: '',
+    },
 });
 
 const mainImageFile = ref(null);
 const imageUrlPreview = ref(null);
 
-// Thêm các ref mới cho thư viện ảnh
-const galleryImageFiles = ref([]); // Mảng các File object
-const galleryImagePreviews = ref([]); // Mảng các URL preview
+const galleryImageFiles = ref([]);
+const galleryImagePreviews = ref([]);
 
 const errors = ref({});
 
-// Watch for changes in product.name to auto-generate slug
+const allScentGroupsForDisplay = ref([]);
+
+const isDarkColor = (hexColor) => {
+    if (!hexColor || hexColor.length < 7) return true;
+    const r = parseInt(hexColor.substring(1, 3), 16);
+    const g = parseInt(hexColor.substring(3, 5), 16);
+    const b = parseInt(hexColor.substring(5, 7), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance <= 0.5;
+};
+
+// Cập nhật computed property cho độ mạnh từ 1-100
+const sortedScentProfiles = computed(() => {
+    const scentProfilesArray = Object.keys(product.value.scent_groups_data)
+        .map(scentGroupId => {
+            const strengthObj = product.value.scent_groups_data[scentGroupId];
+            const strength = strengthObj ? strengthObj.strength : 0; // Giá trị strength giờ là từ 1-100
+
+            const scentGroupInfo = allScentGroupsForDisplay.value.find(sg => sg.id == scentGroupId);
+
+            return {
+                scent_group_id: scentGroupId,
+                scent_group_name: scentGroupInfo ? scentGroupInfo.name : `ID: ${scentGroupId}`,
+                scent_group_color_code: scentGroupInfo ? scentGroupInfo.color_code : '#cccccc',
+                strength: strength, // Giữ nguyên giá trị strength (1-100)
+            };
+        })
+        .filter(scent => scent.strength > 0);
+
+    return scentProfilesArray.sort((a, b) => b.strength - a.strength);
+});
+
 watch(() => product.value.name, (newName) => {
     product.value.slug = generateSlug(newName);
 });
 
-// Watch for changes in has_variants to clear/reset fields
 watch(() => product.value.has_variants, (newVal) => {
-    if (newVal === true) { // Chuyển sang có biến thể
+    if (newVal === true) {
         product.value.price = '';
         product.value.stock = '';
         generateVariants();
-    } else { // Chuyển sang không có biến thể
+    } else {
+        product.value.variants.forEach(variant => {
+            if (variant.imageUrlPreview) URL.revokeObjectURL(variant.imageUrlPreview);
+        });
         product.value.variants = [];
-        // Clear all selected attribute values
         for (const attrId in selectedAttributeValues.value) {
             selectedAttributeValues.value[attrId] = [];
         }
@@ -379,26 +476,22 @@ const fetchCategory = async () => {
 
 const fetchBrand = async () => {
     try {
-        // Your Postman result shows the data is directly an array, so no 'data.data' nesting.
         const response = await axios.get('http://localhost:8000/api/admin/brands');
-        brands.value = response.data; // Assign the array of brands directly
+        brands.value = response.data;
         console.log('Brands loaded successfully:', brands.value);
     } catch (error) {
         console.error('Lỗi khi tải thương hiệu:', error);
         let errorMessage = 'Không thể tải danh sách thương hiệu.';
 
         if (error.response) {
-            // Server responded with an error status
             if (error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message;
             } else {
                 errorMessage = `Lỗi máy chủ: ${error.response.status}`;
             }
         } else if (error.request) {
-            // Request made, but no response received
             errorMessage = 'Không có phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.';
         } else {
-            // Something else happened
             errorMessage = `Lỗi yêu cầu: ${error.message}`;
         }
 
@@ -410,7 +503,6 @@ const fetchAttributes = async () => {
     try {
         const { data } = await axios.get(`http://localhost:8000/api/admin/attributes`);
         attributes.value = data.data;
-        // Khởi tạo selectedAttributeValues cho mỗi thuộc tính
         attributes.value.forEach(attr => {
             selectedAttributeValues.value[attr.id] = [];
         });
@@ -420,13 +512,23 @@ const fetchAttributes = async () => {
     }
 };
 
+const fetchAllScentGroupsForDisplay = async () => {
+    try {
+        const { data } = await axios.get(`http://localhost:8000/api/admin/scent-groups?all=true`);
+        allScentGroupsForDisplay.value = data.data || data;
+    } catch (error) {
+        console.error('Lỗi khi tải tất cả nhóm hương để hiển thị demo:', error);
+        Swal.fire('Lỗi!', 'Không thể tải danh sách nhóm hương để hiển thị.', 'error');
+    }
+};
+
 onMounted(() => {
     fetchCategory();
     fetchBrand();
     fetchAttributes();
+    fetchAllScentGroupsForDisplay();
 });
 
-// Hàm xử lý khi chọn file ảnh chính
 const onFileChangeMainImage = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -438,11 +540,13 @@ const onFileChangeMainImage = (e) => {
     }
 };
 
-// Hàm xử lý khi chọn nhiều file ảnh cho thư viện
 const onFileChangeGalleryImages = (e) => {
     const files = Array.from(e.target.files);
-    galleryImageFiles.value = []; // Reset mảng ảnh cũ
-    galleryImagePreviews.value = []; // Reset mảng preview cũ
+    galleryImageFiles.value.forEach(file => URL.revokeObjectURL(file));
+    galleryImagePreviews.value.forEach(url => URL.revokeObjectURL(url));
+
+    galleryImageFiles.value = [];
+    galleryImagePreviews.value = [];
 
     files.forEach(file => {
         galleryImageFiles.value.push(file);
@@ -450,24 +554,22 @@ const onFileChangeGalleryImages = (e) => {
     });
 };
 
-// Hàm xóa một ảnh trong thư viện
 const removeGalleryImage = (index) => {
-    // Revoke object URL to free memory
     URL.revokeObjectURL(galleryImagePreviews.value[index]);
     galleryImageFiles.value.splice(index, 1);
     galleryImagePreviews.value.splice(index, 1);
 };
 
-
-// Hàm xử lý khi chọn file ảnh cho biến thể
 const onFileChangeVariantImage = (e, index) => {
     const file = e.target.files[0];
     if (file) {
-        product.value.variants[index].imageFile = file; // Lưu File object
-        product.value.variants[index].imageUrlPreview = URL.createObjectURL(file); // Tạo URL xem trước
+        if (product.value.variants[index].imageUrlPreview) {
+            URL.revokeObjectURL(product.value.variants[index].imageUrlPreview);
+        }
+        product.value.variants[index].imageFile = file;
+        product.value.variants[index].imageUrlPreview = URL.createObjectURL(file);
     } else {
         product.value.variants[index].imageFile = null;
-        // Revoke previous URL if any
         if (product.value.variants[index].imageUrlPreview) {
             URL.revokeObjectURL(product.value.variants[index].imageUrlPreview);
         }
@@ -475,14 +577,11 @@ const onFileChangeVariantImage = (e, index) => {
     }
 };
 
-// Hàm chính để tự động tạo biến thể
 const generateVariants = () => {
-    // Lấy tất cả các giá trị thuộc tính đã chọn mà không rỗng
     const activeAttributeValueGroups = Object.values(selectedAttributeValues.value)
         .filter(group => group.length > 0);
 
     if (activeAttributeValueGroups.length === 0) {
-        // Nếu không có nhóm thuộc tính nào được chọn, xóa tất cả biến thể
         product.value.variants.forEach(variant => {
             if (variant.imageUrlPreview) URL.revokeObjectURL(variant.imageUrlPreview);
         });
@@ -490,7 +589,6 @@ const generateVariants = () => {
         return;
     }
 
-    // Tạo tất cả các tổ hợp
     const combinations = activeAttributeValueGroups.reduce((acc, currentGroup) => {
         if (acc.length === 0) return currentGroup.map(val => [val]);
 
@@ -503,20 +601,16 @@ const generateVariants = () => {
         return newCombinations;
     }, []);
 
-    // Chuyển đổi combinations thành cấu trúc biến thể mong muốn
     const newVariants = combinations.map(combination => {
-        // Tạo tên biến thể (ví dụ: "Đỏ / S")
         const name = combination.map(val => val.valueName).join(' / ');
-        // Lấy mảng các ID giá trị thuộc tính
         const attribute_values_ids = combination.map(val => val.valueId);
 
-        // Tìm biến thể hiện có nếu có cùng các giá trị thuộc tính để giữ lại dữ liệu nhập
         const existingVariant = product.value.variants.find(v =>
             JSON.stringify(v.attribute_values.sort()) === JSON.stringify(attribute_values_ids.sort())
         );
 
         return {
-            tempId: existingVariant ? existingVariant.tempId : Date.now() + Math.random(), // Giữ tempId nếu có
+            tempId: existingVariant ? existingVariant.tempId : Date.now() + Math.random(),
             name: name,
             sku: existingVariant ? existingVariant.sku : '',
             price: existingVariant ? existingVariant.price : null,
@@ -527,7 +621,6 @@ const generateVariants = () => {
         };
     });
 
-    // Xóa các URL preview của biến thể cũ không còn tồn tại
     product.value.variants.forEach(oldVariant => {
         const stillExists = newVariants.some(newVariant => newVariant.tempId === oldVariant.tempId);
         if (!stillExists && oldVariant.imageUrlPreview) {
@@ -538,7 +631,6 @@ const generateVariants = () => {
     product.value.variants = newVariants;
 };
 
-// Hàm xóa một biến thể cụ thể khỏi bảng (có thể xóa thủ công)
 const removeSpecificVariant = (index) => {
     if (product.value.variants[index].imageUrlPreview) {
         URL.revokeObjectURL(product.value.variants[index].imageUrlPreview);
@@ -547,40 +639,50 @@ const removeSpecificVariant = (index) => {
 };
 
 const addProduct = async () => {
-    errors.value = {}; // Reset lỗi mỗi khi gửi form
+    errors.value = {};
     try {
         const formData = new FormData();
 
-        // Append các trường thông tin sản phẩm chính
         for (const key in product.value) {
             if (key === 'has_variants') {
-                // Chuyển đổi boolean thành 0 hoặc 1
                 formData.append('has_variants', product.value.has_variants ? 1 : 0);
-            } else if (key !== 'slug' && key !== 'variants' && product.value[key] !== null && product.value[key] !== '') {
+            } else if (key === 'scent_groups_data') {
+                // Đảm bảo scent_groups_data được gửi dưới dạng JSON string
+                if (Object.keys(product.value.scent_groups_data).length > 0) {
+                    formData.append('scent_groups', JSON.stringify(product.value.scent_groups_data));
+                }
+            } else if (key === 'usage_profile') {
+                // --- BỔ SUNG: Thêm các trường usage_profile vào FormData ---
+                for (const upKey in product.value.usage_profile) {
+                    // Đảm bảo giá trị là số và không null/undefined trước khi append
+                    if (product.value.usage_profile[upKey] !== null && product.value.usage_profile[upKey] !== undefined) {
+                        formData.append(`usage_profile[${upKey}]`, product.value.usage_profile[upKey]);
+                    }
+                }
+                // --- KẾT THÚC BỔ SUNG ---
+            }
+            else if (key !== 'slug' && key !== 'variants' && key !== 'selected_scent_group_ids' && product.value[key] !== null && product.value[key] !== '') {
                 formData.append(key, product.value[key]);
             }
         }
 
-        // Append ảnh chính nếu có
         if (mainImageFile.value) {
             formData.append('image', mainImageFile.value);
         }
 
-        // Append nhiều ảnh gallery nếu có
+
         galleryImageFiles.value.forEach((file, index) => {
             formData.append(`gallery_images[${index}]`, file);
         });
 
 
-        // Append biến thể nếu product.has_variants là true
         if (product.value.has_variants) {
             if (product.value.variants.length === 0) {
                 Swal.fire('Lỗi!', 'Bạn phải tạo ít nhất một biến thể cho sản phẩm có biến thể.', 'error');
-                errors.value.variants = ['Bạn phải tạo ít nhất một biến thể.']; // Thêm lỗi vào object errors
-                return; // Ngăn không cho form gửi đi
+                errors.value.variants = ['Bạn phải tạo ít nhất một biến thể.'];
+                return;
             }
             product.value.variants.forEach((variant, index) => {
-                // Cần đảm bảo các trường này không null hoặc rỗng khi gửi đi
                 formData.append(`variants[${index}][sku]`, variant.sku || '');
                 formData.append(`variants[${index}][price]`, variant.price || '');
                 formData.append(`variants[${index}][stock]`, variant.stock || '');
@@ -589,7 +691,6 @@ const addProduct = async () => {
                     formData.append(`variants[${index}][image]`, variant.imageFile);
                 }
 
-                // Append các giá trị thuộc tính đã chọn
                 variant.attribute_values.forEach((attrValueId, attrIndex) => {
                     formData.append(`variants[${index}][attribute_values][${attrIndex}]`, attrValueId);
                 });

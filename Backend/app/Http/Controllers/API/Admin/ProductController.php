@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ProductUsageProfile;
 use App\Models\ProductImage; // Essential for handling additional images
 use App\Models\Category;
 use App\Models\Brand;
@@ -46,18 +47,26 @@ class ProductController extends Controller
             'gallery_images' => 'nullable|array', // Allows an array of files
             'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:4096', // Each file in the array
             'has_variants' => 'required|boolean',
-            'scent_groups' => 'nullable|array', // New: Validation for scent groups
-            'scent_groups.*.id' => 'required|exists:scent_groups,id',
-            'scent_groups.*.strength' => 'required|integer|min:1|max:5',
+            'scent_groups' => 'nullable|json', // Changed to json, as frontend sends stringified JSON
+            // 'scent_groups.*.id' => 'required|exists:scent_groups,id', // These rules are for array, need to validate after json_decode
+            // 'scent_groups.*.strength' => 'required|integer|min:1|max:100', // Adjusted max for 1-100 scale
+
+            // --- BỔ SUNG CÁC TRƯỜNG VALIDATION CHO USAGE PROFILE ---
+            'usage_profile' => 'nullable|array',
+            'usage_profile.spring_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.summer_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.autumn_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.winter_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.suitable_day' => 'nullable|integer|min:0|max:100',
+            'usage_profile.suitable_night' => 'nullable|integer|min:0|max:100',
+            'usage_profile.longevity_hours' => 'nullable|numeric|min:0|max:99.9', // Max based on 3,1 decimal
+            'usage_profile.sillage_range_m' => 'nullable|string|max:255',
+            // --- KẾT THÚC BỔ SUNG ---
         ];
 
         // Add validation rules depending on product type (with/without variants)
         if ($request->boolean('has_variants')) {
             $rules['variants'] = 'required|array|min:1';
-            // Validate that attribute values for variants are unique within a product
-            // This is a complex rule that might need a custom validation if you want to ensure
-            // combinations like (Red, Small) are unique across all variants of THIS product.
-            // For now, unique SKU is sufficient.
             $rules['variants.*.sku'] = 'required|string|max:255|unique:product_variants,sku';
             $rules['variants.*.price'] = 'required|numeric|min:0';
             $rules['variants.*.stock'] = 'required|integer|min:0';
@@ -67,9 +76,6 @@ class ProductController extends Controller
         } else {
             $rules['price'] = 'required|numeric|min:0';
             $rules['stock'] = 'required|integer|min:0';
-            // Add a rule for SKU of the default variant if needed
-            // For a default variant, you might want to generate SKU automatically,
-            // so no need to validate from request for this case.
         }
 
         try {
@@ -86,11 +92,11 @@ class ProductController extends Controller
                 'brand_id.exists' => 'Thương hiệu không hợp lệ.',
                 'image.image' => 'Tệp ảnh chính phải là hình ảnh.',
                 'image.mimes' => 'Định dạng ảnh chính không hợp lệ. Chỉ chấp nhận: jpeg, png, jpg, gif, svg.',
-                'image.max' => 'Kích thước ảnh chính không được vượt quá 2MB.', // Corrected from 4MB as per rule
+                'image.max' => 'Kích thước ảnh chính không được vượt quá 2MB.',
                 'gallery_images.array' => 'Thư viện ảnh phải là một mảng.',
                 'gallery_images.*.image' => 'Mỗi tệp trong thư viện ảnh phải là một hình ảnh.',
                 'gallery_images.*.mimes' => 'Mỗi tệp trong thư viện ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
-                'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 4MB.', // Corrected from 2MB as per rule
+                'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 4MB.',
                 'has_variants.required' => 'Loại sản phẩm là bắt buộc.',
                 'has_variants.boolean' => 'Loại sản phẩm không hợp lệ.',
                 'price.required' => 'Giá sản phẩm là bắt buộc.',
@@ -121,14 +127,54 @@ class ProductController extends Controller
                 'variants.*.attribute_values.*.exists' => 'Giá trị thuộc tính không hợp lệ.',
 
                 // Validation for scent groups
-                'scent_groups.array' => 'Dữ liệu nhóm hương không hợp lệ.',
-                'scent_groups.*.id.required' => 'ID nhóm hương là bắt buộc.',
-                'scent_groups.*.id.exists' => 'ID nhóm hương không hợp lệ.',
-                'scent_groups.*.strength.required' => 'Độ mạnh nhóm hương là bắt buộc.',
-                'scent_groups.*.strength.integer' => 'Độ mạnh nhóm hương phải là số nguyên.',
-                'scent_groups.*.strength.min' => 'Độ mạnh nhóm hương phải từ 1 trở lên.',
-                'scent_groups.*.strength.max' => 'Độ mạnh nhóm hương tối đa là 5.',
+                'scent_groups.json' => 'Dữ liệu nhóm hương không hợp lệ (phải là JSON string).',
+
+                // --- BỔ SUNG CÁC THÔNG BÁO LỖI CHO USAGE PROFILE ---
+                'usage_profile.array' => 'Dữ liệu hồ sơ sử dụng không hợp lệ.',
+                'usage_profile.spring_percent.integer' => 'Phần trăm mùa xuân phải là số nguyên.',
+                'usage_profile.spring_percent.min' => 'Phần trăm mùa xuân phải từ 0 trở lên.',
+                'usage_profile.spring_percent.max' => 'Phần trăm mùa xuân tối đa là 100.',
+                'usage_profile.summer_percent.integer' => 'Phần trăm mùa hè phải là số nguyên.',
+                'usage_profile.summer_percent.min' => 'Phần trăm mùa hè phải từ 0 trở lên.',
+                'usage_profile.summer_percent.max' => 'Phần trăm mùa hè tối đa là 100.',
+                'usage_profile.autumn_percent.integer' => 'Phần trăm mùa thu phải là số nguyên.',
+                'usage_profile.autumn_percent.min' => 'Phần trăm mùa thu phải từ 0 trở lên.',
+                'usage_profile.autumn_percent.max' => 'Phần trăm mùa thu tối đa là 100.',
+                'usage_profile.winter_percent.integer' => 'Phần trăm mùa đông phải là số nguyên.',
+                'usage_profile.winter_percent.min' => 'Phần trăm mùa đông phải từ 0 trở lên.',
+                'usage_profile.winter_percent.max' => 'Phần trăm mùa đông tối đa là 100.',
+                'usage_profile.suitable_day.integer' => 'Phần trăm ban ngày phải là số nguyên.',
+                'usage_profile.suitable_day.min' => 'Phần trăm ban ngày phải từ 0 trở lên.',
+                'usage_profile.suitable_day.max' => 'Phần trăm ban ngày tối đa là 100.',
+                'usage_profile.suitable_night.integer' => 'Phần trăm ban đêm phải là số nguyên.',
+                'usage_profile.suitable_night.min' => 'Phần trăm ban đêm phải từ 0 trở lên.',
+                'usage_profile.suitable_night.max' => 'Phần trăm ban đêm tối đa là 100.',
+                'usage_profile.longevity_hours.numeric' => 'Thời gian lưu hương phải là số.',
+                'usage_profile.longevity_hours.min' => 'Thời gian lưu hương không được âm.',
+                'usage_profile.longevity_hours.max' => 'Thời gian lưu hương không được vượt quá 99.9 giờ.',
+                'usage_profile.sillage_range_m.string' => 'Độ tỏa hương phải là chuỗi ký tự.',
+                'usage_profile.sillage_range_m.max' => 'Độ tỏa hương không được vượt quá 255 ký tự.',
+                // --- KẾT THÚC BỔ SUNG THÔNG BÁO LỖI ---
             ]);
+
+            // Decode scent_groups JSON string
+            $scentGroupsData = [];
+            if (isset($validatedData['scent_groups'])) {
+                $scentGroupsData = json_decode($validatedData['scent_groups'], true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw ValidationException::withMessages(['scent_groups' => 'Dữ liệu nhóm hương không phải là JSON hợp lệ.']);
+                }
+                // Validate the structure of decoded scent_groups data
+                $validator = validator($scentGroupsData, [
+                    '*.strength' => 'required|integer|min:1|max:100', // Adjusted max for 1-100 scale
+                ], [
+                    '*.strength.required' => 'Độ mạnh nhóm hương là bắt buộc.',
+                    '*.strength.integer' => 'Độ mạnh nhóm hương phải là số nguyên.',
+                    '*.strength.min' => 'Độ mạnh nhóm hương phải từ 1 trở lên.',
+                    '*.strength.max' => 'Độ mạnh nhóm hương tối đa là 100.',
+                ]);
+                $validator->validate(); // This will throw ValidationException on failure
+            }
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Lỗi validation khi thêm sản phẩm.',
@@ -157,9 +203,6 @@ class ProductController extends Controller
                 'brand_id' => $validatedData['brand_id'],
                 'image' => $imagePath,
                 'has_variants' => $validatedData['has_variants'],
-                // Price and stock for product table should be null if has_variants is true,
-                // as they will be managed by variants.
-                // Otherwise, they are directly taken from the request for the default variant.
                 'price' => !$validatedData['has_variants'] ? ($validatedData['price'] ?? 0) : null,
                 'stock' => !$validatedData['has_variants'] ? ($validatedData['stock'] ?? 0) : null,
             ];
@@ -179,7 +222,6 @@ class ProductController extends Controller
 
             // --- Handle Variants ---
             if ($validatedData['has_variants']) {
-                // If product has variants, create them based on the request
                 foreach ($validatedData['variants'] as $variantData) {
                     $variantImagePath = null;
                     if (isset($variantData['image']) && $variantData['image'] instanceof \Illuminate\Http\UploadedFile) {
@@ -201,43 +243,59 @@ class ProductController extends Controller
                     $variant->attributeValues()->sync($variantData['attribute_values']);
                 }
             } else {
-                // If product DOES NOT have variants, create a single default variant
-                // Use the product's price and stock for this default variant
-                // Generate a unique SKU for the default variant, e.g., using product slug
                 $defaultSku = Str::slug($validatedData['name']) . '-' . Str::random(5);
 
                 $product->variants()->create([
                     'sku' => $defaultSku,
-                    'price' => $validatedData['price'] ?? 0, // Use product's price
-                    'stock' => $validatedData['stock'] ?? 0, // Use product's stock
-                    'image' => $imagePath, // Use main product image for default variant
+                    'price' => $validatedData['price'] ?? 0,
+                    'stock' => $validatedData['stock'] ?? 0,
+                    'image' => $imagePath,
                     'sold' => 0,
                     'status' => 'available',
                     'barcode' => null,
-                    'description' => null, // Or can copy product description if desired
+                    'description' => null,
                 ]);
             }
             // --- End Handle Variants ---
 
             // --- Handle Scent Groups ---
-            if (isset($validatedData['scent_groups']) && is_array($validatedData['scent_groups'])) {
+            if (!empty($scentGroupsData)) {
                 $scentGroupSyncData = [];
-                foreach ($validatedData['scent_groups'] as $scentGroup) {
-                    $scentGroupSyncData[$scentGroup['id']] = ['strength' => $scentGroup['strength']];
+                foreach ($scentGroupsData as $scentGroupId => $data) {
+                    // $scentGroupId is the key from decoded JSON, which is the ID
+                    $scentGroupSyncData[$scentGroupId] = ['strength' => $data['strength']];
                 }
                 $product->scentGroups()->sync($scentGroupSyncData);
+            } else {
+                $product->scentGroups()->detach(); // If no scent groups, remove all existing
             }
             // --- End Handle Scent Groups ---
 
+            // --- BỔ SUNG: Handle Usage Profile ---
+            if (isset($validatedData['usage_profile'])) {
+                $usageProfileData = $validatedData['usage_profile'];
+                // Create a new usage profile entry
+                $product->usageProfile()->create([
+                    'spring_percent' => $usageProfileData['spring_percent'] ?? 0,
+                    'summer_percent' => $usageProfileData['summer_percent'] ?? 0,
+                    'autumn_percent' => $usageProfileData['autumn_percent'] ?? 0,
+                    'winter_percent' => $usageProfileData['winter_percent'] ?? 0,
+                    'suitable_day' => $usageProfileData['suitable_day'] ?? 0,
+                    'suitable_night' => $usageProfileData['suitable_night'] ?? 0,
+                    'longevity_hours' => $usageProfileData['longevity_hours'] ?? 0.0,
+                    'sillage_range_m' => $usageProfileData['sillage_range_m'] ?? '',
+                ]);
+            }
+            // --- KẾT THÚC BỔ SUNG ---
+
             DB::commit();
             // Load relationships to return full data
-            $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute', 'scentGroups']); // Load scentGroups
+            $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute', 'scentGroups', 'usageProfile']); // Load usageProfile
 
             return response()->json([
                 'message' => 'Sản phẩm đã được thêm thành công!',
                 'data' => new ProductDetailResource($product)
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
             // Delete all uploaded files if an error occurs
@@ -255,13 +313,21 @@ class ProductController extends Controller
         }
     }
 
+
     /**
      * Display the specified resource.
      * GET /api/admin/products/{product}
      */
     public function show(Product $product)
     {
-        $product->load(['category', 'brand', 'images', 'variants.attributeValues.attribute']);
+        $product->load([
+            'category',
+            'brand',
+            'images',
+            'variants.attributeValues.attribute',
+            'usageProfile',
+            'scentProfiles.scentGroup',
+        ]);
         return new ProductDetailResource($product);
     }
 
@@ -282,15 +348,27 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
             'remove_main_image' => 'boolean', // Flag to delete main image
 
-            // --- NEW: Validation for additional images and deletions ---
             'additional_images' => 'nullable|array', // New images to upload
             'additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'deleted_image_ids' => 'nullable|array', // IDs of existing images to delete
-            'deleted_image_ids.*' => 'integer|exists:product_images,id', // Ensure IDs are integers and exist
-            // -----------------------------------------------------------
+            'deleted_image_ids.*' => 'integer|exists:product_images,id',
 
             'has_variants' => 'sometimes|boolean',
-            'variants' => 'nullable|json',
+            'variants' => 'nullable|json', // Variants data is sent as JSON string
+
+            'scent_groups' => 'nullable|json', // New: Validation for scent groups (JSON string)
+
+            // --- BỔ SUNG CÁC TRƯỜNG VALIDATION CHO USAGE PROFILE (UPDATE) ---
+            'usage_profile' => 'nullable|array',
+            'usage_profile.spring_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.summer_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.autumn_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.winter_percent' => 'nullable|integer|min:0|max:100',
+            'usage_profile.suitable_day' => 'nullable|integer|min:0|max:100',
+            'usage_profile.suitable_night' => 'nullable|integer|min:0|max:100',
+            'usage_profile.longevity_hours' => 'nullable|numeric|min:0|max:99.9',
+            'usage_profile.sillage_range_m' => 'nullable|string|max:255',
+            // --- KẾT THÚC BỔ SUNG ---
         ];
 
         // Apply rules for price/stock based on has_variants, if present in request
@@ -299,9 +377,17 @@ class ProductController extends Controller
                 $rules['price'] = 'nullable|numeric|min:0'; // Price/stock become nullable if variants exist
                 $rules['stock'] = 'nullable|integer|min:0';
                 $rules['variants'] = 'required|array|min:1'; // If true, variants are required
-                $rules['variants.*.sku'] = ['required', 'string', 'max:255', Rule::unique('product_variants')->ignore($product->id, 'product_id')->where(function ($query) use ($product) {
-                    return $query->where('product_id', $product->id); // Ensure uniqueness within this product's variants
-                })]; // Complex rule for unique SKU per product
+                $rules['variants.*.sku'] = [
+                    'required',
+                    'string',
+                    'max:255',
+                    // This unique rule needs to ignore the current variant ID if it exists in the payload,
+                    // and ignore all other variants of this product. This is tricky.
+                    // The simplest is to ensure uniqueness across all product_variants except the current one being updated.
+                    Rule::unique('product_variants', 'sku')->ignore($product->id, 'product_id')->where(function ($query) use ($product) {
+                        return $query->where('product_id', $product->id); // For variants of THIS product
+                    })
+                ];
                 $rules['variants.*.price'] = 'required|numeric|min:0';
                 $rules['variants.*.stock'] = 'required|integer|min:0';
                 $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
@@ -315,22 +401,76 @@ class ProductController extends Controller
         }
 
 
-        $validated = $request->validate($rules, [
-            'name.unique' => 'Tên sản phẩm đã tồn tại.',
-            'image.image' => 'Tệp tải lên phải là hình ảnh.',
-            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
-            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
-            'gender.in' => 'Giới tính không hợp lệ.',
-            'price.numeric' => 'Giá phải là một số.',
-            'price.min' => 'Giá không được nhỏ hơn 0.',
-            'category_id.exists' => 'Danh mục không tồn tại.',
-            'brand_id.exists' => 'Thương hiệu không tồn tại.',
-            'variants.json' => 'Dữ liệu biến thể không hợp lệ.',
-            'additional_images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
-            'additional_images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
-            'additional_images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
-            'deleted_image_ids.*.exists' => 'Ảnh phụ cần xóa không tồn tại.',
-        ]);
+        try {
+            $validated = $request->validate($rules, [
+                'name.unique' => 'Tên sản phẩm đã tồn tại.',
+                'image.image' => 'Tệp tải lên phải là hình ảnh.',
+                'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
+                'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+                'gender.in' => 'Giới tính không hợp lệ.',
+                'price.numeric' => 'Giá phải là một số.',
+                'price.min' => 'Giá không được nhỏ hơn 0.',
+                'category_id.exists' => 'Danh mục không tồn tại.',
+                'brand_id.exists' => 'Thương hiệu không tồn tại.',
+                'variants.json' => 'Dữ liệu biến thể không hợp lệ.', // If variants sent as JSON string
+                'additional_images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
+                'additional_images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
+                'additional_images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
+                'deleted_image_ids.*.exists' => 'Ảnh phụ cần xóa không tồn tại.',
+
+                // --- BỔ SUNG CÁC THÔNG BÁO LỖI CHO USAGE PROFILE (UPDATE) ---
+                'usage_profile.array' => 'Dữ liệu hồ sơ sử dụng không hợp lệ.',
+                'usage_profile.spring_percent.integer' => 'Phần trăm mùa xuân phải là số nguyên.',
+                'usage_profile.spring_percent.min' => 'Phần trăm mùa xuân phải từ 0 trở lên.',
+                'usage_profile.spring_percent.max' => 'Phần trăm mùa xuân tối đa là 100.',
+                'usage_profile.summer_percent.integer' => 'Phần trăm mùa hè phải là số nguyên.',
+                'usage_profile.summer_percent.min' => 'Phần trăm mùa hè phải từ 0 trở lên.',
+                'usage_profile.summer_percent.max' => 'Phần trăm mùa hè tối đa là 100.',
+                'usage_profile.autumn_percent.integer' => 'Phần trăm mùa thu phải là số nguyên.',
+                'usage_profile.autumn_percent.min' => 'Phần trăm mùa thu phải từ 0 trở lên.',
+                'usage_profile.autumn_percent.max' => 'Phần trăm mùa thu tối đa là 100.',
+                'usage_profile.winter_percent.integer' => 'Phần trăm mùa đông phải là số nguyên.',
+                'usage_profile.winter_percent.min' => 'Phần trăm mùa đông phải từ 0 trở lên.',
+                'usage_profile.winter_percent.max' => 'Phần trăm mùa đông tối đa là 100.',
+                'usage_profile.suitable_day.integer' => 'Phần trăm ban ngày phải là số nguyên.',
+                'usage_profile.suitable_day.min' => 'Phần trăm ban ngày phải từ 0 trở lên.',
+                'usage_profile.suitable_day.max' => 'Phần trăm ban ngày tối đa là 100.',
+                'usage_profile.suitable_night.integer' => 'Phần trăm ban đêm phải là số nguyên.',
+                'usage_profile.suitable_night.min' => 'Phần trăm ban đêm phải từ 0 trở lên.',
+                'usage_profile.suitable_night.max' => 'Phần trăm ban đêm tối đa là 100.',
+                'usage_profile.longevity_hours.numeric' => 'Thời gian lưu hương phải là số.',
+                'usage_profile.longevity_hours.min' => 'Thời gian lưu hương không được âm.',
+                'usage_profile.longevity_hours.max' => 'Thời gian lưu hương không được vượt quá 99.9 giờ.',
+                'usage_profile.sillage_range_m.string' => 'Độ tỏa hương phải là chuỗi ký tự.',
+                'usage_profile.sillage_range_m.max' => 'Độ tỏa hương không được vượt quá 255 ký tự.',
+                // --- KẾT THÚC BỔ SUNG THÔNG BÁO LỖI ---
+            ]);
+
+            // Decode scent_groups JSON string for update
+            $scentGroupsData = [];
+            if (isset($validated['scent_groups'])) {
+                $scentGroupsData = json_decode($validated['scent_groups'], true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw ValidationException::withMessages(['scent_groups' => 'Dữ liệu nhóm hương không phải là JSON hợp lệ.']);
+                }
+                // Validate the structure of decoded scent_groups data
+                $validator = validator($scentGroupsData, [
+                    '*.strength' => 'required|integer|min:1|max:100', // Adjusted max for 1-100 scale
+                ], [
+                    '*.strength.required' => 'Độ mạnh nhóm hương là bắt buộc.',
+                    '*.strength.integer' => 'Độ mạnh nhóm hương phải là số nguyên.',
+                    '*.strength.min' => 'Độ mạnh nhóm hương phải từ 1 trở lên.',
+                    '*.strength.max' => 'Độ mạnh nhóm hương tối đa là 100.',
+                ]);
+                $validator->validate(); // This will throw ValidationException on failure
+            }
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Lỗi validation khi cập nhật sản phẩm.',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
 
         DB::beginTransaction();
         try {
@@ -366,7 +506,9 @@ class ProductController extends Controller
                 'remove_main_image',
                 'additional_images',
                 'deleted_image_ids',
-                'variants'
+                'variants',
+                'scent_groups', // Exclude as it's handled separately
+                'usage_profile', // Exclude as it's handled separately
             ])->toArray();
 
             // Explicitly set price/stock to null if has_variants is true and they are not provided
@@ -399,7 +541,6 @@ class ProductController extends Controller
                     ]);
                 }
             }
-            // -----------------------------------------------
 
             // --- Handle Variants ---
             $submittedVariantsData = [];
@@ -415,11 +556,15 @@ class ProductController extends Controller
 
             if (isset($validated['has_variants']) && $validated['has_variants']) { // If product should have variants
                 foreach ($submittedVariantsData as $variantData) {
+                    // This logic for updating/creating variants is complex with unique SKUs.
+                    // It's generally better to handle it with a dedicated service or more robust method
+                    // to prevent race conditions or unexpected unique constraint violations.
+                    // For now, assuming `id` is present for existing variants and missing for new ones.
                     if (isset($variantData['id']) && in_array($variantData['id'], $existingVariantIds)) {
                         $variant = ProductVariant::find($variantData['id']);
                         if ($variant) {
                             $variantValidated = validator($variantData, [
-                                'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants')->ignore($variant->id)],
+                                'sku' => ['required', 'string', 'max:255', Rule::unique('product_variants', 'sku')->ignore($variant->id)],
                                 'price' => 'required|numeric|min:0',
                                 'stock' => 'required|integer|min:0',
                                 'sold' => 'sometimes|integer|min:0',
@@ -431,8 +576,8 @@ class ProductController extends Controller
                             $variant->update($variantValidated);
                             $variantsToKeepIds[] = $variant->id;
 
-                            if (isset($variantData['attribute_value_ids']) && is_array($variantData['attribute_value_ids'])) {
-                                $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_value_ids'])->pluck('id');
+                            if (isset($variantData['attribute_values']) && is_array($variantData['attribute_values'])) {
+                                $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
                                 $variant->attributeValues()->sync($validAttributeValueIds);
                             } else {
                                 $variant->attributeValues()->detach();
@@ -452,24 +597,67 @@ class ProductController extends Controller
                         $newVariant = $product->variants()->create($newVariantData);
                         $variantsToKeepIds[] = $newVariant->id;
 
-                        if (isset($variantData['attribute_value_ids']) && is_array($variantData['attribute_value_ids'])) {
-                            $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_value_ids'])->pluck('id');
+                        if (isset($variantData['attribute_values']) && is_array($variantData['attribute_values'])) {
+                            $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
                             $newVariant->attributeValues()->attach($validAttributeValueIds);
                         }
                     }
                 }
             } else { // If product should NOT have variants
-                // Ensure all existing variants are soft-deleted
+                // Ensure all existing variants are deleted
                 $product->variants()->delete();
                 $variantsToKeepIds = []; // No variants to keep
             }
 
-            // Delete variants that were removed from the frontend (only if has_variants is true initially)
-            if ($product->has_variants || ($request->has('has_variants') && !$request->boolean('has_variants'))) {
-                ProductVariant::where('product_id', $product->id)
-                    ->whereNotIn('id', $variantsToKeepIds)
-                    ->delete();
+            // Delete variants that were removed from the frontend
+            ProductVariant::where('product_id', $product->id)
+                ->whereNotIn('id', $variantsToKeepIds)
+                ->delete();
+            // --- End Handle Variants ---
+
+            // --- Handle Scent Groups (Update) ---
+            if (!empty($scentGroupsData)) {
+                $scentGroupSyncData = [];
+                foreach ($scentGroupsData as $scentGroupItem) { // Iterate over each item
+                    // Ensure 'id' exists and is valid before using it
+                    if (isset($scentGroupItem['id']) && $scentGroupItem['id'] > 0) {
+                        $scentGroupId = $scentGroupItem['id'];
+                        $strength = $scentGroupItem['strength'] ?? 50; // Use default if strength is missing
+                        $scentGroupSyncData[$scentGroupId] = ['strength' => $strength];
+                    } else {
+                        // Optionally log or handle cases where an item doesn't have a valid ID
+                        \Log::warning('Scent group item without valid ID encountered during sync preparation.', ['item' => $scentGroupItem]);
+                    }
+                }
+                // \Log::info('Prepared scentGroupSyncData for sync:', ['data' => $scentGroupSyncData]); // Uncomment for further debugging
+                $product->scentGroups()->sync($scentGroupSyncData);
+            } else {
+                $product->scentGroups()->detach(); // If no scent groups, remove all existing
             }
+            // --- End Handle Scent Groups ---
+
+            // --- BỔ SUNG: Handle Usage Profile (Update) ---
+            if (isset($validated['usage_profile'])) {
+                $usageProfileData = $validated['usage_profile'];
+                $product->usageProfile()->updateOrCreate(
+                    ['product_id' => $product->id], // Find by product_id
+                    [
+                        'spring_percent' => $usageProfileData['spring_percent'] ?? 0,
+                        'summer_percent' => $usageProfileData['summer_percent'] ?? 0,
+                        'autumn_percent' => $usageProfileData['autumn_percent'] ?? 0,
+                        'winter_percent' => $usageProfileData['winter_percent'] ?? 0,
+                        'suitable_day' => $usageProfileData['suitable_day'] ?? 0,
+                        'suitable_night' => $usageProfileData['suitable_night'] ?? 0,
+                        'longevity_hours' => $usageProfileData['longevity_hours'] ?? 0.0,
+                        'sillage_range_m' => $usageProfileData['sillage_range_m'] ?? '',
+                    ]
+                );
+            } else {
+                // If usage_profile is not sent, you might want to delete it or keep it as is.
+                // For now, let's delete it if no data is provided to ensure data integrity.
+                $product->usageProfile()->delete();
+            }
+            // --- KẾT THÚC BỔ SUNG ---
 
             DB::commit();
 
@@ -478,7 +666,9 @@ class ProductController extends Controller
                 'images',
                 'category',
                 'brand',
-                'variants.attributeValues.attribute'
+                'variants.attributeValues.attribute',
+                'scentGroups', // Reload scentGroups
+                'usageProfile', // Reload usageProfile
             ]);
             return new ProductDetailResource($product);
         } catch (ValidationException $e) {
