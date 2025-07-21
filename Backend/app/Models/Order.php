@@ -75,7 +75,7 @@ class Order extends Model
      */
     public function orderAddress()
     {
-        return $this->hasOne(OrderAddress::class); // Mối quan hệ 1-1
+        return $this->hasOne(OrderAddress::class, 'order_id'); // Mối quan hệ 1-1
     }
 
     public function payments() // Đổi tên thành payments để hợp lý hơn với hasMany
@@ -114,4 +114,7 @@ class Order extends Model
     {
         return $this->status === self::STATUS_PAYMENT_FAILED;
     }
+
+
+    
 }
