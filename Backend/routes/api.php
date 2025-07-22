@@ -22,7 +22,9 @@ use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\API\Client\UserProfileController;
 use App\Http\Controllers\API\Client\UserAddressController;
 use App\Http\Controllers\API\Client\LocationController;
+use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
+
 
 Route::middleware([CorsMiddleware::class])->group(function () {
 
@@ -76,6 +78,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
         });
+
+        Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {

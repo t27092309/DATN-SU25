@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaymentResource;
+use App\Http\Requests\LookupOrderRequest;
+use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
@@ -98,4 +100,6 @@ class OrderController extends Controller
         $order->load('payments');
         return PaymentResource::collection($order->payments);
     }
+
+  
 }
