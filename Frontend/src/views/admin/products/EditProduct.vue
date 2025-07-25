@@ -120,42 +120,41 @@
                                     </div>
                                 </div>
                             </div>
-<div class="col-12">
-    <ScentGroupSelector
-        v-model:selectedScentGroupIds="product.scentGroups.selectedScentGroupIds"
-        v-model:scentGroupsData="product.scentGroups.scentGroupsData"
-        :allScentGroups="allScentGroups"
-    />
-    <small v-if="errors.scent_groups" class="form-text text-danger">{{
-        errors.scent_groups[0] }}</small>
+                            <div class="col-12">
+                                <ScentGroupSelector
+                                    v-model:selectedScentGroupIds="product.scentGroups.selectedScentGroupIds"
+                                    v-model:scentGroupsData="product.scentGroups.scentGroupsData"
+                                    :allScentGroups="allScentGroups" />
+                                <small v-if="errors.scent_groups" class="form-text text-danger">{{
+                                    errors.scent_groups[0] }}</small>
 
-    <div v-if="sortedScentProfiles.length > 0" class="mt-3">
-        <h6>Mức độ hương:</h6>
-        <div class="scent-strength-bars">
-            <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
-                class="scent-bar-item mb-2 d-flex align-items-center">
-                <span class="scent-name me-2" :style="{
-                    'min-width': '120px',
-                    'max-width': '120px',
-                    'white-space': 'nowrap',
-                    'overflow': 'hidden',
-                    'text-overflow': 'ellipsis',
-                }">{{ scent.scent_group_name }}:</span>
-                <div class="progress flex-grow-1" style="height: 20px;">
-                    <div class="progress-bar" role="progressbar"
-                        :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
-                        :aria-valuenow="scent.strength" aria-valuemin="0"
-                        aria-valuemax="100">
-                        <span
-                            :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
-                            {{ scent.strength }}%
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
+                                <div v-if="sortedScentProfiles.length > 0" class="mt-3">
+                                    <h6>Mức độ hương:</h6>
+                                    <div class="scent-strength-bars">
+                                        <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
+                                            class="scent-bar-item mb-2 d-flex align-items-center">
+                                            <span class="scent-name me-2" :style="{
+                                                'min-width': '120px',
+                                                'max-width': '120px',
+                                                'white-space': 'nowrap',
+                                                'overflow': 'hidden',
+                                                'text-overflow': 'ellipsis',
+                                            }">{{ scent.scent_group_name }}:</span>
+                                            <div class="progress flex-grow-1" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                    :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
+                                                    :aria-valuenow="scent.strength" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                    <span
+                                                        :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
+                                                        {{ scent.strength }}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
 
@@ -337,7 +336,9 @@ const route = useRoute();
 const categories = ref([]);
 const brands = ref([]);
 const attributes = ref([]); // Stores all attributes with their nested values
-
+// --- NEW STATE FOR GALLERY IMAGES ---
+const newGalleryImages = ref([]); // Lưu trữ các File object của ảnh mới upload
+const galleryImagesToDelete = ref([]); // Lưu trữ IDs của các ảnh cũ muốn xóa
 // Dữ liệu cho ScentGroupSelector
 const allScentGroups = ref([]); // Tất cả nhóm hương có sẵn từ API
 
@@ -369,6 +370,7 @@ const product = ref({
         sillage_range_m: '',
     },
     variants: [],
+    gallery_images: [] // Sẽ chứa các ảnh gallery hiện có từ API
 });
 
 // Form-related state
@@ -387,10 +389,21 @@ watch(() => product.value.name, (newName) => {
 // --- Utility Functions ---
 
 const getImageUrl = (imagePath) => {
+    if (!imagePath) return null; // Handle null or empty paths
+
     if (imagePath instanceof File) {
         return URL.createObjectURL(imagePath);
     }
-    return imagePath ? `http://localhost:8000/storage/${imagePath}` : null;
+
+    // Check if the imagePath is already a full HTTP/HTTPS URL.
+    // This is the ideal scenario for your current backend output.
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath; // Use the provided URL directly
+    }
+
+    // Fallback for relative paths, though your backend might not send these for main images now.
+    // Keep this if you anticipate receiving relative paths like 'products/image.jpg' from other APIs or contexts.
+    return `http://localhost:8000/storage/${imagePath}`;
 };
 
 const generateSlug = (text) => {
@@ -430,6 +443,68 @@ watch(removeMainImage, (newValue) => {
         }
     }
 });
+
+// --- NEW: Gallery Image Handling ---
+
+// Khi chọn ảnh mới từ input
+const onGalleryFilesChange = (e) => {
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+        // Thêm ảnh mới vào newGalleryImages
+        newGalleryImages.value.push(files[i]);
+        // Đồng thời thêm vào product.gallery_images để hiển thị ngay lập tức
+        // Gán một ID tạm thời (âm) để phân biệt với ảnh cũ từ DB
+        product.value.gallery_images.push({
+            id: -Date.now() - i, // ID âm duy nhất
+            path: files[i], // Lưu trữ File object trực tiếp để preview
+            isNew: true, // Đánh dấu đây là ảnh mới
+            order: product.value.gallery_images.length // Gán thứ tự ban đầu
+        });
+    }
+    // Xóa giá trị của input file để có thể chọn lại cùng file
+    e.target.value = '';
+};
+
+// Xóa ảnh cũ hoặc ảnh mới trong preview
+const removeGalleryImage = (imageToRemove) => {
+    Swal.fire({
+        title: 'Bạn có chắc chắn?',
+        text: "Ảnh này sẽ bị xóa khỏi thư viện!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Có, xóa nó đi!',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            product.value.gallery_images = product.value.gallery_images.filter(img => {
+                if (img.id === imageToRemove.id) {
+                    // Nếu là ảnh cũ từ DB, thêm ID vào danh sách xóa
+                    if (!img.isNew) {
+                        galleryImagesToDelete.value.push(img.id);
+                    }
+                    return false; // Loại bỏ ảnh này khỏi mảng hiển thị
+                }
+                return true;
+            });
+            // Cập nhật lại thứ tự
+            updateGalleryImageOrder();
+            Swal.fire(
+                'Đã xóa!',
+                'Ảnh đã được đánh dấu để xóa khi lưu sản phẩm.',
+                'success'
+            );
+        }
+    });
+};
+
+// Cập nhật thứ tự sau khi kéo thả
+const updateGalleryImageOrder = () => {
+    product.value.gallery_images.forEach((image, index) => {
+        image.order = index + 1; // Đặt thứ tự dựa trên vị trí trong mảng
+    });
+};
 
 
 // --- Data Fetching ---
@@ -474,10 +549,18 @@ const fetchProduct = async () => {
                     attribute_id: av.pivot.attribute_id,
                     value_id: av.pivot.attribute_value_id
                 })) : []
+            })) : [],
+            gallery_images: data.data.images ? data.data.images.map((path, index) => ({
+                id: data.data.image_ids ? data.data.image_ids[index] : index, // Giả định có mảng image_ids
+                path: path,
+                isNew: false,
+                order: index + 1
             })) : []
         };
 
         currentImageUrl.value = getImageUrl(product.value.image);
+        newGalleryImages.value = [];
+        galleryImagesToDelete.value = [];
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm:', error);
         Swal.fire({
@@ -536,8 +619,12 @@ const fetchCategory = async () => {
  */
 const fetchBrand = async () => {
     try {
+        // 'data' here will directly be the array from your Postman result
         const { data } = await axios.get('http://localhost:8000/api/admin/brands');
-        brands.value = data.data;
+
+        // Assign the 'data' (which is the array) directly to brands.value
+        brands.value = data; // FIX IS HERE
+
         console.log('Brands loaded successfully:', brands.value);
     } catch (error) {
         console.error('Lỗi khi tải thương hiệu:', error);
@@ -664,23 +751,46 @@ const updateProduct = async () => {
         }
 
         // Append Scent Groups data
-          const formattedScentGroups = product.value.scentGroups.selectedScentGroupIds
+        const formattedScentGroups = product.value.scentGroups.selectedScentGroupIds
             .filter(id => id && id > 0) // Lọc bỏ các giá trị null, undefined, 0, hoặc không phải số
             .map(id => ({
                 id: id,
-                strength: product.value.scentGroups.scentGroupsData[id]?.strength || 50 
+                strength: product.value.scentGroups.scentGroupsData[id]?.strength || 50
             }));
-console.log('Sending scent_groups:', formattedScentGroups);
-formData.append('scent_groups', JSON.stringify(formattedScentGroups));
-        // --- Bắt đầu sửa đổi cho Usage Profile ---
+        console.log('Sending scent_groups:', formattedScentGroups);
+        formData.append('scent_groups', JSON.stringify(formattedScentGroups));
+
         // Duyệt qua từng trường của usageProfile và thêm vào FormData
         for (const key in product.value.usageProfile) {
             const value = product.value.usageProfile[key];
             // Thêm tiền tố 'usage_profile' để Laravel dễ dàng nhận diện và validate
             formData.append(`usage_profile[${key}]`, value === null || value === undefined ? '' : value);
         }
-        // --- Kết thúc sửa đổi cho Usage Profile ---
 
+        // --- Append Gallery Images Data ---
+        // 1. Ảnh mới (File objects)
+        newGalleryImages.value.forEach((file, index) => {
+            formData.append(`new_gallery_images[${index}]`, file);
+        });
+
+        // 2. ID của các ảnh cũ cần xóa
+        if (galleryImagesToDelete.value.length > 0) {
+            formData.append('deleted_gallery_image_ids', JSON.stringify(galleryImagesToDelete.value));
+        }
+
+        // 3. Thứ tự và ID của các ảnh gallery hiện có (cả cũ và mới đã được hiển thị)
+        // Đây là cách bạn gửi thông tin thứ tự về backend
+        const existingGalleryImagesData = product.value.gallery_images
+            .filter(img => !img.isNew) // Chỉ gửi thông tin của ảnh cũ (để cập nhật thứ tự)
+            .map(img => ({
+                id: img.id,
+                order: img.order
+            }));
+        // Các ảnh mới sẽ được xử lý riêng thông qua new_gallery_images và sẽ được gán ID và thứ tự mới ở backend.
+
+        if (existingGalleryImagesData.length > 0) {
+            formData.append('existing_gallery_images_order', JSON.stringify(existingGalleryImagesData));
+        }
         // Prepare and append variants data
         const variantsData = product.value.variants.map(variant => {
             const variantCopy = { ...variant };

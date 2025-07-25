@@ -16,7 +16,7 @@ class ProductResource extends JsonResource
             'name' => $this->name, // Tên sản phẩm
             'description' => $this->description, // Mô tả sản phẩm
             'category_name' => $this->whenLoaded('category', fn() => $this->category->name ?? 'No Category'), // Danh mục
-            'image' => $this->image ? Storage::url($this->image) : ($this->whenLoaded('images', fn() => $this->images->first()?->image_url ? Storage::url($this->images->first()->image_url) : null)) ?? 'https://via.placeholder.com/600x600.png',
+            'image' => $this->image ? config('app.url') . '/' . ltrim(Storage::url($this->image), '/') : 'https://via.placeholder.com/600x600.png',
             'variants' => $this->whenLoaded('variants', function () { // Biến thể
                 return $this->variants->map(function ($variant) {
                     return [
