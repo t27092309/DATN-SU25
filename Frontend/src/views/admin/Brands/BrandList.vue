@@ -1,96 +1,89 @@
 <template>
-  <div class="container">
+  <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-        <ul class="breadcrumbs mb-3">
+      <div class="mb-6 flex justify-between items-center">
+        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }">
-              <i class="icon-home"></i>
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+              <i class="fas fa-home"></i>
             </router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#">Thương hiệu</a>
+            <a href="#" class="hover:text-blue-600">Thương hiệu</a>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#">{{ route.meta.title }}</a>
+            <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
           </li>
         </ul>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title d-flex justify-content-between align-items-center">
-            <h1>{{ route.meta.title }}</h1>
-            <div class="d-flex">
-              <router-link :to="{ name: 'BrandTrash' }" class="btn btn-sm btn-warning me-2">
-                <i class="fas fa-trash"></i> Thùng rác
-              </router-link>
-              <router-link :to="{ name: 'BrandAdd' }" class="btn btn-sm btn-primary">
-                <i class="fas fa-plus"></i> Thêm mới
-              </router-link>
-            </div>
+
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6 flex justify-between items-center">
+          <h1 class="text-2xl font-semibold">Quản lý thương hiệu</h1>
+          <div class="flex space-x-2">
+            <router-link :to="{ name: 'BrandTrash' }"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 text-white">
+              <i class="fas fa-trash mr-2"></i> Thùng rác
+            </router-link>
+            <router-link :to="{ name: 'BrandAdd' }"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <i class="fas fa-plus mr-2"></i> Thêm mới
+            </router-link>
           </div>
         </div>
+
         <div class="card-body">
-          <div class="table-responsive">
-            <table id="brands-table" class="display table table-bordered">
-              <thead>
+          <div class="overflow-x-auto">
+            <table id="brands-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
                 <tr>
-                  <th>ID</th>
-                  <th>Tên</th>
-                  <th>Slug</th>
-                  <th>Logo</th>
-                  <th style="width: 15%">Hành động</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    style="width: 15%">Hành động</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="brand in brands" :key="brand.id">
-                  <td>{{ brand.id }}</td>
-                  <td>{{ brand.name || "Không có" }}</td>
-                  <td>{{ brand.slug || "Không có" }}</td>
-                  <td>
-                    <img
-                      v-if="brand.logo"
-                      :src="brand.logo"
-                      alt="Brand Logo"
-                      style="width: 50px; height: 50px; object-fit: contain;"
-                    />
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ brand.id }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ brand.name || "Không có" }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ brand.slug || "Không có" }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <img v-if="brand.logo" :src="brand.logo" alt="Brand Logo"
+                      class="w-12 h-12 object-contain rounded" />
                     <span v-else>Không có</span>
                   </td>
-                  <td>
-                    <div class="form-button-action">
-                      <router-link
-                        :to="{ name: 'BrandEdit', params: { id: brand.id } }"
-                        data-bs-toggle="tooltip"
-                        title="Sửa"
-                        class="btn btn-link btn-primary"
-                      >
-                        <i class="fa fa-edit"></i> Sửa
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex space-x-2 justify-end">
+                      <router-link :to="{ name: 'BrandEdit', params: { id: brand.id } }"
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-edit mr-1"></i> Sửa
                       </router-link>
-                      <button
-                        type="button"
-                        data-bs-toggle="tooltip"
-                        title="Xóa"
-                        class="btn btn-link btn-danger"
-                        @click="confirmActionWithSwal(brand.id, 'delete')"
-                      >
-                        <i class="fa fa-times"></i> Xóa
+                      <button type="button"
+                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        @click="confirmActionWithSwal(brand.id, 'delete')">
+                        <i class="fas fa-times mr-1"></i> Xóa
                       </button>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="!brands || brands.length === 0">
-                  <td colspan="5" class="text-center">Không có thương hiệu nào.</td>
+                  <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    Không có thương hiệu nào.
+                  </td>
                 </tr>
               </tbody>
             </table>
-            <p v-if="listMessage" :class="listMessageClass">
+            <p v-if="listMessage" :class="listMessageClass" class="mt-4 text-sm">
               {{ listMessage }}
             </p>
           </div>
@@ -120,21 +113,26 @@ let dataTableInstance = null;
 const fetchBrands = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/admin/brands");
-    brands.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    const data = Array.isArray(response.data) ? response.data : response.data.data || [];
+    brands.value = data;
+
     if (!brands.value.length) {
       listMessage.value = "Không có thương hiệu nào.";
-      listMessageClass.value = "text-info";
+      listMessageClass.value = "text-blue-500"; // Tailwind info color
+      // Quan trọng: Hủy DataTables nếu không có dữ liệu
+      destroyDataTableOnly();
     } else {
       listMessage.value = ""; // Clear message if data is loaded
+      // Quan trọng: Khởi tạo/tái khởi tạo DataTables chỉ khi có dữ liệu
+      await initializeDataTable();
     }
-    // Re-initialize DataTables after data change
-    await destroyAndReinitializeDataTable();
 
   } catch (error) {
     listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách thương hiệu!";
-    listMessageClass.value = "text-danger";
+    listMessageClass.value = "text-red-500"; // Tailwind danger color
     console.error("Lỗi khi tải danh sách:", error);
-    await destroyAndReinitializeDataTable(); // Still re-init even on error to clear table if needed
+    // Hủy DataTables nếu có lỗi xảy ra và không có dữ liệu được hiển thị
+    destroyDataTableOnly();
   }
 };
 
@@ -199,20 +197,36 @@ const confirmActionWithSwal = async (id, type) => {
   }
 };
 
-// Function to destroy and reinitialize DataTables
-const destroyAndReinitializeDataTable = async () => {
+// Hàm chỉ hủy DataTables instance
+const destroyDataTableOnly = () => {
   if (dataTableInstance) {
-    dataTableInstance.destroy(); // Destroy the existing DataTable instance
-    dataTableInstance = null; // Clear the instance
+    dataTableInstance.destroy();
+    dataTableInstance = null;
   }
-  await nextTick(); // Wait for Vue to render the updated table
+};
+
+// Hàm chỉ khởi tạo DataTables instance
+const initializeDataTable = async () => {
+  destroyDataTableOnly(); // Đảm bảo hủy instance cũ trước khi tạo mới
+  await nextTick(); // Chờ Vue cập nhật DOM
+
   if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
     dataTableInstance = jQuery("#brands-table").DataTable({
-      pageLength: 10, // Số hàng trên mỗi trang
+      pageLength: 10,
       responsive: true,
       destroy: true, // Quan trọng: cho phép DataTables được khởi tạo lại
+      language: { // Added Vietnamese language options for DataTables
+        lengthMenu: "Hiển thị _MENU_ mục",
+        search: "Tìm kiếm:",
+        info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+        paginate: {
+          previous: "Trước",
+          next: "Tiếp",
+        },
+        emptyTable: "Không có dữ liệu trong bảng",
+      },
       drawCallback: () => {
-        jQuery('[data-bs-toggle="tooltip"]').tooltip(); // Re-initialize Bootstrap tooltips
+        // No Bootstrap tooltips needed with Tailwind.
       },
     });
   } else {
@@ -225,7 +239,6 @@ onMounted(async () => {
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
-    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
   ];
 
   const loadScript = (src) =>
@@ -233,9 +246,7 @@ onMounted(async () => {
       const script = document.createElement("script");
       script.src = src;
       script.async = true;
-      script.onload = () => {
-        resolve();
-      };
+      script.onload = () => resolve();
       script.onerror = () => {
         console.error(`Failed to load: ${src}`);
         reject(new Error(`Không thể tải script: ${src}`));
@@ -267,58 +278,60 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Các style giữ nguyên như BrandList.vue trước đó */
+/* Base container and page layout */
 .container {
   max-width: 1200px;
-  margin: 50px auto;
-}
-.form-button-action {
-  display: flex;
-  flex-direction: column; /* Stack buttons vertically */
-  gap: 5px; /* Small gap between buttons */
-  white-space: nowrap; /* Prevent text wrapping inside buttons */
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.form-button-action .btn {
-  width: 100%; /* Make buttons take full width of their container */
-  text-align: center;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-}
-.table th {
-  background-color: #f8f9fa;
-}
-.text-success {
-  color: green;
-  margin-top: 15px;
-}
-.text-danger {
-  color: red;
-  margin-top: 15px;
-}
-.text-info {
-  color: #17a2b8;
-  margin-top: 15px;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.breadcrumbs {
-  display: flex;
-  list-style: none;
+.page-inner {
   padding: 0;
 }
-.breadcrumbs li {
-  margin-right: 10px;
+
+/* Specific styling for the DataTables generated elements */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_length select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236B7280'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  min-width: unset;
+  width: auto;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Pagination and info */
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dataTables_info {
+  margin-top: 1rem;
+}
+
+/* Specific styling for the DataTables table itself */
+.dataTables_wrapper table.dataTable {
+  border-collapse: collapse !important;
+}
+
+.dataTables_wrapper table.dataTable th,
+.dataTables_wrapper table.dataTable td {
+  padding: 0.75rem 1.5rem;
 }
 </style>

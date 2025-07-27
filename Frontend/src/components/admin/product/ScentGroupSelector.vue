@@ -1,7 +1,7 @@
 <template>
     <div class="scent-group-selector">
-        <div class="input-group mb-3">
-            <select class="form-select" v-model="newScentGroupId" @change="addScentGroup">
+        <div class="mb-4">
+            <select class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-md shadow-sm leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" v-model="newScentGroupId" @change="addScentGroup">
                 <option value="">Chọn nhóm hương để thêm</option>
                 <option v-for="scentGroup in availableScentGroups" :key="scentGroup.id" :value="scentGroup.id">
                     {{ scentGroup.name }}
@@ -9,22 +9,28 @@
             </select>
         </div>
 
-        <div v-if="selectedScentGroupIdsInternal.length > 0" class="mt-3">
-            <label class="form-label">Cấu hình nhóm hương đã chọn:</label>
-            <div class="selected-scent-groups-list">
+        <div v-if="selectedScentGroupIdsInternal.length > 0" class="mt-6">
+            <label class="block text-gray-700 text-sm font-bold mb-3">Cấu hình nhóm hương đã chọn:</label>
+            <div class="space-y-3">
                 <div v-for="scentId in selectedScentGroupIdsInternal" :key="scentId"
-                    class="card mb-2 p-3 d-flex flex-row align-items-center justify-content-between">
-                    <div class="d-flex align-items-center flex-grow-1">
-                        <div class="color-box me-3 rounded"
-                            :style="{ backgroundColor: getScentGroupColor(scentId), width: '25px', height: '25px' }">
+                    class="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between">
+                    <div class="flex items-center flex-grow">
+                        <div class="flex items-center flex-none" style="width: 180px;">
+                            <div class="w-7 h-7 rounded mr-3"
+                                :style="{ backgroundColor: getScentGroupColor(scentId) }">
+                            </div>
+                            <span class="font-semibold text-gray-800 truncate" :title="getScentGroupName(scentId)">
+                                {{ getScentGroupName(scentId) }}
+                            </span>
                         </div>
-                        <span class="fw-bold me-3">{{ getScentGroupName(scentId) }}</span>
-                        <div class="flex-grow-1">
-                            <label :for="`strength-${scentId}`" class="form-label mb-0">Độ mạnh:</label>
-                            <input type="range" class="form-range" :id="`strength-${scentId}`" min="1" max="100" step="1"
+                        
+                        <div class="flex-grow ml-4">
+                            <label :for="`strength-${scentId}`" class="block text-gray-700 text-xs font-medium mb-1">Độ mạnh:</label>
+                            <input type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:-mt-[3px] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:shadow-sm"
+                                :id="`strength-${scentId}`" min="1" max="100" step="1"
                                 v-model.number="scentGroupsDataInternal[scentId].strength"
                                 @input="emitUpdates" />
-                            <div class="d-flex justify-content-between text-muted small mt-1">
+                            <div class="flex justify-between text-gray-500 text-xs mt-1">
                                 <span>1% (Rất nhẹ)</span>
                                 <span>25%</span>
                                 <span>50%</span>
@@ -33,11 +39,15 @@
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-danger btn-sm ms-3" @click="removeScentGroup(scentId)">Xóa</button>
+                    <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm ml-4 shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex-none" @click="removeScentGroup(scentId)">
+                        Xóa
+                    </button>
                 </div>
             </div>
         </div>
-        <p v-else class="text-muted">Chưa có nhóm hương nào được chọn.</p>
+        <p v-else class="text-gray-500 italic mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
+            <i class="fas fa-info-circle mr-2"></i> Chưa có nhóm hương nào được chọn.
+        </p>
     </div>
 </template>
 

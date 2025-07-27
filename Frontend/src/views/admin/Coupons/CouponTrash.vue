@@ -1,54 +1,55 @@
 <template>
-  <div class="container">
+  <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-        <ul class="breadcrumbs mb-3">
+      <div class="mb-6">
+        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }">
-              <i class="icon-home"></i>
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+              <i class="fas fa-home"></i>
             </router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <router-link :to="{ name: 'ma-giam-gia' }">Mã Giảm Giá</router-link>
+            <router-link :to="{ name: 'Coupons' }" class="hover:text-blue-600">Mã Giảm Giá</router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#">{{ route.meta.title }}</a>
+            <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
           </li>
         </ul>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title d-flex justify-content-between align-items-center">
-            <h1>{{ route.meta.title }}</h1>
-            <router-link :to="{ name: 'ma-giam-gia' }" class="btn btn-sm btn-outline-primary">
-              <i class="fas fa-arrow-left"></i> Quay lại danh sách
-            </router-link>
-          </div>
+
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-semibold">{{ route.meta.title }}</h1>
+          <router-link :to="{ name: 'Coupons' }"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <i class="fas fa-arrow-left mr-2"></i> Quay lại danh sách
+          </router-link>
         </div>
+
         <div class="card-body">
-          <div class="table-responsive">
-            <table id="trashed-coupons-table" class="display table table-bordered">
-              <thead>
+          <div class="overflow-x-auto">
+            <table id="trashed-coupons-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
                 <tr>
-                  <th>ID</th>
-                  <th>Mã</th>
-                  <th>Loại giảm giá</th>
-                  <th>Giá trị</th>
-                  <th>Ngày hết hạn</th>
-                  <th>Ngày xóa</th>
-                  <th style="width: 15%">Hành động</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại giảm giá</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày hết hạn</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày xóa</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style="width: 15%">Hành động</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody class="bg-white divide-y divide-gray-200"></tbody>
             </table>
-            <p v-if="listMessage" :class="listMessageClass">{{ listMessage }}</p>
+            <p v-if="listMessage" :class="listMessageClass" class="mt-4 text-sm">{{ listMessage }}</p>
           </div>
         </div>
       </div>
@@ -77,14 +78,14 @@ const fetchTrashedCoupons = async () => {
 
     if (!coupons.value.length) {
       listMessage.value = "Không có mã giảm giá nào trong thùng rác.";
-      listMessageClass.value = "text-info";
+      listMessageClass.value = "text-blue-500"; // Tailwind class for info
     } else {
       listMessage.value = "";
     }
     await destroyAndReinitializeDataTable();
   } catch (error) {
     listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách mã giảm giá trong thùng rác!";
-    listMessageClass.value = "text-danger";
+    listMessageClass.value = "text-red-500"; // Tailwind class for danger
     console.error("Lỗi khi tải danh sách thùng rác:", error);
     await destroyAndReinitializeDataTable();
   }
@@ -104,6 +105,7 @@ const confirmActionWithSwal = async (id, type) => {
     icon = "info";
     actionEndpoint = `http://localhost:8000/api/admin/coupons/${id}/restore`;
     successMessage = "Khôi phục mã giảm giá thành công!";
+    successIcon = "success";
   } else if (type === "force") {
     title = "Bạn có chắc muốn xóa VĨNH VIỄN mã giảm giá này?";
     text = "Hành động này không thể hoàn tác! Toàn bộ dữ liệu liên quan sẽ bị xóa. Bạn vẫn muốn tiếp tục?";
@@ -196,21 +198,21 @@ const destroyAndReinitializeDataTable = async () => {
         },
         {
           data: "expires_at",
-          render: (data) => (data ? new Date(data).toLocaleString() : "Không có"),
+          render: (data) => (data ? new Date(data).toLocaleString("vi-VN") : "Không có"),
         },
         {
           data: "deleted_at",
-          render: (data) => (data ? new Date(data).toLocaleString() : "Không có"),
+          render: (data) => (data ? new Date(data).toLocaleString("vi-VN") : "Không có"),
         },
         {
           data: null,
           render: (data, type, row) => `
-            <div class="form-button-action">
-              <button type="button" data-bs-toggle="tooltip" title="Khôi phục" class="btn btn-link btn-success" data-id="${row.id}">
-                <i class="fas fa-undo"></i> Khôi phục
+            <div class="flex space-x-2 justify-center items-center">
+              <button type="button" title="Khôi phục" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap" data-action="restore" data-id="${row.id}">
+                <i class="fas fa-undo"></i>
               </button>
-              <button type="button" data-bs-toggle="tooltip" title="Xóa vĩnh viễn" class="btn btn-link btn-danger" data-id="${row.id}">
-                <i class="fas fa-trash-alt"></i> Xóa vĩnh viễn
+              <button type="button" title="Xóa vĩnh viễn" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 whitespace-nowrap" data-action="force" data-id="${row.id}">
+                <i class="fas fa-trash-alt"></i>
               </button>
             </div>
           `,
@@ -218,27 +220,23 @@ const destroyAndReinitializeDataTable = async () => {
       ],
       data: coupons.value,
       drawCallback: () => {
-        jQuery('[data-bs-toggle="tooltip"]').tooltip();
-        jQuery("#trashed-coupons-table")
-          .find(".btn-success")
-          .off("click")
-          .on("click", (e) => {
-            const id = jQuery(e.currentTarget).data("id");
+        // Unbind previous event handlers before re-binding to prevent multiple calls
+        jQuery("#trashed-coupons-table").off("click", "button[data-action]");
+        jQuery("#trashed-coupons-table").on("click", "button[data-action]", (e) => {
+          const id = jQuery(e.currentTarget).data("id");
+          const action = jQuery(e.currentTarget).data("action");
+          if (action === "restore") {
             confirmActionWithSwal(id, "restore");
-          });
-        jQuery("#trashed-coupons-table")
-          .find(".btn-danger")
-          .off("click")
-          .on("click", (e) => {
-            const id = jQuery(e.currentTarget).data("id");
+          } else if (action === "force") {
             confirmActionWithSwal(id, "force");
-          });
+          }
+        });
       },
     });
   } else {
     console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
     listMessage.value = "Không thể khởi tạo bảng!";
-    listMessageClass.value = "text-danger";
+    listMessageClass.value = "text-red-500";
   }
 };
 
@@ -246,7 +244,6 @@ onMounted(async () => {
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
-    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
   ];
 
   const loadScript = (src) =>
@@ -283,71 +280,68 @@ onMounted(async () => {
   } catch (error) {
     console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
     listMessage.value = "Có lỗi khi tải bảng mã giảm giá!";
-    listMessageClass.value = "text-danger";
+    listMessageClass.value = "text-red-500";
   }
 });
 </script>
 
 <style scoped>
+/* Base container and page layout */
 .container {
   max-width: 1200px;
-  margin: 50px auto;
+  margin: 0 auto; /* Center the container */
 }
-.form-button-action {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  white-space: nowrap;
-}
-.form-button-action .btn {
-  width: 100%;
-  text-align: center;
-}
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-}
-.table th {
-  background-color: #f8f9fa;
-}
-.text-success {
-  color: green;
-  margin-top: 15px;
-}
-.text-danger {
-  color: red;
-  margin-top: 15px;
-}
-.text-info {
-  color: #17a2b8;
-  margin-top: 15px;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.breadcrumbs {
-  display: flex;
-  list-style: none;
+
+/* Remove default padding from page-inner to let Tailwind's px-4 handle it */
+.page-inner {
   padding: 0;
 }
-.breadcrumbs li {
-  margin-right: 10px;
-}
+
+/* Specific styling for the DataTables generated elements if needed */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-  margin-bottom: 15px;
+  margin-bottom: 1rem; /* Tailwind's mb-4 equivalent */
+  display: flex; /* Use flex to align items horizontally */
+  align-items: center; /* Center items vertically */
+  gap: 0.5rem; /* Space between filter/length elements */
 }
-.dataTables_wrapper .dataTables_paginate {
-  margin-top: 15px;
+
+/* Adjust select input inside DataTables length control */
+.dataTables_wrapper .dataTables_length select {
+  padding: 0.25rem 0.5rem; /* Tailwind's px-2 py-1 */
+  border: 1px solid #d1d5db; /* Tailwind's border-gray-300 */
+  border-radius: 0.25rem; /* Tailwind's rounded-md */
+  background-color: #fff; /* White background */
+  appearance: none; /* Remove default arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236B7280'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  min-width: unset; /* Override any conflicting min-width */
+  width: auto; /* Allow width to adjust to content */
 }
+
+/* Adjust search input inside DataTables filter control */
+.dataTables_wrapper .dataTables_filter input {
+  padding: 0.25rem 0.75rem; /* Tailwind's px-3 py-2 */
+  border: 1px solid #d1d5db; /* Tailwind's border-gray-300 */
+  border-radius: 0.25rem; /* Tailwind's rounded-md */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Tailwind's shadow-sm */
+}
+
+/* Pagination and info */
+.dataTables_wrapper .dataTables_paginate,
 .dataTables_wrapper .dataTables_info {
-  margin-top: 15px;
+  margin-top: 1rem; /* Tailwind's mt-4 equivalent */
+}
+
+/* Specific styling for the DataTables table itself */
+.dataTables_wrapper table.dataTable {
+  border-collapse: collapse !important; /* Ensure no double borders */
+}
+
+.dataTables_wrapper table.dataTable th,
+.dataTables_wrapper table.dataTable td {
+  padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 for th, but more flexible for td */
 }
 </style>

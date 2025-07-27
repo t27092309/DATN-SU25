@@ -1,329 +1,324 @@
 <template>
-    <div class="container">
-        <div class="page-inner">
-            <div class="page-header">
-                <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-                <ul class="breadcrumbs mb-3">
-                    <li class="nav-home">
-                        <router-link :to="{ name: 'AdminDashboard' }">
-                            <i class="icon-home"></i>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+            <div class="mb-6">
+                <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+                <ul class="flex items-center space-x-2 text-gray-600 text-sm">
+                    <li>
+                        <router-link :to="{ name: 'AdminDashboard' }" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-home"></i>
                         </router-link>
                     </li>
-                    <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                    <li>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
                     </li>
-                    <li class="nav-item">
-                        <router-link :to="{ name: 'products' }">Danh sách sản phẩm</router-link>
+                    <li>
+                        <router-link :to="{ name: 'products' }" class="text-blue-600 hover:text-blue-800">Danh sách sản phẩm</router-link>
                     </li>
-                    <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                    <li>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
                     </li>
-                    <li class="nav-item">
-                        <span class="text-primary">{{ route.meta.title }}</span>
+                    <li>
+                        <span class="text-blue-600 font-semibold">{{ route.meta.title }}</span>
                     </li>
                 </ul>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title d-flex justify-content-between align-items-center">
-                        <div class="card-title">{{ route.meta.title }}</div>
+            <div class="bg-white shadow-lg rounded-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div class="text-xl font-semibold">{{ route.meta.title }}</div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="p-6">
                     <form @submit.prevent="addProduct">
-                        <div class="row">
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="name">Tên sản phẩm <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="name" placeholder="Nhập tên sản phẩm"
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
+                            <div>
+                                <div class="mb-4">
+                                    <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Tên sản phẩm <span class="text-red-500">*</span></label>
+                                    <input type="text" class="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="name" placeholder="Nhập tên sản phẩm"
                                         v-model="product.name" />
-                                    <small v-if="errors.name" class="form-text text-danger">{{ errors.name[0] }}</small>
+                                    <p v-if="errors.name" class="text-red-500 text-xs italic mt-1">{{ errors.name[0] }}</p>
                                 </div>
-                                <div class="form-group">
-                                    <label>Giới tính <span class="text-danger">*</span></label><br />
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="gender" id="male"
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Giới tính <span class="text-red-500">*</span></label>
+                                    <div class="flex gap-6 mt-1">
+                                        <div class="flex items-center">
+                                            <input class="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out" type="radio" name="gender" id="male"
                                                 value="male" v-model="product.gender" />
-                                            <label class="form-check-label" for="male">Nam</label>
+                                            <label class="ml-2 text-gray-700" for="male">Nam</label>
                                         </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="gender" id="female"
+                                        <div class="flex items-center">
+                                            <input class="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out" type="radio" name="gender" id="female"
                                                 value="female" v-model="product.gender" />
-                                            <label class="form-check-label" for="female">Nữ</label>
+                                            <label class="ml-2 text-gray-700" for="female">Nữ</label>
                                         </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="gender" id="unisex"
+                                        <div class="flex items-center">
+                                            <input class="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out" type="radio" name="gender" id="unisex"
                                                 value="unisex" v-model="product.gender" />
-                                            <label class="form-check-label" for="unisex">Unisex</label>
+                                            <label class="ml-2 text-gray-700" for="unisex">Unisex</label>
                                         </div>
                                     </div>
-                                    <small v-if="errors.gender" class="form-text text-danger">{{ errors.gender[0]
-                                    }}</small>
+                                    <p v-if="errors.gender" class="text-red-500 text-xs italic mt-1">{{ errors.gender[0]
+                                    }}</p>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="categorySelect">Danh mục <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="categorySelect" v-model="product.category_id">
+                            <div>
+                                <div class="mb-4">
+                                    <label for="categorySelect" class="block text-gray-700 text-sm font-bold mb-2">Danh mục <span class="text-red-500">*</span></label>
+                                    <select class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-md shadow-sm leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="categorySelect" v-model="product.category_id">
                                         <option value="">Chọn danh mục</option>
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
                                             {{ category.name }}
                                         </option>
                                     </select>
-                                    <small v-if="errors.category_id" class="form-text text-danger">{{
-                                        errors.category_id[0] }}</small>
+                                    <p v-if="errors.category_id" class="text-red-500 text-xs italic mt-1">{{
+                                        errors.category_id[0] }}</p>
                                 </div>
-                                <div class="form-group">
-                                    <label for="brandSelect">Thương hiệu <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="brandSelect" v-model="product.brand_id"
+                                <div class="mb-4">
+                                    <label for="brandSelect" class="block text-gray-700 text-sm font-bold mb-2">Thương hiệu <span class="text-red-500">*</span></label>
+                                    <select class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-md shadow-sm leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="brandSelect" v-model="product.brand_id"
                                         v-if="brands.length > 0">
                                         <option value="">Chọn thương hiệu</option>
                                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                                             {{ brand.name }}
                                         </option>
                                     </select>
-                                    <p v-else class="text-muted">Đang tải thương hiệu...</p>
-                                    <small v-if="errors.brand_id" class="form-text text-danger">{{ errors.brand_id[0]
-                                    }}</small>
+                                    <p v-else class="text-gray-500 text-sm italic mt-1">Đang tải thương hiệu...</p>
+                                    <p v-if="errors.brand_id" class="text-red-500 text-xs italic mt-1">{{ errors.brand_id[0]
+                                    }}</p>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="slug">Slug (Tự động tạo)</label>
-                                    <input type="text" class="form-control" id="slug" placeholder="Slug sản phẩm"
+                            <div>
+                                <div class="mb-4">
+                                    <label for="slug" class="block text-gray-700 text-sm font-bold mb-2">Slug (Tự động tạo)</label>
+                                    <input type="text" class="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 bg-gray-100 leading-tight cursor-not-allowed" id="slug" placeholder="Slug sản phẩm"
                                         v-model="product.slug" disabled />
                                 </div>
-                                <div class="form-group">
-                                    <label for="image">Hình ảnh chính</label>
-                                    <input type="file" class="form-control" id="image" @change="onFileChangeMainImage"
+                                <div class="mb-4">
+                                    <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Hình ảnh chính</label>
+                                    <input type="file" class="block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-md file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100 file:cursor-pointer" id="image" @change="onFileChangeMainImage"
                                         accept="image/*" />
-                                    <small v-if="errors.image" class="form-text text-danger">{{ errors.image[0]
-                                    }}</small>
+                                    <p v-if="errors.image" class="text-red-500 text-xs italic mt-1">{{ errors.image[0]
+                                    }}</p>
                                 </div>
                                 <div v-if="imageUrlPreview" class="mt-2">
-                                    <label>Ảnh xem trước:</label><br />
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Ảnh xem trước:</label>
                                     <img :src="imageUrlPreview" alt="Image Preview"
-                                        style="max-width: 200px; border-radius: 5px;" />
+                                        class="max-w-xs h-32 w-32 object-cover rounded-md shadow-md border border-gray-200" />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label for="description">Mô tả</label>
-                                    <textarea class="form-control" id="description" rows="5"
-                                        v-model="product.description"></textarea>
-                                    <small v-if="errors.description" class="form-text text-danger">{{
-                                        errors.description[0] }}</small>
+                        <hr class="my-8 border-gray-300" />
+
+                        <div class="mb-6">
+                            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Mô tả</label>
+                            <textarea class="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="description" rows="5"
+                                v-model="product.description" placeholder="Nhập mô tả sản phẩm"></textarea>
+                            <p v-if="errors.description" class="text-red-500 text-xs italic mt-1">{{
+                                errors.description[0] }}</p>
+                        </div>
+
+                        <hr class="my-8 border-gray-300" />
+
+                        <div class="mb-6">
+                            <label for="productGallery" class="block text-gray-700 text-sm font-bold mb-2">Thư viện ảnh sản phẩm</label>
+                            <input type="file" class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100 file:cursor-pointer" id="productGallery" multiple
+                                @change="onFileChangeGalleryImages" accept="image/*" />
+                            <p v-if="errors.gallery_images" class="text-red-500 text-xs italic mt-1">{{
+                                errors.gallery_images[0] }}</p>
+                        </div>
+                        <div v-if="galleryImagePreviews.length > 0" class="mt-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Ảnh thư viện xem trước:</label>
+                            <div class="flex flex-wrap gap-3">
+                                <div v-for="(image, index) in galleryImagePreviews" :key="index"
+                                    class="relative group">
+                                    <img :src="image" alt="Gallery Image Preview"
+                                        class="max-w-[100px] h-[100px] object-cover rounded-md shadow-md border border-gray-200 transition-all duration-200 group-hover:scale-105" />
+                                    <button type="button"
+                                        class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                        @click="removeGalleryImage(index)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label for="productGallery">Thư viện ảnh sản phẩm</label>
-                                    <input type="file" class="form-control" id="productGallery" multiple
-                                        @change="onFileChangeGalleryImages" accept="image/*" />
-                                    <small v-if="errors.gallery_images" class="form-text text-danger">{{
-                                        errors.gallery_images[0] }}</small>
-                                </div>
-                                <div v-if="galleryImagePreviews.length > 0" class="mt-2">
-                                    <label>Ảnh thư viện xem trước:</label><br />
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <div v-for="(image, index) in galleryImagePreviews" :key="index"
-                                            class="position-relative">
-                                            <img :src="image" alt="Gallery Image Preview"
-                                                style="max-width: 100px; height: 100px; object-fit: cover; border-radius: 5px;" />
-                                            <button type="button"
-                                                class="btn btn-danger btn-sm position-absolute top-0 end-0"
-                                                style="--bs-btn-padding-y: .1rem; --bs-btn-padding-x: .3rem;"
-                                                @click="removeGalleryImage(index)">X</button>
+                        <hr class="my-8 border-gray-300" />
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Nhóm hương</label>
+                            <ScentGroupSelector
+                                v-model:selected-scent-group-ids="product.selected_scent_group_ids"
+                                v-model:scent-groups-data="product.scent_groups_data"
+                                :all-scent-groups="allScentGroupsForDisplay" />
+                            <p v-if="errors.scent_groups" class="text-red-500 text-xs italic mt-1">{{
+                                errors.scent_groups[0] }}</p>
+                        </div>
+                        <div v-if="sortedScentProfiles.length > 0" class="mt-8">
+                            <h6 class="text-lg font-semibold mb-4 text-gray-800">Mức độ hương:</h6>
+                            <div class="space-y-4">
+                                <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
+                                    class="flex items-center">
+                                    <span class="scent-name mr-4 text-gray-700 font-medium w-32 truncate" :title="scent.scent_group_name">{{ scent.scent_group_name }}:</span>
+                                    <div class="flex-grow bg-gray-200 rounded-full h-6 overflow-hidden">
+                                        <div class="h-full flex items-center justify-center text-sm font-bold transition-all duration-300 ease-out px-2" role="progressbar"
+                                            :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
+                                            :aria-valuenow="scent.strength" aria-valuemin="0"
+                                            aria-valuemax="100">
+                                            <span
+                                                :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
+                                                {{ scent.strength }}%
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <hr />
 
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label>Nhóm hương</label>
-                                    <ScentGroupSelector
-                                        v-model:selected-scent-group-ids="product.selected_scent_group_ids"
-                                        v-model:scent-groups-data="product.scent_groups_data"
-                                        :all-scent-groups="allScentGroupsForDisplay" />
-                                    <small v-if="errors.scent_groups" class="form-text text-danger">{{
-                                        errors.scent_groups[0] }}</small>
-                                </div>
-                                <div v-if="sortedScentProfiles.length > 0" class="mt-3">
-                                    <h6>Mức độ hương:</h6>
-                                    <div class="scent-strength-bars">
-                                        <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
-                                            class="scent-bar-item mb-2 d-flex align-items-center">
-                                            <span class="scent-name me-2" :style="{
-                                                'min-width': '120px',
-                                                'max-width': '120px',
-                                                'white-space': 'nowrap',
-                                                'overflow': 'hidden',
-                                                'text-overflow': 'ellipsis',
-                                            }">{{ scent.scent_group_name }}:</span>
-                                            <div class="progress flex-grow-1" style="height: 20px;">
-                                                <div class="progress-bar" role="progressbar"
-                                                    :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
-                                                    :aria-valuenow="scent.strength" aria-valuemin="0"
-                                                    aria-valuemax="100">
-                                                    <span
-                                                        :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
-                                                        {{ scent.strength }}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <hr />
+                        <hr class="my-8 border-gray-300" />
 
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <label>Thông tin sử dụng sản phẩm</label>
-                                <UsageProfile v-model:usage-profile-data="product.usage_profile" />
-                                <small v-if="errors['usage_profile.spring_percent']" class="form-text text-danger">
-                                    {{ errors['usage_profile.spring_percent'][0] }}
-                                </small>
-                            </div>
-                        </div>
-                        <hr />
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label>Loại sản phẩm <span class="text-danger">*</span></label><br />
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" id="noVariants" :value="false"
-                                            v-model="product.has_variants" />
-                                        <label class="form-check-label" for="noVariants">Sản phẩm đơn giản</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" id="hasVariants" :value="true"
-                                            v-model="product.has_variants" />
-                                        <label class="form-check-label" for="hasVariants">Sản phẩm có biến thể</label>
-                                    </div>
-                                    <small v-if="errors.has_variants" class="form-text text-danger">{{
-                                        errors.has_variants[0] }}</small>
-                                </div>
-                            </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Thông tin sử dụng sản phẩm</label>
+                            <UsageProfile v-model:usage-profile-data="product.usage_profile" />
+                            <p v-if="errors['usage_profile.spring_percent']" class="text-red-500 text-xs italic mt-1">
+                                {{ errors['usage_profile.spring_percent'][0] }}
+                            </p>
                         </div>
 
-                        <div class="row" v-if="product.has_variants === false">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="simplePrice">Giá sản phẩm <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="simplePrice"
+                        <hr class="my-8 border-gray-300" />
+
+                        <div class="mb-8">
+                            <label class="block text-gray-700 text-sm font-bold mb-3">Loại sản phẩm <span class="text-red-500">*</span></label>
+                            <div class="flex items-center space-x-6">
+                                <div class="flex items-center">
+                                    <input class="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out" type="radio" id="noVariants" :value="false"
+                                        v-model="product.has_variants" />
+                                    <label class="ml-2 text-gray-700" for="noVariants">Sản phẩm đơn giản</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input class="form-radio h-4 w-4 text-blue-600 transition duration-150 ease-in-out" type="radio" id="hasVariants" :value="true"
+                                        v-model="product.has_variants" />
+                                    <label class="ml-2 text-gray-700" for="hasVariants">Sản phẩm có biến thể</label>
+                                </div>
+                            </div>
+                            <p v-if="errors.has_variants" class="text-red-500 text-xs italic mt-1">{{
+                                errors.has_variants[0] }}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6" v-if="product.has_variants === false">
+                            <div>
+                                <div class="mb-4">
+                                    <label for="simplePrice" class="block text-gray-700 text-sm font-bold mb-2">Giá sản phẩm <span class="text-red-500">*</span></label>
+                                    <input type="number" class="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="simplePrice"
                                         placeholder="Nhập giá sản phẩm" v-model="product.price" min="0" />
-                                    <small v-if="errors.price" class="form-text text-danger">{{ errors.price[0]
-                                    }}</small>
+                                    <p v-if="errors.price" class="text-red-500 text-xs italic mt-1">{{ errors.price[0]
+                                    }}</p>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="simpleStock">Số lượng tồn kho <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="simpleStock"
+                            <div>
+                                <div class="mb-4">
+                                    <label for="simpleStock" class="block text-gray-700 text-sm font-bold mb-2">Số lượng tồn kho <span class="text-red-500">*</span></label>
+                                    <input type="number" class="shadow-sm appearance-none border border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="simpleStock"
                                         placeholder="Nhập số lượng tồn kho" v-model="product.stock" min="0" />
-                                    <small v-if="errors.stock" class="form-text text-danger">{{ errors.stock[0]
-                                    }}</small>
+                                    <p v-if="errors.stock" class="text-red-500 text-xs italic mt-1">{{ errors.stock[0]
+                                    }}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div v-if="product.has_variants === true">
-                            <h4 class="mt-4">Chọn thuộc tính và giá trị</h4>
-                            <div class="row">
-                                <div class="col-12">
-                                    <small v-if="errors.variants" class="form-text text-danger mb-3 d-block">{{
-                                        errors.variants[0] }}</small>
-                                    <div v-for="attribute in attributes" :key="attribute.id"
-                                        class="form-group mb-3 p-3 border rounded">
-                                        <h6>{{ attribute.name }}</h6>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <div v-for="value in attribute.attribute_values" :key="value.id"
-                                                class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox"
-                                                    :id="`attr-${attribute.id}-val-${value.id}`"
-                                                    :value="{ attributeId: attribute.id, valueId: value.id, valueName: value.value, attributeName: attribute.name }"
-                                                    v-model="selectedAttributeValues[attribute.id]"
-                                                    @change="generateVariants" />
-                                                <label class="form-check-label"
-                                                    :for="`attr-${attribute.id}-val-${value.id}`">
-                                                    {{ value.value }}
-                                                </label>
-                                            </div>
+                            <h4 class="text-xl font-semibold mt-8 mb-6 text-gray-800">Chọn thuộc tính và giá trị</h4>
+                            <div>
+                                <p v-if="errors.variants" class="text-red-500 text-xs italic mb-4">{{
+                                    errors.variants[0] }}</p>
+                                <div v-for="attribute in attributes" :key="attribute.id"
+                                    class="mb-6 p-5 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
+                                    <h6 class="text-lg font-semibold mb-4 text-gray-800">{{ attribute.name }}</h6>
+                                    <div class="flex flex-wrap gap-x-6 gap-y-3">
+                                        <div v-for="value in attribute.attribute_values" :key="value.id"
+                                            class="flex items-center">
+                                            <input class="form-checkbox h-4 w-4 text-blue-600 rounded focus:ring-blue-500 transition duration-150 ease-in-out" type="checkbox"
+                                                :id="`attr-${attribute.id}-val-${value.id}`"
+                                                :value="{ attributeId: attribute.id, valueId: value.id, valueName: value.value, attributeName: attribute.name }"
+                                                v-model="selectedAttributeValues[attribute.id]"
+                                                @change="generateVariants" />
+                                            <label class="ml-2 text-gray-700 select-none cursor-pointer"
+                                                :for="`attr-${attribute.id}-val-${value.id}`">
+                                                {{ value.value }}
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <h4 class="mt-4">Các biến thể đã tạo</h4>
-                            <div v-if="product.variants.length > 0" class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead>
+                            <h4 class="text-xl font-semibold mt-10 mb-6 text-gray-800">Các biến thể đã tạo</h4>
+                            <div v-if="product.variants.length > 0" class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                                <table class="min-w-full bg-white divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
                                         <tr>
-                                            <th>Tên biến thể</th>
-                                            <th>SKU <span class="text-danger">*</span></th>
-                                            <th>Giá <span class="text-danger">*</span></th>
-                                            <th>Tồn kho <span class="text-danger">*</span></th>
-                                            <th>Ảnh biến thể</th>
-                                            <th>Hành động</th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên biến thể</th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU <span class="text-red-500">*</span></th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá <span class="text-red-500">*</span></th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho <span class="text-red-500">*</span></th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ảnh biến thể</th>
+                                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr v-for="(variant, index) in product.variants" :key="variant.tempId">
-                                            <td>{{ variant.name }}</td>
-                                            <td>
-                                                <input type="text" class="form-control form-control-sm"
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr v-for="(variant, index) in product.variants" :key="variant.tempId" class="hover:bg-gray-50">
+                                            <td class="py-3 px-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ variant.name }}</td>
+                                            <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                                                <input type="text" class="w-full text-sm py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                     v-model="variant.sku" :id="'variantSku' + variant.tempId" />
-                                                <small v-if="errors[`variants.${index}.sku`]"
-                                                    class="text-danger d-block">
+                                                <p v-if="errors[`variants.${index}.sku`]"
+                                                    class="text-red-500 text-xs italic mt-1">
                                                     {{ errors[`variants.${index}.sku`][0] }}
-                                                </small>
+                                                </p>
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm"
+                                            <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                                                <input type="number" class="w-full text-sm py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                     v-model="variant.price" min="0"
                                                     :id="'variantPrice' + variant.tempId" />
-                                                <small v-if="errors[`variants.${index}.price`]"
-                                                    class="text-danger d-block">
+                                                <p v-if="errors[`variants.${index}.price`]"
+                                                    class="text-red-500 text-xs italic mt-1">
                                                     {{ errors[`variants.${index}.price`][0] }}
-                                                </small>
+                                                </p>
                                             </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm"
+                                            <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                                                <input type="number" class="w-full text-sm py-1 px-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                     v-model="variant.stock" min="0"
                                                     :id="'variantStock' + variant.tempId" />
-                                                <small v-if="errors[`variants.${index}.stock`]"
-                                                    class="text-danger d-block">
+                                                <p v-if="errors[`variants.${index}.stock`]"
+                                                    class="text-red-500 text-xs italic mt-1">
                                                     {{ errors[`variants.${index}.stock`][0] }}
-                                                </small>
+                                                </p>
                                             </td>
-                                            <td>
-                                                <input type="file" class="form-control form-control-sm"
+                                            <td class="py-3 px-4 text-sm text-gray-700">
+                                                <input type="file" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer"
                                                     @change="e => onFileChangeVariantImage(e, index)"
                                                     accept="image/*" />
-                                                <div v-if="variant.imageUrlPreview" class="mt-1">
+                                                <div v-if="variant.imageUrlPreview" class="mt-2">
                                                     <img :src="variant.imageUrlPreview" alt="Preview"
-                                                        style="max-width: 50px; border-radius: 3px;" />
+                                                        class="max-w-[60px] h-16 object-cover rounded-md shadow-sm border border-gray-200" />
                                                 </div>
-                                                <small v-if="errors[`variants.${index}.image`]"
-                                                    class="text-danger d-block">
+                                                <p v-if="errors[`variants.${index}.image`]"
+                                                    class="text-red-500 text-xs italic mt-1">
                                                     {{ errors[`variants.${index}.image`][0] }}
-                                                </small>
+                                                </p>
                                             </td>
-                                            <td>
-                                                <button type="button" class="btn btn-danger btn-sm"
+                                            <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                                     @click="removeSpecificVariant(index)">
                                                     Xóa
                                                 </button>
@@ -332,13 +327,15 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p v-else class="text-muted">Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và giá
-                                trị ở trên.</p>
+                            <p v-else class="text-gray-500 text-base italic mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
+                                <i class="fas fa-info-circle mr-2"></i> Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và giá
+                                trị ở trên để tạo biến thể.
+                            </p>
                         </div>
 
-                        <div class="card-action mt-4">
-                            <button type="submit" class="btn btn-success me-2">Thêm sản phẩm</button>
-                            <router-link :to="{ name: 'products' }" class="btn btn-primary">
+                        <div class="mt-10 pt-6 border-t border-gray-200 flex justify-start space-x-4">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Thêm sản phẩm</button>
+                            <router-link :to="{ name: 'products' }" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                 Quay lại
                             </router-link>
                         </div>

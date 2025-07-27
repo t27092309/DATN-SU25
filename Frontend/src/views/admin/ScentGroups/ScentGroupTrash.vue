@@ -1,114 +1,114 @@
 <template>
-  <div class="container">
+  <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-        <ul class="breadcrumbs mb-3">
+      <div class="mb-6 flex justify-between items-center">
+        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }">
-              <i class="icon-home"></i>
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+              <i class="fas fa-home"></i>
             </router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <router-link :to="{ name: 'nhom-huong' }">Nhóm Hương</router-link>
+            <router-link :to="{ name: 'ScentGroups' }" class="hover:text-blue-600">Nhóm Hương</router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#">{{ route.meta.title }}</a>
+            <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
           </li>
         </ul>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title d-flex justify-content-between align-items-center">
-            <h1>{{ route.meta.title }}</h1>
-            <router-link :to="{ name: 'nhom-huong' }" class="btn btn-sm btn-outline-primary">
-              <i class="fas fa-arrow-left"></i> Quay lại danh sách
-            </router-link>
-          </div>
+
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6 flex justify-between items-center">
+          <h1 class="text-2xl font-semibold text-gray-800">{{ route.meta.title }}</h1>
+          <router-link :to="{ name: 'ScentGroups' }"
+            class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <i class="fas fa-arrow-left mr-2"></i> Quay lại danh sách
+          </router-link>
         </div>
+
         <div class="card-body">
-          <div class="table-responsive">
-            <table id="trashed-scent-groups-table" class="display table table-bordered">
-              <thead>
+          <div class="overflow-x-auto">
+            <table id="trashed-scent-groups-table" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
                 <tr>
-                  <th>ID</th>
-                  <th>Tên</th>
-                  <th>Mã màu</th>
-                  <th>Ngày tạo</th>
-                  <th>Ngày cập nhật</th>
-                  <th>Ngày xóa</th>
-                  <th style="width: 15%">Hành động</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã màu</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày cập nhật
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày xóa</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    style="width: 15%">Hành động</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="scentGroup in scentGroups" :key="scentGroup.id">
-                  <td>{{ scentGroup.id }}</td>
-                  <td>{{ scentGroup.name || "Không có" }}</td>
-                  <td>
-                    <span
-                      :style="{ backgroundColor: scentGroup.color_code }"
-                      class="color-box"
-                    ></span>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroup.id }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroup.name || "Không có" }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span :style="{ backgroundColor: scentGroup.color_code }"
+                      class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"></span>
                     {{ scentGroup.color_code || "Không có" }}
                   </td>
-                  <td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{
                       scentGroup.created_at
-                        ? new Date(scentGroup.created_at).toLocaleString()
+                        ? new Date(scentGroup.created_at).toLocaleString('vi-VN')
                         : "Không có"
                     }}
                   </td>
-                  <td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{
                       scentGroup.updated_at
-                        ? new Date(scentGroup.updated_at).toLocaleString()
+                        ? new Date(scentGroup.updated_at).toLocaleString('vi-VN')
                         : "Không có"
                     }}
                   </td>
-                  <td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{
                       scentGroup.deleted_at
-                        ? new Date(scentGroup.deleted_at).toLocaleString()
+                        ? new Date(scentGroup.deleted_at).toLocaleString('vi-VN')
                         : "Không có"
                     }}
                   </td>
-                  <td>
-                    <div class="form-button-action">
-                      <button
-                        type="button"
-                        data-bs-toggle="tooltip"
-                        title="Khôi phục"
-                        class="btn btn-link btn-success"
-                        @click="confirmActionWithSwal(scentGroup.id, 'restore')"
-                      >
-                        <i class="fas fa-undo"></i> Khôi phục
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex flex-col space-y-1">
+                      <button type="button" title="Khôi phục"
+                        class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        @click="confirmActionWithSwal(scentGroup.id, 'restore')">
+                        <i class="fas fa-undo mr-1"></i> Khôi phục
                       </button>
-                      <button
-                        type="button"
-                        data-bs-toggle="tooltip"
-                        title="Xóa vĩnh viễn"
-                        class="btn btn-link btn-danger"
-                        @click="confirmActionWithSwal(scentGroup.id, 'force')"
-                      >
-                        <i class="fas fa-trash-alt"></i> Xóa vĩnh viễn
+                      <button type="button" title="Xóa vĩnh viễn"
+                        class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        @click="confirmActionWithSwal(scentGroup.id, 'force')">
+                        <i class="fas fa-trash-alt mr-1"></i> Xóa vĩnh viễn
                       </button>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="!scentGroups || scentGroups.length === 0">
-                  <td colspan="7" class="text-center">
+                  <td colspan="7" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
                     Không có nhóm hương nào trong thùng rác.
                   </td>
                 </tr>
               </tbody>
             </table>
-            <p v-if="listMessage" :class="listMessageClass">
+            <p v-if="listMessage" :class="listMessageClass" class="mt-4 text-sm">
               {{ listMessage }}
             </p>
           </div>
@@ -122,7 +122,7 @@
 import { onMounted, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
 
 const route = useRoute();
 const router = useRouter();
@@ -131,26 +131,67 @@ const scentGroups = ref([]);
 const listMessage = ref("");
 const listMessageClass = ref("");
 
+// Biến để theo dõi instance của DataTables
+let dataTableInstance = null;
+
 // Fetch trashed scent groups
 const fetchTrashedScentGroups = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/admin/scent-groups/trashed");
-    scentGroups.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    const data = Array.isArray(response.data) ? response.data : response.data.data || [];
+    scentGroups.value = data;
 
     if (!scentGroups.value.length) {
       listMessage.value = "Không có nhóm hương nào trong thùng rác.";
-      listMessageClass.value = "text-info";
+      listMessageClass.value = "text-blue-500";
+      // Quan trọng: Hủy DataTables nếu không có dữ liệu
+      destroyDataTableOnly();
     } else {
-      listMessage.value = ""; // Clear message if data is loaded
+      listMessage.value = "";
+      // Quan trọng: Khởi tạo/tái khởi tạo DataTables chỉ khi có dữ liệu
+      await initializeDataTable();
     }
-    // Re-initialize DataTables after data change
-    await destroyAndReinitializeDataTable();
 
   } catch (error) {
     listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương trong thùng rác!";
-    listMessageClass.value = "text-danger";
+    listMessageClass.value = "text-red-500";
     console.error("Lỗi khi tải danh sách thùng rác:", error);
-    await destroyAndReinitializeDataTable(); // Still re-init even on error to clear table if needed
+    // Hủy DataTables nếu có lỗi xảy ra và không có dữ liệu được hiển thị
+    destroyDataTableOnly();
+  }
+};
+
+// Hàm chỉ hủy DataTables instance
+const destroyDataTableOnly = () => {
+  if (dataTableInstance) {
+    dataTableInstance.destroy();
+    dataTableInstance = null;
+  }
+};
+
+// Hàm chỉ khởi tạo DataTables instance
+const initializeDataTable = async () => {
+  destroyDataTableOnly(); // Đảm bảo hủy instance cũ trước khi tạo mới
+  await nextTick(); // Chờ Vue cập nhật DOM
+
+  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
+    dataTableInstance = jQuery("#trashed-scent-groups-table").DataTable({
+      pageLength: 10,
+      responsive: true,
+      destroy: true, // Đảm bảo rằng nó có thể bị hủy nếu được gọi lại
+      language: {
+        lengthMenu: "Hiển thị _MENU_ mục",
+        search: "Tìm kiếm:",
+        info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+        paginate: {
+          previous: "Trước",
+          next: "Tiếp",
+        },
+        emptyTable: "Không có dữ liệu trong bảng",
+      },
+    });
+  } else {
+    console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
   }
 };
 
@@ -175,7 +216,7 @@ const confirmActionWithSwal = async (id, type) => {
     icon = 'error';
     actionEndpoint = `http://localhost:8000/api/admin/scent-groups/${id}/force`;
     successMessage = 'Xóa vĩnh viễn nhóm hương thành công!';
-    successIcon = 'info'; // Use info icon for force delete success to differentiate
+    successIcon = 'info';
   } else {
     Swal.fire('Lỗi!', 'Hành động không hợp lệ.', 'error');
     return;
@@ -196,13 +237,12 @@ const confirmActionWithSwal = async (id, type) => {
     if (result.isConfirmed) {
       let response;
       if (type === 'restore') {
-        response = await axios.put(actionEndpoint); // PUT for restore
+        response = await axios.put(actionEndpoint);
       } else {
-        response = await axios.delete(actionEndpoint); // DELETE for force delete
+        response = await axios.delete(actionEndpoint);
       }
 
-      // Re-fetch trashed groups after successful action
-      await fetchTrashedScentGroups();
+      await fetchTrashedScentGroups(); // Re-fetch trashed groups after successful action
 
       Swal.fire({
         title: response.data.message || successMessage,
@@ -221,35 +261,10 @@ const confirmActionWithSwal = async (id, type) => {
   }
 };
 
-// Function to destroy and reinitialize DataTables
-let dataTableInstance = null;
-const destroyAndReinitializeDataTable = async () => {
-  if (dataTableInstance) {
-    dataTableInstance.destroy(); // Destroy the existing DataTable instance
-    dataTableInstance = null; // Clear the instance
-  }
-  await nextTick(); // Wait for Vue to render the updated table
-  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
-    dataTableInstance = jQuery("#trashed-scent-groups-table").DataTable({ // Use unique ID
-      pageLength: 10,
-      responsive: true,
-      destroy: true,
-      drawCallback: () => {
-        jQuery('[data-bs-toggle="tooltip"]').tooltip();
-      },
-    });
-  } else {
-    console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
-  }
-};
-
-
 onMounted(async () => {
-  // Load scripts and stylesheets dynamically
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
-    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
   ];
 
   const loadScript = (src) =>
@@ -257,9 +272,7 @@ onMounted(async () => {
       const script = document.createElement("script");
       script.src = src;
       script.async = true;
-      script.onload = () => {
-        resolve();
-      };
+      script.onload = () => resolve();
       script.onerror = () => {
         console.error(`Failed to load: ${src}`);
         reject(new Error(`Không thể tải script: ${src}`));
@@ -291,66 +304,65 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Base container and page layout */
 .container {
   max-width: 1200px;
-  margin: 50px auto;
-}
-.form-button-action {
-  display: flex;
-  flex-direction: column; /* Stack buttons vertically */
-  gap: 5px; /* Small gap between buttons */
-  white-space: nowrap; /* Prevent text wrapping inside buttons */
+  /* Removed fixed margin to rely on Tailwind's auto margins or padding utilities */
+  margin-left: auto;
+  margin-right: auto;
+  /* Tailwind's px-4 py-8 on the outer div handle spacing */
 }
 
-/* Specific styles for buttons to make them look good when stacked */
-.form-button-action .btn {
-    width: 100%; /* Make buttons take full width of their container */
-    text-align: center;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-}
-.table th {
-  background-color: #f8f9fa;
-}
-.color-box {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-  margin-right: 10px;
-  border: 1px solid #ced4da;
-}
-.text-success {
-  color: green;
-  margin-top: 15px;
-}
-.text-danger {
-  color: red;
-  margin-top: 15px;
-}
-.text-info {
-  color: #17a2b8;
-  margin-top: 15px;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.breadcrumbs {
-  display: flex;
-  list-style: none;
+.page-inner {
   padding: 0;
 }
-.breadcrumbs li {
-  margin-right: 10px;
+
+/* Specific styling for the DataTables generated elements */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
+
+.dataTables_wrapper .dataTables_length select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236B7280'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  min-width: unset;
+  width: auto;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Pagination and info */
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dataTables_info {
+  margin-top: 1rem;
+}
+
+/* Specific styling for the DataTables table itself */
+.dataTables_wrapper table.dataTable {
+  border-collapse: collapse !important;
+}
+
+.dataTables_wrapper table.dataTable th,
+.dataTables_wrapper table.dataTable td {
+  padding: 0.75rem 1.5rem;
+}
+
+/* Custom styles that were originally Bootstrap-specific are now Tailwind classes */
+/* .table, .card, .btn, .form-button-action, .color-box, .text-success, .text-danger, .text-info have been replaced */
 </style>

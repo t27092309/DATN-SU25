@@ -182,17 +182,6 @@
 
     <router-view></router-view>
 
-    <button ref="chatButtonRef" @click.stop="toggleChatWindow"
-      class="fixed bottom-4 right-4 bg-red-500 text-white rounded-full p-3 shadow-lg flex items-center space-x-2 z-40">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
-        </path>
-      </svg>
-      <span>Chat</span>
-    </button>
-
-    <ChatWindow v-if="showChatWindow" ref="chatWindowRef" @close="showChatWindow = false" @click.stop />
     <footer class="bg-gray-800 text-gray-300 py-10">
       <div class="container mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -344,7 +333,6 @@
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '@/stores/auth';
   import logormbg from '@/assets/images/categories/Logo-removebg.png';
-  import ChatWindow from '@/components/ChatWindow.vue';
   import UserDisplay from '@/components/user/UserDisplay.vue';
   import axios from 'axios';
 

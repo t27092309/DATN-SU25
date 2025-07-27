@@ -1,159 +1,127 @@
 <template>
-  <div class="container">
+  <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3">Nhóm Hương</h3>
-        <ul class="breadcrumbs mb-3">
+      <div class="mb-6 flex justify-between items-center">
+        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }">
-              <i class="icon-home"></i>
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+              <i class="fas fa-home"></i>
             </router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#">Nhóm Hương</a>
+            <a href="#" class="text-blue-600">Nhóm Hương</a>
           </li>
         </ul>
       </div>
-      <div class="row">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title d-flex justify-content-between align-items-center">
-                Quản lý nhóm hương
-                <div class="d-flex gap-2">
-                  <router-link :to="{ name: 'ScentGroupTrash' }" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-trash"></i> Thùng rác
-                  </router-link>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6 col-lg-4">
-                  <form @submit.prevent="addScentGroup" class="mb-5">
-                    <div class="form-group">
-                      <h5 class="card-title">Thêm mới nhóm hương</h5>
-                    </div>
-                    <div class="form-group">
-                      <label for="name">Tên nhóm hương</label>
-                      <input
-                        type="text"
-                        v-model="scentGroup.name"
-                        class="form-control"
-                        id="name"
-                        placeholder="Nhập tên nhóm hương"
-                        required
-                      />
-                      <small class="form-text text-muted"
-                        >Ví dụ: Hương hoa, Hương gỗ</small
-                      >
-                    </div>
-                    <div class="form-group">
-                      <label for="color_code">Mã màu</label>
-                      <input
-                        type="color"
-                        v-model="scentGroup.color_code"
-                        class="form-control color-picker"
-                        id="color_code"
-                        required
-                      />
-                      <small class="form-text text-muted"
-                        >Chọn màu từ bảng màu</small
-                      >
-                    </div>
-                    <div class="card-action">
-                      <button type="submit" class="btn btn-primary">
-                        Thêm nhóm hương
+
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-semibold">Quản lý nhóm hương</h1>
+          <div class="flex gap-2">
+            <router-link :to="{ name: 'ScentGroupTrash' }"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <i class="fas fa-trash mr-2"></i> Thùng rác
+            </router-link>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="overflow-x-auto mb-8">
+            <table id="add-row" class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã màu</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày cập nhật</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    style="width: 10%">Hành động</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="scentGroupItem in scentGroups" :key="scentGroupItem.id">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.id }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.name || "Không có" }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span :style="{ backgroundColor: scentGroupItem.color_code }"
+                      class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"></span>
+                    {{ scentGroupItem.color_code || "Không có" }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{
+                      scentGroupItem.created_at
+                        ? new Date(scentGroupItem.created_at).toLocaleString('vi-VN')
+                        : "Không có"
+                    }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{
+                      scentGroupItem.updated_at
+                        ? new Date(scentGroupItem.updated_at).toLocaleString('vi-VN')
+                        : "Không có"
+                    }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex space-x-2">
+                      <button type="button" title="Chỉnh sửa nhóm hương"
+                        class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        @click="startEdit(scentGroupItem)">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button type="button" title="Xóa mềm"
+                        class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        @click="confirmSoftDeleteWithSwal(scentGroupItem.id)">
+                        <i class="fa fa-times"></i>
                       </button>
                     </div>
-                    <p v-if="addMessage" :class="addMessageClass">
-                      {{ addMessage }}
-                    </p>
-                  </form>
-                </div>
-
-                <div class="col-md-6 col-lg-8">
-                  <div class="table-responsive">
-                    <table id="add-row" class="display table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Tên</th>
-                          <th>Mã màu</th>
-                          <th>Ngày tạo</th>
-                          <th>Ngày cập nhật</th>
-                          <th style="width: 10%">Hành động</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="scentGroup in scentGroups" :key="scentGroup.id">
-                          <td>{{ scentGroup.id }}</td>
-                          <td>{{ scentGroup.name || "Không có" }}</td>
-                          <td>
-                            <span
-                              :style="{ backgroundColor: scentGroup.color_code }"
-                              class="color-box"
-                            ></span>
-                            {{ scentGroup.color_code || "Không có" }}
-                          </td>
-                          <td>
-                            {{
-                              scentGroup.created_at
-                                ? new Date(
-                                    scentGroup.created_at
-                                  ).toLocaleString()
-                                : "Không có"
-                            }}
-                          </td>
-                          <td>
-                            {{
-                              scentGroup.updated_at
-                                ? new Date(
-                                    scentGroup.updated_at
-                                  ).toLocaleString()
-                                : "Không có"
-                            }}
-                          </td>
-                          <td>
-                            <div class="form-button-action">
-                              <button
-                                type="button"
-                                data-bs-toggle="tooltip"
-                                title="Chỉnh sửa nhóm hương"
-                                class="btn btn-link btn-primary btn-lg"
-                                @click="editScentGroup(scentGroup.id)"
-                              >
-                                <i class="fa fa-edit"></i>
-                              </button>
-                              <button
-                                type="button"
-                                data-bs-toggle="tooltip"
-                                title="Xóa mềm"
-                                class="btn btn-link btn-danger"
-                                @click="confirmSoftDeleteWithSwal(scentGroup.id)"
-                              >
-                                <i class="fa fa-times"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr v-if="!scentGroups || scentGroups.length === 0">
-                          <td colspan="6" class="text-center">
-                            Không có nhóm hương nào.
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <p v-if="listMessage" :class="listMessageClass">
-                      {{ listMessage }}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                  </td>
+                </tr>
+                <tr v-if="!scentGroups || scentGroups.length === 0">
+                  <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                    Không có nhóm hương nào.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             </div>
+
+          <div class="w-full px-4 mt-8">
+            <form @submit.prevent="isEditing ? updateScentGroup() : addScentGroup()"
+              class="p-6 border border-gray-200 rounded-lg shadow-sm">
+              <div class="mb-6">
+                <h5 class="text-xl font-semibold text-gray-800">{{ isEditing ? 'Chỉnh sửa nhóm hương' : 'Thêm mới nhóm hương' }}</h5>
+              </div>
+              <div class="mb-4">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Tên nhóm hương</label>
+                <input type="text" v-model="scentGroup.name"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  id="name" placeholder="Nhập tên nhóm hương" required />
+                <p class="mt-1 text-sm text-gray-500">Ví dụ: Hương hoa, Hương gỗ (Tên này sẽ được lưu nguyên bản)</p>
+              </div>
+              <div class="mb-6">
+                <label for="color_code" class="block text-sm font-medium text-gray-700 mb-1">Mã màu</label>
+                <input type="color" v-model="scentGroup.color_code"
+                  class="block w-full h-10 px-1 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
+                  id="color_code" required />
+                <p class="mt-1 text-sm text-gray-500">Chọn màu từ bảng màu</p>
+              </div>
+              <div class="flex justify-end space-x-2">
+                <button type="submit"
+                  class="inline-flex items-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i :class="isEditing ? 'fas fa-save' : 'fas fa-plus'" class="mr-2"></i>
+                  {{ isEditing ? 'Cập nhật nhóm hương' : 'Thêm nhóm hương' }}
+                </button>
+                <button v-if="isEditing" type="button" @click="cancelEdit"
+                  class="inline-flex items-center px-5 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  <i class="fas fa-times mr-2"></i> Hủy
+                </button>
+              </div>
+              </form>
           </div>
         </div>
       </div>
@@ -162,64 +130,43 @@
 </template>
 
 <script setup>
-import { onMounted, nextTick, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, nextTick, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-import slugify from "slugify";
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
+import { useToast } from "vue-toastification"; // Import useToast
 
-// Reactive variables
+const route = useRoute();
+const router = useRouter();
+const toast = useToast(); // Khởi tạo instance của toast
+
 const scentGroup = ref({
+  id: null,
   name: "",
   color_code: "#000000",
 });
 const scentGroups = ref([]);
-const addMessage = ref("");
-const addMessageClass = ref("");
-const listMessage = ref("");
-const listMessageClass = ref("");
+// Bỏ addMessage, addMessageClass, listMessage, listMessageClass vì dùng toast
+const isEditing = ref(false);
 
-const router = useRouter();
-
-// Watch for name changes to slugify
-watch(
-  () => scentGroup.value.name,
-  (newName) => {
-    scentGroup.value.name = slugify(newName, {
-      lower: true,
-      strict: true,
-      locale: "vi",
-    });
-  }
-);
-
-// Fetch active scent groups
 const fetchScentGroups = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/admin/scent-groups");
     scentGroups.value = Array.isArray(response.data) ? response.data : response.data.data || [];
     if (!scentGroups.value.length) {
-      listMessage.value = "Không có nhóm hương nào.";
-      listMessageClass.value = "text-info";
-    } else {
-      listMessage.value = ""; // Clear message if data is loaded
+      toast.info("Không có nhóm hương nào."); // Thay thế listMessage
     }
-    // Re-initialize DataTables after data change
     await destroyAndReinitializeDataTable();
-
   } catch (error) {
-    listMessage.value = error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!";
-    listMessageClass.value = "text-danger";
+    toast.error(error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!"); // Thay thế listMessage
     console.error("Lỗi khi tải danh sách:", error);
-    await destroyAndReinitializeDataTable(); // Still re-init even on error to clear table if needed
+    await destroyAndReinitializeDataTable();
   }
 };
 
-// Handle adding a new scent group
 const addScentGroup = async () => {
   if (!scentGroup.value.name || !scentGroup.value.color_code) {
-    addMessage.value = "Vui lòng nhập tên nhóm hương và chọn màu!";
-    addMessageClass.value = "text-danger";
+    toast.error("Vui lòng nhập tên nhóm hương và chọn màu!"); // Thay thế addMessage
     return;
   }
   try {
@@ -231,29 +178,67 @@ const addScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    addMessage.value = response.data.message || "Thêm nhóm hương thành công!";
-    addMessageClass.value = "text-success";
-    scentGroup.value.name = "";
-    scentGroup.value.color_code = "#000000";
-    await fetchScentGroups(); // Refresh the list
+    toast.success(response.data.message || "Thêm nhóm hương thành công!"); // Thay thế addMessage
+    resetForm();
+    await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
     if (errors) {
-      addMessage.value = Object.values(errors).flat().join(" ");
+      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
     } else {
-      addMessage.value = error.response?.data?.message || "Có lỗi khi thêm nhóm hương!";
+      toast.error(error.response?.data?.message || "Có lỗi khi thêm nhóm hương!"); // Thay thế addMessage
     }
-    addMessageClass.value = "text-danger";
   }
 };
 
-// Navigate to edit page
-const editScentGroup = (id) => {
-  router.push(`/scent-group/edit/${id}`);
+const startEdit = (item) => {
+  scentGroup.value = { ...item };
+  isEditing.value = true;
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 };
 
-// Function to handle soft delete with SweetAlert2
+const updateScentGroup = async () => {
+  if (!scentGroup.value.name || !scentGroup.value.color_code || !scentGroup.value.id) {
+    toast.error("Dữ liệu cập nhật không hợp lệ!"); // Thay thế addMessage
+    return;
+  }
+  try {
+    const response = await axios.put(
+      `http://localhost:8000/api/admin/scent-groups/${scentGroup.value.id}`,
+      {
+        name: scentGroup.value.name,
+        color_code: scentGroup.value.color_code,
+      },
+      { validateStatus: (status) => status >= 200 && status < 300 }
+    );
+    toast.success(response.data.message || "Cập nhật nhóm hương thành công!"); // Thay thế addMessage
+    resetForm();
+    await fetchScentGroups();
+  } catch (error) {
+    console.error("Lỗi từ API:", error.response);
+    const errors = error.response?.data?.errors;
+    if (errors) {
+      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
+    } else {
+      toast.error(error.response?.data?.message || "Có lỗi khi cập nhật nhóm hương!"); // Thay thế addMessage
+    }
+  }
+};
+
+const cancelEdit = () => {
+  resetForm();
+};
+
+const resetForm = () => {
+  scentGroup.value = {
+    id: null,
+    name: "",
+    color_code: "#000000",
+  };
+  isEditing.value = false;
+};
+
 const confirmSoftDeleteWithSwal = async (id) => {
   try {
     const result = await Swal.fire({
@@ -269,40 +254,42 @@ const confirmSoftDeleteWithSwal = async (id) => {
 
     if (result.isConfirmed) {
       const response = await axios.delete(`http://localhost:8000/api/admin/scent-groups/${id}`);
-      await fetchScentGroups(); // Refresh the list after soft delete
-      Swal.fire({
-        title: response.data.message || 'Xóa mềm nhóm hương thành công!',
-        icon: 'success',
-        confirmButtonText: 'Đã hiểu!'
-      });
+      await fetchScentGroups();
+      toast.success(response.data.message || 'Xóa mềm nhóm hương thành công!'); // Thay thế Swal.fire success
+    } else {
+        toast.info("Thao tác xóa mềm đã bị hủy.");
     }
   } catch (error) {
     console.error('Lỗi khi xóa mềm nhóm hương:', error);
     const errorMessage = error.response?.data?.message || 'Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.';
-    Swal.fire({
-      icon: 'error',
-      title: 'Lỗi!',
-      text: `Xảy ra lỗi: ${errorMessage}`,
-    });
+    toast.error(`Xảy ra lỗi: ${errorMessage}`); // Thay thế Swal.fire error
   }
 };
 
-
-// Function to destroy and reinitialize DataTables
 let dataTableInstance = null;
 const destroyAndReinitializeDataTable = async () => {
   if (dataTableInstance) {
-    dataTableInstance.destroy(); // Destroy the existing DataTable instance
-    dataTableInstance = null; // Clear the instance
+    dataTableInstance.destroy();
+    dataTableInstance = null;
   }
-  await nextTick(); // Wait for Vue to render the updated table
+  await nextTick();
   if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
     dataTableInstance = jQuery("#add-row").DataTable({
       pageLength: 10,
       responsive: true,
-      destroy: true, // Ensure it can be reinitialized
+      destroy: true,
+      language: {
+        lengthMenu: "Hiển thị _MENU_ mục",
+        search: "Tìm kiếm:",
+        info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+        paginate: {
+          previous: "Trước",
+          next: "Tiếp",
+        },
+        emptyTable: "Không có dữ liệu trong bảng",
+      },
       drawCallback: () => {
-        jQuery('[data-bs-toggle="tooltip"]').tooltip(); // Re-initialize tooltips
+        // No Bootstrap tooltips needed.
       },
     });
   } else {
@@ -311,11 +298,9 @@ const destroyAndReinitializeDataTable = async () => {
 };
 
 onMounted(async () => {
-  // Load scripts and stylesheets dynamically
   const scripts = [
     "https://code.jquery.com/jquery-3.7.1.min.js",
     "https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js",
-    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js",
   ];
 
   const loadScript = (src) =>
@@ -347,118 +332,72 @@ onMounted(async () => {
     fontAwesomeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
     document.head.appendChild(fontAwesomeLink);
 
-    // Initial fetch and DataTable initialization
     await fetchScentGroups();
-
   } catch (error) {
     console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
+    // Có thể hiển thị một toast thông báo lỗi tải tài nguyên ở đây
+    toast.error("Không thể tải đầy đủ tài nguyên cần thiết. Vui lòng thử lại.");
   }
 });
 </script>
 
 <style scoped>
+/* Base container and page layout */
 .container {
   max-width: 1200px;
-  margin: 50px auto;
+  margin-left: auto;
+  margin-right: auto;
 }
-.form-group {
-  margin-bottom: 20px;
-}
-.form-control {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-}
-.color-picker {
-  height: 40px;
-  padding: 5px;
-  cursor: pointer;
-}
-.form-text {
-  font-size: 14px;
-}
-.btn-primary {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-.btn-link.btn-primary {
-  color: #007bff;
-}
-.btn-link.btn-primary:hover {
-  color: #0056b3;
-}
-.btn-link.btn-danger {
-  color: #dc3545;
-}
-.btn-link.btn-danger:hover {
-  color: #b02a37;
-}
-.btn-link.btn-success {
-  color: #28a745;
-}
-.btn-link.btn-success:hover {
-  color: #218838;
-}
-.form-button-action {
-  display: flex;
-  gap: 10px;
-  white-space: nowrap; /* Prevent buttons from wrapping */
-}
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-}
-.table th {
-  background-color: #f8f9fa;
-}
-.color-box {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  vertical-align: middle;
-  margin-right: 10px;
-  border: 1px solid #ced4da;
-}
-.text-success {
-  color: green;
-  margin-top: 15px;
-}
-.text-danger {
-  color: red;
-  margin-top: 15px;
-}
-.text-info {
-  color: #17a2b8;
-  margin-top: 15px;
-}
-.mb-5 {
-  margin-bottom: 3rem;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.breadcrumbs {
-  display: flex;
-  list-style: none;
+
+.page-inner {
   padding: 0;
 }
-.breadcrumbs li {
-  margin-right: 10px;
+
+/* Specific styling for the DataTables generated elements if needed */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
+
+.dataTables_wrapper .dataTables_length select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236B7280'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  min-width: unset;
+  width: auto;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Pagination and info */
+.dataTables_wrapper .dataTables_paginate,
+.dataTables_wrapper .dataTables_info {
+  margin-top: 1rem;
+}
+
+/* Specific styling for the DataTables table itself */
+.dataTables_wrapper table.dataTable {
+  border-collapse: collapse !important;
+}
+
+.dataTables_wrapper table.dataTable th,
+.dataTables_wrapper table.dataTable td {
+  padding: 0.75rem 1.5rem;
+}
+
+/* Custom styles for color box if needed */
 </style>

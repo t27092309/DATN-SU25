@@ -6,13 +6,13 @@
         <h3 class="fw-bold mb-3">Chỉnh sửa nhóm hương</h3>
         <ul class="breadcrumbs mb-3">
           <li class="nav-home">
-            <router-link to="/admin/nhom-huong"><i class="icon-home"></i></router-link>
+            <router-link to="/admin/scent-groups"><i class="icon-home"></i></router-link>
           </li>
           <li class="separator">
             <i class="icon-arrow-right"></i>
           </li>
           <li class="nav-item">
-            <router-link to="/admin/nhom-huong">Quản lý nhóm hương</router-link>
+            <router-link to="/admin/scent-groups">Quản lý nhóm hương</router-link>
           </li>
           <li class="separator">
             <i class="icon-arrow-right"></i>
@@ -55,7 +55,7 @@
                 </div>
                 <div class="card-action">
                   <button type="submit" class="btn btn-primary">Cập nhật nhóm hương</button>
-                  <router-link to="/admin/nhom-huong" class="btn btn-secondary ms-2">Hủy</router-link>
+                  <router-link to="/admin/scent-groups" class="btn btn-secondary ms-2">Hủy</router-link>
                 </div>
                 <p v-if="message" :class="messageClass">{{ message }}</p>
               </form>
@@ -122,7 +122,7 @@ export default {
         this.message = response.data.message || 'Cập nhật nhóm hương thành công!';
         this.messageClass = 'text-success';
         setTimeout(() => {
-          this.$router.push('/admin/nhom-huong');
+          this.$router.push('/admin/scent-groups');
         }, 1000);
       } catch (error) {
         const errors = error.response?.data?.errors;

@@ -9,10 +9,7 @@ import EditProduct from "@/views/admin/products/EditProduct.vue";
 import detailProduct from "@/views/admin/products/DetailProduct.vue";
 import ProductTrash from "@/views/admin/products/ProductTrash.vue";
 
-import AttributeIndex from "@/views/admin/Attribute/AttributeIndex.vue";
-import AttributeForm from "@/views/admin/Attribute/AttributeForm.vue";
-import AttributeValueIndex from "@/views/admin/Attribute/AttributeValueIndex.vue";
-import AttributeValueForm from "@/views/admin/AttributeValue/AttributeValueForm.vue";
+import AttributeManagementPage from "@/views/admin/Attribute/AttributeManagementPage.vue";
 
 import CategoryManager from "@/views/admin/Categories/CategoryManager.vue";
 import EditCategory from "@/views/admin/Categories/EditCategory.vue";
@@ -42,17 +39,20 @@ export default [
         path: "",
         name: "AdminDashboard",
         component: AdminDashboard,
+        meta: { requiresAdmin: true, title: "Trang quản trị" }, // Thêm meta
       },
       {
         path: "datatables",
         name: "Datatables",
         component: Datatables,
+        meta: { requiresAdmin: true, title: "Datatables" }, // Thêm meta
       },
       {
         path: "products",
         name: "products",
         component: Products,
         meta: {
+          requiresAdmin: true, // Thêm meta
           title: "Danh sách sản phẩm",
         },
       },
@@ -61,6 +61,7 @@ export default [
         name: "addProduct",
         component: AddProduct,
         meta: {
+          requiresAdmin: true, // Thêm meta
           title: "Thêm mới sản phẩm",
         },
       },
@@ -69,6 +70,7 @@ export default [
         name: "editProduct",
         component: EditProduct,
         meta: {
+          requiresAdmin: true, // Thêm meta
           title: "Sửa sản phẩm",
         },
       },
@@ -77,6 +79,7 @@ export default [
         name: "detailProduct",
         component: detailProduct,
         meta: {
+          requiresAdmin: true, // Thêm meta
           title: "Chi tiết sản phẩm",
         },
       },
@@ -84,131 +87,100 @@ export default [
         path: "products/trash", // Đường dẫn cho thùng rác
         name: "trashedProducts", // Tên route cho thùng rác
         component: ProductTrash,
-        meta: { title: "Thùng rác Sản phẩm" }, // Tiêu đề cho trang thùng rác
+        meta: { requiresAdmin: true, title: "Thùng rác Sản phẩm" }, // Thêm meta và tiêu đề
       },
       {
         path: "attributes",
         name: "AttributeIndex",
-        component: AttributeIndex,
+        component: AttributeManagementPage,
         meta: {
+          requiresAdmin: true, // Thêm meta
           title: "Danh sách biến thể",
         },
       },
       {
-        path: "attributes/create",
-        name: "AttributeCreate",
-        component: AttributeForm,
-        meta: {
-          title: "Danh sách biến thể",
-        },
-      },
-      {
-        path: "attributes/:id/edit",
-        name: "AttributeEdit",
-        component: AttributeForm,
-        props: true,
-        meta: {
-          title: "Danh sách biến thể",
-        },
-      },
-      {
-        path: "attributes/:attributeId/values",
-        name: "AttributeValueIndex",
-        component: AttributeValueIndex,
-        props: true,
-        meta: {
-          title: "Danh sách biến thể",
-        },
-      },
-      {
-        path: "attributes/:attributeId/values/create",
-        name: "AttributeValueCreate",
-        component: AttributeValueForm,
-        props: true,
-        meta: {
-          title: "Danh sách biến thể",
-        },
-      },
-      {
-        path: "attributes/:attributeId/values/:valueId/edit",
-        name: "AttributeValueEdit",
-        component: AttributeValueForm,
-        props: true,
-        meta: {
-          title: "Danh sách biến thể",
-        },
-      },
-      {
-        path: "danh-muc",
-        name: "category",
+        path: "categories",
+        name: "Categories",
         component: CategoryManager,
+        meta: { requiresAdmin: true, title: "Quản lý danh mục" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/categories/edit/:id",
+        path: "/categories/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditCategory",
         component: EditCategory,
+        meta: { requiresAdmin: true, title: "Sửa danh mục" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/hang",
+        path: "brands",
         name: "BrandList",
         component: BrandList,
+        meta: { requiresAdmin: true, title: "Quản lý thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/hang/them-moi",
+        path: "/brand/them-moi", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandAdd",
         component: BrandAdd,
+        meta: { requiresAdmin: true, title: "Thêm thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/hang/sua/:id",
+        path: "/brand/sua/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandEdit",
         component: BrandEdit,
+        meta: { requiresAdmin: true, title: "Sửa thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/hang/thung-rac",
+        path: "/brand/thung-rac", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandTrash",
         component: BrandTrash,
+        meta: { requiresAdmin: true, title: "Thùng rác Thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "ma-giam-gia",
-        name: "ma-giam-gia",
+        path: "coupons",
+        name: "Coupons",
         component: CouponManager,
+        meta: { requiresAdmin: true, title: "Quản lý mã giảm giá" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/coupons/edit/:id",
+        path: "/coupons/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditCoupons",
         component: EditCoupon,
+        meta: { requiresAdmin: true, title: "Sửa mã giảm giá" }, // Thêm meta và tiêu đề
       },
       {
         path: "/coupons/trash",
         name: "CouponTrash",
         component: CouponTrash,
-        meta: { title: "Thùng Rác Mã Giảm Giá" },
+        meta: { requiresAdmin: true, title: "Thùng Rác Mã Giảm Giá" }, // Thêm meta
       },
       {
-        path: "nhom-huong",
-        name: "nhom-huong",
+        path: "scent-groups",
+        name: "ScentGroups",
         component: ScentGroupManager,
+        meta: { requiresAdmin: true, title: "Quản lý nhóm hương" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/scent-group/edit/:id",
+        path: "/scent-group/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditScentGroup",
         component: EditScentGroup,
+        meta: { requiresAdmin: true, title: "Sửa nhóm hương" }, // Thêm meta và tiêu đề
       },
       {
         path: "scent-groups/trash",
         name: "ScentGroupTrash",
         component: ScentGroupTrash,
-        meta: { title: "Thùng Rác Nhóm Hương" },
+        meta: { requiresAdmin: true, title: "Thùng Rác Nhóm Hương" }, // Thêm meta
       },
       {
-        path: "don-hang",
+        path: "orders",
         name: "DanhSachDonHang",
         component: OrderList,
+        meta: { requiresAdmin: true, title: "Danh sách đơn hàng" }, // Thêm meta và tiêu đề
       },
       {
-        path: "don-vi-van-chuyen",
+        path: "shipping-methods",
         name: "DonViVanChuyen",
         component: ShippingMethodList,
+        meta: { requiresAdmin: true, title: "Quản lý đơn vị vận chuyển" }, // Thêm meta và tiêu đề
       }
     ],
   },

@@ -1,115 +1,127 @@
 <template>
-  <div class="order-list-container">
-    <h2>Danh sách Đơn hàng</h2>
+  <div class="container mx-auto px-4 py-8">
+    <h2 class="text-center text-3xl font-bold text-gray-800 mb-8 border-b-2 pb-4">Danh sách Đơn hàng</h2>
 
-    <div class="filters-and-search">
-      <div class="order-tabs">
+    <div class="flex flex-col md:flex-row md:justify-between items-center gap-4 mb-6">
+      <div class="flex flex-wrap gap-2">
         <button v-for="tab in orderTabs" :key="tab.value"
-          :class="{ 'tab-button': true, 'active': filters.status === tab.value }" @click="selectTab(tab.value)">
+          :class="['px-4 py-2 rounded-md font-semibold transition-all duration-300 ease-in-out',
+                   filters.status === tab.value ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']"
+          @click="selectTab(tab.value)">
           {{ tab.label }}
         </button>
       </div>
 
-      <div class="search-box">
-        <label for="orderSearch">Tìm kiếm (ID đơn hàng / Tên người dùng / SĐT):</label>
-        <input id="orderSearch" type="text" v-model="filters.search" placeholder="Nhập ID, tên người dùng hoặc SĐT" />
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <label for="orderSearch" class="text-gray-700 font-medium whitespace-nowrap">Tìm kiếm (ID/Tên/SĐT):</label>
+        <input id="orderSearch" type="text" v-model="filters.search" placeholder="Nhập ID, tên người dùng hoặc SĐT"
+               class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
       </div>
     </div>
 
-    <div v-if="loading" class="loading-indicator">Đang tải đơn hàng...</div>
-    <div v-else-if="!loading && orders && orders.length === 0" class="no-orders">Không có đơn hàng nào.</div>
-    <div v-else>
-      <table class="order-table">
-        <thead>
+    <div v-if="loading" class="text-center py-10 text-lg text-gray-600">Đang tải đơn hàng...</div>
+    <div v-else-if="!loading && orders && orders.length === 0" class="text-center py-10 text-lg text-gray-500 italic border border-dashed rounded-md">
+      Không có đơn hàng nào.
+    </div>
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
           <tr>
-            <th>ID</th>
-            <th>Khách hàng</th>
-            <th>Tổng tiền</th>
-            <th>Ngày tạo</th>
-            <th>Trạng thái</th>
-            <th>Hành động</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="order in orders" :key="order.id">
-            <td>{{ order.id }}</td>
-            <td>{{ order.user ? order.user.name : 'N/A' }}</td>
-            <td>{{ order.total_price_formatted }}</td>
-            <td>{{ order.display_created_at }}</td>
-            <td>
-              <div class="status-cell">
-                <span v-if="!order.isEditingStatus" :class="getStatusClass(order.status)"
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50 transition-colors duration-150">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ order.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.user ? order.user.name : 'N/A' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.total_price_formatted }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.display_created_at }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+              <div class="flex items-center gap-2">
+                <span v-if="!order.isEditingStatus" :class="['px-2 py-1 rounded-full text-xs font-semibold cursor-pointer', getStatusClass(order.status)]"
                   @click="startEditStatus(order)">
                   {{ order.status_label || order.status }}
                 </span>
                 <select v-else v-model="order.status" @change="updateOrderStatus(order)" @blur="cancelEditStatus(order)"
-                  :disabled="order.isUpdatingStatus">
+                  :disabled="order.isUpdatingStatus"
+                  class="block w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
                   <option v-for="statusOpt in availableStatusOptions" :key="statusOpt.value" :value="statusOpt.value">
                     {{ statusOpt.label }}
                   </option>
                 </select>
-                <span v-if="order.isUpdatingStatus" class="status-spinner">🔄</span>
+                <span v-if="order.isUpdatingStatus" class="animate-spin text-blue-500 text-lg">🔄</span>
               </div>
             </td>
-            <td>
-              <button @click="viewOrderDetails(order.id)" class="btn-view">Xem chi tiết</button>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button @click="viewOrderDetails(order.id)"
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Xem chi tiết
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div class="pagination">
-        <button @click="fetchOrders(pagination.current_page - 1)" :disabled="!pagination.prev_page_url">
+      <div class="flex justify-center items-center gap-4 py-4 px-6 bg-gray-50 border-t border-gray-200">
+        <button @click="fetchOrders(pagination.current_page - 1)" :disabled="!pagination.prev_page_url"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
           Trước
         </button>
-        <span>Trang {{ pagination.current_page }} / {{ pagination.last_page }}</span>
-        <button @click="fetchOrders(pagination.current_page + 1)" :disabled="!pagination.next_page_url">
+        <span class="text-gray-700 font-semibold">Trang {{ pagination.current_page }} / {{ pagination.last_page }}</span>
+        <button @click="fetchOrders(pagination.current_page + 1)" :disabled="!pagination.next_page_url"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
           Sau
         </button>
       </div>
     </div>
 
-    <div v-if="showDetailsModal" class="modal-overlay" @click.self="closeDetailsModal">
-      <div class="modal-content">
-        <button class="close-button" @click="closeDetailsModal">&times;</button>
-        <h3>Chi tiết đơn hàng #{{ selectedOrder.id }}</h3>
-        <div v-if="loadingDetails">Đang tải chi tiết...</div>
-        <div v-else-if="selectedOrder">
-          <p><strong>Khách hàng:</strong> {{ selectedOrder.user ? selectedOrder.user.name : 'N/A' }}</p>
-          <p><strong>Email:</strong> {{ selectedOrder.user ? selectedOrder.user.email : 'N/A' }}</p>
-          <p><strong>Trạng thái:</strong> <span :class="getStatusClass(selectedOrder.status)">{{
-            selectedOrder.status_label || selectedOrder.status }}</span></p>
-          <p><strong>Tổng tiền:</strong> {{ selectedOrder.total_price_formatted }}</p>
-          <p><strong>Phí vận chuyển:</strong> {{ formatCurrency(selectedOrder.shipping_fee) }}</p>
-          <p><strong>Ngày tạo:</strong> {{ selectedOrder.display_created_at }}</p>
-          <p><strong>Ghi chú:</strong> {{ selectedOrder.notes || 'Không có' }}</p>
+    <div v-if="showDetailsModal" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[1000]" @click.self="closeDetailsModal">
+      <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl relative max-h-[90vh] overflow-y-auto">
+        <button class="absolute top-3 right-5 text-gray-500 hover:text-gray-800 text-3xl leading-none" @click="closeDetailsModal">&times;</button>
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Chi tiết đơn hàng #{{ selectedOrder?.id }}</h3>
 
-          <h4>Địa chỉ giao hàng:</h4>
-          <p v-if="selectedOrder.address">
+        <div v-if="loadingDetails" class="text-center py-5 text-gray-600">Đang tải chi tiết...</div>
+        <div v-else-if="selectedOrder">
+          <p class="mb-2"><strong>Khách hàng:</strong> {{ selectedOrder.user ? selectedOrder.user.name : 'N/A' }}</p>
+          <p class="mb-2"><strong>Email:</strong> {{ selectedOrder.user ? selectedOrder.user.email : 'N/A' }}</p>
+          <p class="mb-2"><strong>Trạng thái:</strong> <span :class="['px-2 py-1 rounded-full text-xs font-semibold', getStatusClass(selectedOrder.status)]">{{
+            selectedOrder.status_label || selectedOrder.status }}</span></p>
+          <p class="mb-2"><strong>Tổng tiền:</strong> {{ selectedOrder.total_price_formatted }}</p>
+          <p class="mb-2"><strong>Phí vận chuyển:</strong> {{ formatCurrency(selectedOrder.shipping_fee) }}</p>
+          <p class="mb-2"><strong>Ngày tạo:</strong> {{ selectedOrder.display_created_at }}</p>
+          <p class="mb-4"><strong>Ghi chú:</strong> {{ selectedOrder.notes || 'Không có' }}</p>
+
+          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Địa chỉ giao hàng:</h4>
+          <p v-if="selectedOrder.address" class="ml-4 mb-4 text-gray-700">
             <strong>Người nhận:</strong> {{ selectedOrder.address.recipient_name }}<br>
             <strong>Điện thoại:</strong> {{ selectedOrder.address.phone_number }}<br>
             <strong>Địa chỉ:</strong> {{ selectedOrder.address.address_line }}, {{ selectedOrder.address.ward }}, {{
               selectedOrder.address.district }}, {{ selectedOrder.address.province }}
           </p>
-          <p v-else>Không có địa chỉ giao hàng.</p>
+          <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có địa chỉ giao hàng.</p>
 
-          <h4>Sản phẩm:</h4>
-          <ul v-if="selectedOrder.items && selectedOrder.items.length">
-            <li v-for="item in selectedOrder.items" :key="item.id">
+          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Sản phẩm:</h4>
+          <ul v-if="selectedOrder.items && selectedOrder.items.length" class="list-disc pl-8 mb-4">
+            <li v-for="item in selectedOrder.items" :key="item.id" class="mb-1 text-gray-700">
               {{ item.variant_name || 'Sản phẩm không xác định' }} ({{ item.quantity }} x {{
                 formatCurrency(item.price_each) }})
             </li>
           </ul>
-          <p v-else>Không có sản phẩm trong đơn hàng.</p>
+          <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có sản phẩm trong đơn hàng.</p>
 
-          <h4>Thanh toán:</h4>
-          <ul v-if="selectedOrder.payments && selectedOrder.payments.length">
-            <li v-for="payment in selectedOrder.payments" :key="payment.id">
+          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Thanh toán:</h4>
+          <ul v-if="selectedOrder.payments && selectedOrder.payments.length" class="list-disc pl-8">
+            <li v-for="payment in selectedOrder.payments" :key="payment.id" class="mb-1 text-gray-700">
               {{ formatCurrency(payment.amount) }} - {{ payment.payment_method }} (Trạng thái: {{ payment.status }})
-              <span v-if="payment.paid_at"> - Ngày thanh toán: {{ formatOrderCreatedAt(payment.paid_at) }}</span>
+              <span v-if="payment.paid_at" class="text-gray-600"> - Ngày thanh toán: {{ formatOrderCreatedAt(payment.paid_at) }}</span>
             </li>
           </ul>
-          <p v-else>Chưa có thanh toán nào.</p>
+          <p v-else class="ml-4 text-gray-500 italic">Chưa có thanh toán nào.</p>
         </div>
       </div>
     </div>
@@ -119,6 +131,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 // ==============================================
 // 1. STATE REACTIVE
@@ -160,8 +173,15 @@ let searchTimeout = null;
 // ==============================================
 
 const showAuthError = (message) => {
-  alert(message);
-  // window.location.href = '/login';
+  Swal.fire({
+    icon: 'error',
+    title: 'Lỗi xác thực!',
+    text: message,
+    confirmButtonText: 'Đăng nhập lại'
+  }).then(() => {
+    // Có thể chuyển hướng đến trang đăng nhập sau khi người dùng đóng alert
+    // window.location.href = '/login';
+  });
 };
 
 // ==============================================
@@ -209,7 +229,11 @@ async function fetchOrders(page = 1) {
     if (error.response && error.response.status === 401) {
       showAuthError('Phiên làm việc của bạn đã hết hạn hoặc không có quyền truy cập. Vui lòng đăng nhập lại.');
     } else {
-      alert("Không thể tải danh sách đơn hàng. Vui lòng thử lại.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: "Không thể tải danh sách đơn hàng. Vui lòng thử lại.",
+      });
     }
   } finally {
     loading.value = false;
@@ -250,7 +274,11 @@ async function viewOrderDetails(orderId) {
     if (error.response && error.response.status === 401) {
       showAuthError('Phiên làm việc của bạn đã hết hạn hoặc không có quyền truy cập. Vui lòng đăng nhập lại.');
     } else {
-      alert("Không thể tải chi tiết đơn hàng này.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: "Không thể tải chi tiết đơn hàng này.",
+      });
     }
     closeDetailsModal();
   } finally {
@@ -286,8 +314,18 @@ async function updateOrderStatus(order) {
     return;
   }
 
-  // Cập nhật thông báo xác nhận để hiển thị label thay vì value
-  if (!confirm(`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng #${order.id} từ "${order.status_label || oldStatus}" sang "${availableStatusOptions.value.find(opt => opt.value === newStatus)?.label || newStatus}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận thay đổi trạng thái?',
+    html: `Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng **#${order.id}** từ "<span class="font-bold">${order.status_label || oldStatus}</span>" sang "<span class="font-bold">${availableStatusOptions.value.find(opt => opt.value === newStatus)?.label || newStatus}</span>"?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Có, thay đổi!',
+    cancelButtonText: 'Hủy bỏ'
+  });
+
+  if (!result.isConfirmed) {
     order.status = oldStatus;
     order.isEditingStatus = false;
     return;
@@ -300,60 +338,73 @@ async function updateOrderStatus(order) {
       status: newStatus
     });
 
-    // --- LOGIC ĐÃ CẬP NHẬT: XỬ LÝ PHẢN HỒI VÀ CẬP NHẬT GIAO DIỆN ---
-    if (response.data.success) { // Kiểm tra thuộc tính 'success' từ backend
-      // Lấy dữ liệu đơn hàng đã cập nhật từ phản hồi (nếu backend có gửi về)
-      // Nếu backend chỉ gửi { success: true, message: '...', data: { id, status, status_label } },
-      // chúng ta sẽ lấy trực tiếp từ response.data.data
-      const updatedOrderData = response.data.data || {}; // Đảm bảo không bị lỗi nếu data không tồn tại
-
-      // Tìm và cập nhật trực tiếp đối tượng order trong mảng orders.value
-      // để giao diện cập nhật ngay lập tức
-      const orderIndex = orders.value.findIndex(o => o.id === order.id); // Dùng order.id của đối tượng gốc
+    if (response.data.success) {
+      const updatedOrderData = response.data.data || {};
+      const orderIndex = orders.value.findIndex(o => o.id === order.id);
       if (orderIndex !== -1) {
-        // Cập nhật các thuộc tính cần thiết
-        orders.value[orderIndex].status = updatedOrderData.status || newStatus; // Ưu tiên data từ backend
-        // Lấy status_label mới từ backend nếu có, hoặc từ availableStatusOptions
+        orders.value[orderIndex].status = updatedOrderData.status || newStatus;
         orders.value[orderIndex].status_label = updatedOrderData.status_label || availableStatusOptions.value.find(opt => opt.value === orders.value[orderIndex].status)?.label || orders.value[orderIndex].status;
-        orders.value[orderIndex].originalStatus = orders.value[orderIndex].status; // Cập nhật originalStatus
+        orders.value[orderIndex].originalStatus = orders.value[orderIndex].status;
       }
 
-      alert(`Cập nhật trạng thái đơn hàng #${order.id} thành công!`);
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: `Cập nhật trạng thái đơn hàng #${order.id} thành công!`,
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
 
-      // Quan trọng: Tải lại số lượng đơn hàng cho các tab
-      // Điều này đảm bảo số đếm trên các tab được cập nhật chính xác
-      fetchCountsOnly();
-
+      fetchCountsOnly(); // Tải lại số lượng đơn hàng cho các tab
     } else {
-      // Backend báo thất bại (success: false)
-      alert(`Cập nhật trạng thái đơn hàng #${order.id} thất bại: ` + (response.data.message || 'Lỗi không xác định từ server.'));
-      order.status = oldStatus; // Khôi phục trạng thái cũ trên UI
+      Swal.fire({
+        icon: 'error',
+        title: 'Thất bại!',
+        text: `Cập nhật trạng thái đơn hàng #${order.id} thất bại: ` + (response.data.message || 'Lỗi không xác định từ server.'),
+      });
+      order.status = oldStatus;
     }
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
-    // Xử lý lỗi Axios (Network Error, 4xx, 5xx)
-    if (axios.isAxiosError(error)) { // Kiểm tra xem đây có phải lỗi Axios không
+    if (axios.isAxiosError(error)) {
       if (error.response) {
-        // Lỗi từ server (status code không phải 2xx)
         if (error.response.status === 401) {
           showAuthError('Phiên làm việc của bạn đã hết hạn hoặc không có quyền truy cập. Vui lòng đăng nhập lại.');
         } else if (error.response.data && error.response.data.message) {
-          alert(`Cập nhật trạng thái đơn hàng #${order.id} thất bại: ` + error.response.data.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: `Cập nhật trạng thái đơn hàng #${order.id} thất bại: ` + error.response.data.message,
+          });
         } else {
-          alert(`Cập nhật trạng thái đơn hàng #${order.id} thất bại: Lỗi ${error.response.status} từ server.`);
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: `Cập nhật trạng thái đơn hàng #${order.id} thất bại: Lỗi ${error.response.status} từ server.`,
+          });
         }
       } else if (error.request) {
-        // Yêu cầu đã được gửi nhưng không nhận được phản hồi (Network Error)
-        alert("Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc server.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng hoặc server.",
+        });
       } else {
-        // Lỗi khác khi thiết lập request
-        alert("Lỗi khi gửi yêu cầu cập nhật trạng thái. Vui lòng thử lại.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+        });
       }
     } else {
-      // Lỗi không phải Axios
-      alert("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+      });
     }
-    order.status = oldStatus; // Khôi phục trạng thái cũ trên UI trong mọi trường hợp lỗi
+    order.status = oldStatus;
   } finally {
     order.isEditingStatus = false;
     order.isUpdatingStatus = false;
@@ -361,7 +412,7 @@ async function updateOrderStatus(order) {
 }
 
 function cancelEditStatus(order) {
-  if (!order.isUpdatingStatus) { // Chỉ revert nếu không đang trong quá trình cập nhật
+  if (!order.isUpdatingStatus) {
     order.status = order.originalStatus;
     order.isEditingStatus = false;
   }
@@ -370,7 +421,8 @@ function cancelEditStatus(order) {
 // Hàm mới để chỉ fetch số lượng đơn hàng cho các tab
 async function fetchCountsOnly() {
   try {
-    const response = await axios.get('http://localhost:8000/api/admin/orders', { params: { page: 1, status: '' } }); // Gửi request chung để lấy tất cả counts
+    // Chỉ gửi params tối thiểu để lấy counts
+    const response = await axios.get('http://localhost:8000/api/admin/orders', { params: { page: 1, status: '', per_page: 1 } });
     if (response.data.counts) {
       orderTabs.value.forEach(tab => {
         tab.count = response.data.counts[tab.value] || 0;
@@ -397,17 +449,17 @@ function formatCurrency(value) {
 function getStatusClass(status) {
   switch (status) {
     case 'pending':
-      return 'status-pending';
+      return 'bg-yellow-100 text-yellow-800'; // Đang chờ
     case 'processing':
-      return 'status-processing';
+      return 'bg-blue-100 text-blue-800'; // Đang xử lý
     case 'shipped':
-      return 'status-shipped';
+      return 'bg-indigo-100 text-indigo-800'; // Đang giao
     case 'completed':
-      return 'status-completed';
+      return 'bg-green-100 text-green-800'; // Đã hoàn thành
     case 'cancelled':
-      return 'status-cancelled';
+      return 'bg-red-100 text-red-800'; // Đã hủy
     default:
-      return '';
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
@@ -428,7 +480,13 @@ function formatOrderCreatedAt(timestampString) {
   const exactDateTime = `${formattedDay}/${formattedMonth}/${date.getFullYear()}, ${formattedHours}:${formattedMinutes}`;
 
   if (diffHours < 24) {
-    return `${exactDateTime} (${Math.round(diffHours)} tiếng trước)`;
+    // Nếu trong vòng 24 giờ, hiển thị "X tiếng trước"
+    const roundedHours = Math.round(diffHours);
+    if (roundedHours === 0) { // Nếu dưới 1 tiếng, hiển thị phút
+      const diffMinutes = diffMs / (1000 * 60);
+      return `${exactDateTime} (${Math.round(diffMinutes)} phút trước)`;
+    }
+    return `${exactDateTime} (${roundedHours} tiếng trước)`;
   } else {
     return exactDateTime;
   }
@@ -453,372 +511,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Các styles đã có (giữ nguyên) */
-.order-list-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: sans-serif;
-}
+/* Các style tùy chỉnh có thể giữ lại nếu không thể thay thế bằng Tailwind */
+/* Ví dụ: scrollbar styling, hoặc các animation phức tạp không có sẵn trong Tailwind */
 
-h2 {
-  text-align: center;
-  color: #333;
-  margin-bottom: 25px;
-}
+/* Custom select arrow (nếu muốn) - Tailwind không có sẵn mũi tên dropdown mặc định cho select */
+/* Tuy nhiên, các trình duyệt hiện đại thường có mũi tên mặc định khá ổn */
+/* Nếu bạn muốn tùy chỉnh hoàn toàn, bạn có thể tạo một div giả select hoặc dùng thư viện */
 
-.filters-and-search {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.order-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.tab-button {
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-  color: #555;
-}
-
-.tab-button:hover {
-  background-color: #e0e0e0;
-  border-color: #ccc;
-}
-
-.tab-button.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-  box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.filter-status select,
-.search-box input[type="text"] {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.loading-indicator,
-.no-orders {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-}
-
-.order-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
-}
-
-.order-table th,
-.order-table td {
-  border: 1px solid #eee;
-  padding: 12px 15px;
-  text-align: left;
-}
-
-.order-table th {
-  background-color: #f8f8f8;
-  font-weight: bold;
-  color: #333;
-}
-
-.order-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.order-table tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-.btn-view {
-  padding: 6px 12px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-view:hover {
-  background-color: #218838;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  gap: 10px;
-}
-
-.pagination button {
-  padding: 8px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.pagination button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.pagination button:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.pagination span {
-  font-weight: bold;
-  color: #333;
-}
-
-.status-cell {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* Styles cho phần tử select trong cột trạng thái */
-.status-cell select {
-  padding: 5px 8px;
-  /* Tăng padding để dễ nhìn */
-  border: 1px solid #ccc;
-  /* Viền màu xám nhạt */
-  border-radius: 3px;
-  /* Bo tròn góc */
-  background-color: white;
-  /* Nền trắng */
-  font-size: 0.9em;
-  /* Kích thước chữ nhỏ hơn một chút so với mặc định */
-  min-width: 120px;
-  /* Đảm bảo chiều rộng tối thiểu */
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
-  /* Đổ bóng nhẹ bên trong */
-  appearance: none;
-  /* Xóa style mặc định của trình duyệt cho select */
-  -webkit-appearance: none;
-  /* Dành cho WebKit browsers */
-  -moz-appearance: none;
-  /* Dành cho Firefox */
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="gray"><polygon points="0,0 10,0 5,10"/></svg>');
-  /* Icon mũi tên tùy chỉnh */
+/* Ví dụ về cách ghi đè mũi tên mặc định nếu cần */
+select {
+  -webkit-appearance: none; /* Chrome, Safari, Edge */
+  -moz-appearance: none;    /* Firefox */
+  appearance: none;         /* Standard */
+  /* background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); */
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 8px;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
 }
 
-.status-cell select:focus {
-  border-color: #007bff;
-  /* Viền xanh khi focus */
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  /* Đổ bóng focus */
-  outline: none;
-  /* Xóa outline mặc định */
-}
+/* No longer needed as status classes are directly applied via Tailwind utility classes */
+/* .status-pending, .status-processing, etc. are now handled by getStatusClass function returning Tailwind classes */
 
-/* Tùy chọn: Định kiểu cho các option bên trong select */
-/* Lưu ý: Việc định kiểu option có thể bị giới hạn tùy thuộc vào trình duyệt */
-.status-cell select option {
-  padding: 8px 12px;
-  background-color: white;
-  color: #333;
-}
-
-.status-cell select option:checked {
-  background-color: #007bff;
-  /* Nền xanh khi chọn */
-  color: white;
-  /* Chữ trắng khi chọn */
-}
-
-/* Bạn cũng có thể áp dụng màu nền cho từng option dựa trên trạng thái, nếu muốn */
-.status-cell select option[value="pending"] {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-cell select option[value="processing"] {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.status-cell select option[value="shipped"] {
-  background-color: #cce5ff;
-  color: #004085;
-}
-
-.status-cell select option[value="completed"] {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-cell select option[value="cancelled"] {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.status-cell span {
-  cursor: pointer;
-  padding: 5px 8px;
-  border-radius: 3px;
-  display: inline-block;
-}
-
-.status-cell select {
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background-color: white;
-  font-size: 0.9em;
-  min-width: 120px;
-}
-
-.status-spinner {
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-left: 5px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.status-pending {
-  background-color: #fff3cd;
-  color: #856404;
-  font-weight: bold;
-  border: 1px solid #ffeeba;
-}
-
-.status-processing {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  font-weight: bold;
-  border: 1px solid #bee5eb;
-}
-
-.status-shipped {
-  background-color: #cce5ff;
-  color: #004085;
-  font-weight: bold;
-  border: 1px solid #b8daff;
-}
-
-.status-completed {
-  background-color: #d4edda;
-  color: #155724;
-  font-weight: bold;
-  border: 1px solid #c3e6cb;
-}
-
-.status-cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-  font-weight: bold;
-  border: 1px solid #f5c6cb;
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 700px;
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content h3 {
-  margin-top: 0;
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.modal-content p {
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.modal-content h4 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.modal-content ul {
-  list-style-type: disc;
-  padding-left: 20px;
-  margin-bottom: 10px;
-}
-
-.modal-content li {
-  margin-bottom: 5px;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-}
-
-.close-button:hover {
-  color: #333;
-}
 </style>
