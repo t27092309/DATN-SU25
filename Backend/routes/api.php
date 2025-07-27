@@ -22,6 +22,9 @@ use App\Http\Middleware\CorsMiddleware;
 use App\Http\Controllers\API\Client\UserProfileController;
 use App\Http\Controllers\API\Client\UserAddressController;
 use App\Http\Controllers\API\Client\LocationController;
+use App\Http\Controllers\Api\OrderLookupController;
+use App\Http\Controllers\API\Client\PaymentController;
+
 
 Route::middleware([CorsMiddleware::class])->group(function () {
 
@@ -41,6 +44,13 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::post('checkout/buy-now', [CheckoutController::class, 'buyNow']);
         Route::post('/check-coupon', [CheckoutController::class, 'checkCoupon']);
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
+
+        // Payment API (public, no auth required)
+        Route::post('/payment/create', [PaymentController::class, 'createPayment']);
+        Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
+        Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
+
+
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -68,6 +78,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
         });
+
+        Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
