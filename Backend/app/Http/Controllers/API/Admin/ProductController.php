@@ -9,6 +9,7 @@ use App\Models\ProductUsageProfile;
 use App\Models\ProductImage; // Essential for handling additional images
 use App\Models\Category;
 use App\Models\Brand;
+use App\Models\AttributeValue;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductImageResource; // Still useful if you want to return individual image details
@@ -215,7 +216,7 @@ class ProductController extends Controller
                     $galleryImagePath = $file->store('products/gallery_images', 'public');
                     $uploadedFilePaths[] = $galleryImagePath;
                     $product->images()->create([
-                        'image_url' => $galleryImagePath,
+                        'path' => $galleryImagePath,
                     ]);
                 }
             }
@@ -348,8 +349,16 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
             'remove_main_image' => 'boolean', // Flag to delete main image
 
-            'additional_images' => 'nullable|array', // New images to upload
-            'additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // --- CẬP NHẬT: Thêm validation cho gallery_images (bao gồm cả ảnh cũ và thứ tự)
+            'gallery_images' => 'nullable|array', // Mảng các đối tượng {id: ..., order: ..., path: ...} hoặc chỉ order cho ảnh mới
+            'gallery_images.*.id' => 'nullable|integer|exists:product_images,id', // ID của ảnh hiện có
+            'gallery_images.*.order' => 'required|integer|min:0', // Thứ tự của ảnh, bắt buộc cho cả ảnh cũ và ảnh mới
+            // 'gallery_images.*.path' => 'nullable|string', // Đường dẫn của ảnh cũ (không cần validate nếu đã validate id)
+
+            // Dùng một trường riêng cho ảnh mới được upload lên
+            'new_additional_images' => 'nullable|array',
+            'new_additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+
             'deleted_image_ids' => 'nullable|array', // IDs of existing images to delete
             'deleted_image_ids.*' => 'integer|exists:product_images,id',
 
@@ -381,16 +390,18 @@ class ProductController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    // This unique rule needs to ignore the current variant ID if it exists in the payload,
-                    // and ignore all other variants of this product. This is tricky.
-                    // The simplest is to ensure uniqueness across all product_variants except the current one being updated.
+                    // The unique rule needs to consider existing variants being updated vs. new ones.
+                    // This rule should ensure uniqueness across all variants of THIS product,
+                    // ignoring the current variant if its ID is present in the request.
                     Rule::unique('product_variants', 'sku')->ignore($product->id, 'product_id')->where(function ($query) use ($product) {
-                        return $query->where('product_id', $product->id); // For variants of THIS product
+                        return $query->where('product_id', $product->id);
                     })
                 ];
                 $rules['variants.*.price'] = 'required|numeric|min:0';
                 $rules['variants.*.stock'] = 'required|integer|min:0';
-                $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+                // No 'image' for variants here, as it's typically handled as an additional image if needed.
+                // Or you can add it back if variants can have their own main images.
+                // $rules['variants.*.image'] = 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
                 $rules['variants.*.attribute_values'] = 'required|array|min:1';
                 $rules['variants.*.attribute_values.*'] = 'exists:attribute_values,id';
             } else {
@@ -413,9 +424,17 @@ class ProductController extends Controller
                 'category_id.exists' => 'Danh mục không tồn tại.',
                 'brand_id.exists' => 'Thương hiệu không tồn tại.',
                 'variants.json' => 'Dữ liệu biến thể không hợp lệ.', // If variants sent as JSON string
-                'additional_images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
-                'additional_images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
-                'additional_images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
+
+                // --- CẬP NHẬT: Thông báo lỗi cho gallery_images ---
+                'gallery_images.array' => 'Dữ liệu ảnh phụ không hợp lệ.',
+                'gallery_images.*.id.exists' => 'Ảnh phụ cần cập nhật không tồn tại.',
+                'gallery_images.*.order.required' => 'Thứ tự ảnh phụ là bắt buộc.',
+                'gallery_images.*.order.integer' => 'Thứ tự ảnh phụ phải là số nguyên.',
+                'gallery_images.*.order.min' => 'Thứ tự ảnh phụ không được nhỏ hơn 0.',
+
+                'new_additional_images.*.image' => 'Tệp ảnh mới phải là hình ảnh.',
+                'new_additional_images.*.mimes' => 'Ảnh mới phải có định dạng: jpeg, png, jpg, gif, svg.',
+                'new_additional_images.*.max' => 'Kích thước ảnh mới không được vượt quá 2MB.',
                 'deleted_image_ids.*.exists' => 'Ảnh phụ cần xóa không tồn tại.',
 
                 // --- BỔ SUNG CÁC THÔNG BÁO LỖI CHO USAGE PROFILE (UPDATE) ---
@@ -455,8 +474,11 @@ class ProductController extends Controller
                 }
                 // Validate the structure of decoded scent_groups data
                 $validator = validator($scentGroupsData, [
+                    '*.id' => 'required|exists:scent_groups,id', // Make sure scent group ID exists
                     '*.strength' => 'required|integer|min:1|max:100', // Adjusted max for 1-100 scale
                 ], [
+                    '*.id.required' => 'ID nhóm hương là bắt buộc.',
+                    '*.id.exists' => 'ID nhóm hương không tồn tại.',
                     '*.strength.required' => 'Độ mạnh nhóm hương là bắt buộc.',
                     '*.strength.integer' => 'Độ mạnh nhóm hương phải là số nguyên.',
                     '*.strength.min' => 'Độ mạnh nhóm hương phải từ 1 trở lên.',
@@ -475,24 +497,22 @@ class ProductController extends Controller
         DB::beginTransaction();
         try {
             $currentImagePath = $product->image;
+            $imagePathForDb = null;
 
-            // Handle main image deletion
-            if (isset($validated['remove_main_image']) && $validated['remove_main_image']) {
+            // 1. Handle main image deletion request
+            if ($request->has('remove_main_image') && $request->boolean('remove_main_image')) {
                 if ($currentImagePath && Storage::disk('public')->exists($currentImagePath)) {
                     Storage::disk('public')->delete($currentImagePath);
                 }
-                $validated['image'] = null; // Set image to null in DB
+                $imagePathForDb = null; // Explicitly set to null for DB
             }
 
-            // Handle main image upload/update
+            // 2. Handle main image upload/update
             if ($request->hasFile('image')) {
-                if ($currentImagePath && Storage::disk('public')->exists($currentImagePath)) {
+                if ($currentImagePath && Storage::disk('public')->exists($currentImagePath) && $imagePathForDb !== null) {
                     Storage::disk('public')->delete($currentImagePath);
                 }
-                $validated['image'] = $request->file('image')->store('products', 'public');
-            } else if (!isset($validated['image']) && !isset($validated['remove_main_image'])) {
-                // If no new image and not removing, retain old image path
-                $validated['image'] = $currentImagePath;
+                $imagePathForDb = $request->file('image')->store('products', 'public');
             }
 
             // Update slug if name changes
@@ -500,16 +520,22 @@ class ProductController extends Controller
                 $validated['slug'] = Str::slug($validated['name']);
             }
 
-            // Prepare product data for update (excluding image/variant specific fields handled below)
+            // Prepare product data for update (excluding image/variant/gallery specific fields handled below)
             $productDataForUpdate = collect($validated)->except([
-                'image',
+                'image', // EXCLUDE 'image' by default from $validated
                 'remove_main_image',
-                'additional_images',
+                'gallery_images', // EXCLUDE new 'gallery_images' field
+                'new_additional_images', // EXCLUDE new 'new_additional_images' field
                 'deleted_image_ids',
                 'variants',
-                'scent_groups', // Exclude as it's handled separately
-                'usage_profile', // Exclude as it's handled separately
+                'scent_groups',
+                'usage_profile',
             ])->toArray();
+
+            // ONLY add 'image' to $productDataForUpdate if $imagePathForDb was explicitly set
+            if ($imagePathForDb !== null || ($request->has('remove_main_image') && $request->boolean('remove_main_image')) || $request->hasFile('image')) {
+                $productDataForUpdate['image'] = $imagePathForDb;
+            }
 
             // Explicitly set price/stock to null if has_variants is true and they are not provided
             if (isset($validated['has_variants']) && $validated['has_variants']) {
@@ -519,28 +545,108 @@ class ProductController extends Controller
 
             $product->update($productDataForUpdate);
 
-            // --- NEW: Handle deleted additional images ---
+            // --- CẬP NHẬT: Xử lý ảnh Gallery (bao gồm xóa, thêm mới và cập nhật thứ tự) ---
+
+            // Step 1: Xử lý ảnh bị xóa
             if (isset($validated['deleted_image_ids']) && is_array($validated['deleted_image_ids'])) {
-                foreach ($validated['deleted_image_ids'] as $imageId) {
-                    $productImage = ProductImage::find($imageId);
-                    if ($productImage && $productImage->product_id === $product->id) { // Ensure ownership
-                        if (Storage::disk('public')->exists($productImage->image_url)) {
-                            Storage::disk('public')->delete($productImage->image_url);
+                $product->images()->whereIn('id', $validated['deleted_image_ids'])->get()->each(function ($image) {
+                    if (Storage::disk('public')->exists($image->path)) { // Sử dụng cột 'path'
+                        Storage::disk('public')->delete($image->path);
+                    }
+                    $image->delete();
+                });
+            }
+
+            // Step 2: Lấy danh sách các ID ảnh cũ còn lại từ request để xử lý order
+            $existingGalleryImages = [];
+            $newImagesToCreate = []; // Sẽ chứa ảnh mới upload với thứ tự của chúng
+
+            if (isset($validated['gallery_images']) && is_array($validated['gallery_images'])) {
+                foreach ($validated['gallery_images'] as $galleryImage) {
+                    // Nếu có ID, đây là ảnh cũ, lưu lại ID và order
+                    if (isset($galleryImage['id']) && $galleryImage['id'] !== null) {
+                        $existingGalleryImages[$galleryImage['id']] = $galleryImage['order'];
+                    }
+                    // Nếu không có ID nhưng có path (trong trường hợp tái sắp xếp ảnh cũ mà không upload mới),
+                    // chúng ta không xử lý ở đây vì đã xử lý ảnh cũ bằng ID.
+                    // Chỉ xử lý các ảnh mới được upload ở bước tiếp theo.
+                }
+            }
+
+            // Cập nhật thứ tự cho các ảnh cũ còn lại
+            foreach ($existingGalleryImages as $imageId => $order) {
+                ProductImage::where('id', $imageId)
+                    ->where('product_id', $product->id) // Đảm bảo quyền sở hữu
+                    ->update(['order' => $order]);
+            }
+
+            // Step 3: Xử lý ảnh mới được upload và gán thứ tự của chúng
+            // $request->file('new_additional_images') sẽ chứa các file thực tế
+            if ($request->hasFile('new_additional_images')) {
+                foreach ($request->file('new_additional_images') as $index => $file) {
+                    $newPath = $file->store('products/gallery', 'public');
+
+                    // Lấy thứ tự từ mảng gallery_images theo index của file
+                    // Frontend should send gallery_images array with placeholders for new files,
+                    // or match orders explicitly. Assuming the order in new_additional_images corresponds
+                    // to the order in the 'gallery_images' validation array for new items.
+                    // A more robust way: Frontend sends gallery_images with a temporary_id for new files,
+                    // and you match based on that. For simplicity here, we'll try to get order based on sequence.
+
+                    $correspondingGalleryItem = null;
+                    if (isset($validated['gallery_images']) && is_array($validated['gallery_images'])) {
+                        // Find the gallery_images entry that corresponds to this new file.
+                        // This assumes the frontend sends gallery_images with a structure that allows
+                        // matching new files to their intended order.
+                        // For example, frontend might send:
+                        // gallery_images: [{id: 1, order: 0}, {order: 1, new_file_index: 0}, {id: 2, order: 2}]
+                        // new_additional_images: [file0, file1]
+                        // We need a way to link file0 to {order: 1, new_file_index: 0}.
+                        // A simpler approach for now: assign arbitrary high order or sort after all uploads.
+
+                        // If the frontend sends the order of NEW files within `gallery_images` and `new_additional_images`
+                        // maintains that order, we can try to link by the "index" or sequentially.
+                        // A more reliable way is to have `gallery_images` contain a `temp_id` for new files,
+                        // and `new_additional_images` also send files with their `temp_id`.
+                        // For this example, let's just assign an order based on the current highest order + 1
+                        // or find the corresponding order from $validated['gallery_images'] if a direct match exists.
+
+                        // Simplistic approach: if `gallery_images` contains entries without `id` but with `order`,
+                        // we can try to pair them. This requires frontend to send correct counts.
+                        // Let's iterate through $validated['gallery_images'] and find an entry without an 'id'
+                        // that hasn't been processed yet.
+                        foreach ($validated['gallery_images'] as $gIndex => $gItem) {
+                            if (!isset($gItem['id']) && !isset($gItem['processed'])) { // Not an existing image and not yet processed
+                                $newImagesToCreate[] = [
+                                    'path' => $newPath, // Use 'path' column
+                                    'order' => $gItem['order'],
+                                    // Mark as processed to avoid reusing this slot for another new file
+                                    // This assumes `gallery_images` contains one entry per *intended final image*.
+                                    'processed' => true // This is just for internal loop tracking
+                                ];
+                                $validated['gallery_images'][$gIndex]['processed'] = true; // Mark original validation item
+                                break; // Found a slot for this new file, move to next file
+                            }
                         }
-                        $productImage->delete();
+                    } else {
+                        // Fallback: if no structured gallery_images, just add with high order.
+                        // This might not be suitable for precise ordering.
+                        $newImagesToCreate[] = [
+                            'path' => $newPath,
+                            'order' => $product->images()->count() + $index, // Simple sequential order
+                        ];
                     }
                 }
             }
 
-            // --- NEW: Handle new additional images upload ---
-            if ($request->hasFile('additional_images')) {
-                foreach ($request->file('additional_images') as $file) {
-                    $additionalImagePath = $file->store('products/gallery', 'public');
-                    $product->images()->create([
-                        'image_url' => $additionalImagePath,
-                    ]);
-                }
+            // Create new ProductImage records with their assigned order
+            foreach ($newImagesToCreate as $imageData) {
+                $product->images()->create([
+                    'path' => $imageData['path'], // Use 'path' column
+                    'order' => $imageData['order'],
+                ]);
             }
+            // --- KẾT THÚC CẬP NHẬT XỬ LÝ ẢNH GALLERY ---
 
             // --- Handle Variants ---
             $submittedVariantsData = [];
@@ -556,10 +662,6 @@ class ProductController extends Controller
 
             if (isset($validated['has_variants']) && $validated['has_variants']) { // If product should have variants
                 foreach ($submittedVariantsData as $variantData) {
-                    // This logic for updating/creating variants is complex with unique SKUs.
-                    // It's generally better to handle it with a dedicated service or more robust method
-                    // to prevent race conditions or unexpected unique constraint violations.
-                    // For now, assuming `id` is present for existing variants and missing for new ones.
                     if (isset($variantData['id']) && in_array($variantData['id'], $existingVariantIds)) {
                         $variant = ProductVariant::find($variantData['id']);
                         if ($variant) {
@@ -577,7 +679,7 @@ class ProductController extends Controller
                             $variantsToKeepIds[] = $variant->id;
 
                             if (isset($variantData['attribute_values']) && is_array($variantData['attribute_values'])) {
-                                $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
+                                $validAttributeValueIds = AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
                                 $variant->attributeValues()->sync($validAttributeValueIds);
                             } else {
                                 $variant->attributeValues()->detach();
@@ -598,7 +700,7 @@ class ProductController extends Controller
                         $variantsToKeepIds[] = $newVariant->id;
 
                         if (isset($variantData['attribute_values']) && is_array($variantData['attribute_values'])) {
-                            $validAttributeValueIds = \App\Models\AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
+                            $validAttributeValueIds = AttributeValue::whereIn('id', $variantData['attribute_values'])->pluck('id');
                             $newVariant->attributeValues()->attach($validAttributeValueIds);
                         }
                     }
@@ -619,24 +721,21 @@ class ProductController extends Controller
             if (!empty($scentGroupsData)) {
                 $scentGroupSyncData = [];
                 foreach ($scentGroupsData as $scentGroupItem) { // Iterate over each item
-                    // Ensure 'id' exists and is valid before using it
                     if (isset($scentGroupItem['id']) && $scentGroupItem['id'] > 0) {
                         $scentGroupId = $scentGroupItem['id'];
                         $strength = $scentGroupItem['strength'] ?? 50; // Use default if strength is missing
                         $scentGroupSyncData[$scentGroupId] = ['strength' => $strength];
                     } else {
-                        // Optionally log or handle cases where an item doesn't have a valid ID
                         \Log::warning('Scent group item without valid ID encountered during sync preparation.', ['item' => $scentGroupItem]);
                     }
                 }
-                // \Log::info('Prepared scentGroupSyncData for sync:', ['data' => $scentGroupSyncData]); // Uncomment for further debugging
                 $product->scentGroups()->sync($scentGroupSyncData);
             } else {
                 $product->scentGroups()->detach(); // If no scent groups, remove all existing
             }
             // --- End Handle Scent Groups ---
 
-            // --- BỔ SUNG: Handle Usage Profile (Update) ---
+            // --- Handle Usage Profile (Update) ---
             if (isset($validated['usage_profile'])) {
                 $usageProfileData = $validated['usage_profile'];
                 $product->usageProfile()->updateOrCreate(
@@ -653,17 +752,16 @@ class ProductController extends Controller
                     ]
                 );
             } else {
-                // If usage_profile is not sent, you might want to delete it or keep it as is.
-                // For now, let's delete it if no data is provided to ensure data integrity.
+                // If usage_profile is not sent or is null, delete it.
                 $product->usageProfile()->delete();
             }
-            // --- KẾT THÚC BỔ SUNG ---
+            // --- End Handle Usage Profile ---
 
             DB::commit();
 
             // Reload the product with all necessary relations for the detailed response
             $product->load([
-                'images',
+                'images', // The 'images' relationship will automatically order by 'order' if defined in Product model
                 'category',
                 'brand',
                 'variants.attributeValues.attribute',
@@ -769,9 +867,9 @@ class ProductController extends Controller
             $galleryImages = $product->images;
             foreach ($galleryImages as $image) {
                 // image_path là tên cột trong DB của ProductImage (vd: 'products/gallery_images/ten_file.jpg')
-                if ($image->image_url) { // Đảm bảo có đường dẫn
+                if ($image->path) { // Đảm bảo có đường dẫn
                     // Đảm bảo loại bỏ tiền tố /storage/ nếu có
-                    $galleryPathToDelete = str_replace('/storage/', '', $image->image_url);
+                    $galleryPathToDelete = str_replace('/storage/', '', $image->path);
 
                     if (Storage::disk('public')->exists($galleryPathToDelete)) {
                         Storage::disk('public')->delete($galleryPathToDelete);
@@ -851,7 +949,7 @@ class ProductController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Ảnh chính đã được cập nhật thành công.',
-                'image_url' => Storage::url($path),
+                'path' => Storage::url($path),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -883,8 +981,8 @@ class ProductController extends Controller
         try {
             // Delete all old additional images and their files
             foreach ($product->images as $image) {
-                if (Storage::disk('public')->exists($image->image_url)) {
-                    Storage::disk('public')->delete($image->image_url);
+                if (Storage::disk('public')->exists($image->path)) {
+                    Storage::disk('public')->delete($image->path);
                 }
                 $image->delete();
             }
@@ -892,7 +990,7 @@ class ProductController extends Controller
             // Save new additional images
             foreach ($request->file('images') as $file) {
                 $path = $file->store('products/gallery', 'public');
-                $product->images()->create(['image_url' => $path]);
+                $product->images()->create(['path' => $path]);
             }
 
             DB::commit();
@@ -919,8 +1017,8 @@ class ProductController extends Controller
 
         DB::beginTransaction();
         try {
-            if (Storage::disk('public')->exists($image->image_url)) {
-                Storage::disk('public')->delete($image->image_url);
+            if (Storage::disk('public')->exists($image->path)) {
+                Storage::disk('public')->delete($image->path);
             }
             $image->delete();
 

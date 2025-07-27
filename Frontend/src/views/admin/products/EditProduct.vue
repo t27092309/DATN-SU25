@@ -1,316 +1,287 @@
 <template>
-    <div class="container">
-        <div class="page-inner">
-            <div class="page-header">
-                <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-                <ul class="breadcrumbs mb-3">
-                    <li class="nav-home">
-                        <router-link :to="{ name: 'AdminDashboard' }">
-                            <i class="icon-home"></i>
+    <div class="container mx-auto px-4 py-8">
+        <div class="space-y-6">
+            <div class="mb-6">
+                <h3 class="text-3xl font-bold text-gray-900 mb-3">{{ route.meta.title }}</h3>
+                <ul class="flex items-center space-x-2 text-sm text-gray-600">
+                    <li>
+                        <router-link :to="{ name: 'AdminDashboard' }" class="text-blue-600 hover:text-blue-800">
+                            <i class="fa fa-home"></i>
                         </router-link>
                     </li>
-                    <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                    <li>
+                        <i class="fa fa-chevron-right text-xs"></i>
                     </li>
-                    <li class="nav-item">
-                        <router-link :to="{ name: 'products' }">Danh sách sản phẩm</router-link>
+                    <li>
+                        <router-link :to="{ name: 'products' }" class="text-blue-600 hover:text-blue-800">Danh sách sản phẩm</router-link>
                     </li>
-                    <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                    <li>
+                        <i class="fa fa-chevron-right text-xs"></i>
                     </li>
-                    <li class="nav-item">
-                        <router-link :to="{ name: 'addProduct' }">{{ route.meta.title }}</router-link>
+                    <li>
+                        <router-link :to="{ name: 'addProduct' }" class="text-gray-800">{{ route.meta.title }}</router-link>
                     </li>
                 </ul>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title d-flex justify-content-between align-items-center">
-                        <div class="card-title">{{ route.meta.title }}</div>
-                    </div>
+
+            <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h4 class="text-lg font-semibold text-gray-800">{{ route.meta.title }}</h4>
                 </div>
-                <div class="card-body">
-                    <form @submit.prevent="updateProduct">
-                        <div class="row">
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="name">Tên sản phẩm</label>
-                                    <input type="text" class="form-control" id="name" placeholder="Nhập tên sản phẩm"
-                                        v-model="product.name" />
-                                </div>
-                                <div class="form-group">
-                                    <label>Giới tính</label><br />
-                                    <div class="d-flex">
-                                        <div class="form-check me-3">
-                                            <input class="form-check-input" type="radio" name="gender" id="male"
-                                                value="male" v-model="product.gender" />
-                                            <label class="form-check-label" for="male">Nam</label>
-                                        </div>
-                                        <div class="form-check me-3">
-                                            <input class="form-check-input" type="radio" name="gender" id="female"
-                                                value="female" v-model="product.gender" />
-                                            <label class="form-check-label" for="female">Nữ</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="gender" id="unisex"
-                                                value="unisex" v-model="product.gender" />
-                                            <label class="form-check-label" for="unisex">Unisex</label>
-                                        </div>
+                <div class="p-6">
+                    <form @submit.prevent="updateProduct" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm</label>
+                                <input type="text" id="name" placeholder="Nhập tên sản phẩm"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    v-model="product.name" />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
+                                <div class="flex items-center space-x-6">
+                                    <div class="flex items-center">
+                                        <input type="radio" name="gender" id="male" value="male"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            v-model="product.gender" />
+                                        <label for="male" class="ml-2 block text-sm text-gray-900">Nam</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" name="gender" id="female" value="female"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            v-model="product.gender" />
+                                        <label for="female" class="ml-2 block text-sm text-gray-900">Nữ</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" name="gender" id="unisex" value="unisex"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                            v-model="product.gender" />
+                                        <label for="unisex" class="ml-2 block text-sm text-gray-900">Unisex</label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="price">Giá</label>
-                                    <input type="number" class="form-control" id="price" placeholder="Nhập giá sản phẩm"
-                                        step="0.01" inputmode="decimal" v-model.number="product.price" />
-                                </div>
-                                <div class="form-group">
-                                    <label for="category_id">Danh mục</label>
-                                    <select class="form-select" id="category_id" v-model="product.category_id">
-                                        <option value="" disabled>Chọn danh mục</option>
-                                        <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="slug">Slug</label>
-                                    <input type="text" class="form-control" id="slug" placeholder="Nhập tên slug"
-                                        v-model="product.slug" />
-                                </div>
-                                <div class="form-group">
-                                    <label for="brandSelect">Thương hiệu <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="brandSelect" v-model="product.brand_id"
-                                        v-if="brands && brands.length > 0">
-                                        <option value="">Chọn thương hiệu</option>
-                                        <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-                                            {{ brand.name }}
-                                        </option>
-                                    </select>
-                                    <p v-else class="text-muted">Đang tải thương hiệu...</p>
-                                    <small v-if="errors.brand_id" class="form-text text-danger">{{ errors.brand_id[0]
-                                        }}</small>
-                                </div>
+
+                            <div>
+                                <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Giá</label>
+                                <input type="number" id="price" placeholder="Nhập giá sản phẩm"
+                                    step="0.01" inputmode="decimal" v-model.number="product.price"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                             </div>
 
-                            <div class="col-md-6 col-lg-4">
-                                <div class="form-group">
-                                    <label for="image">Hình ảnh</label>
-                                    <input type="file" class="form-control mb-3" id="image" @change="onFileChange"
-                                        accept="image/*" />
+                            <div>
+                                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                                <select id="category_id" v-model="product.category_id"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                    <option value="" disabled>Chọn danh mục</option>
+                                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                                <input type="text" id="slug" placeholder="Nhập tên slug"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    v-model="product.slug" />
+                            </div>
+
+                            <div>
+                                <label for="brandSelect" class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu <span class="text-red-500">*</span></label>
+                                <select id="brandSelect" v-model="product.brand_id"
+                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    v-if="brands && brands.length > 0">
+                                    <option value="">Chọn thương hiệu</option>
+                                    <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+                                        {{ brand.name }}
+                                    </option>
+                                </select>
+                                <p v-else class="text-gray-500 text-sm mt-1">Đang tải thương hiệu...</p>
+                                <p v-if="errors.brand_id" class="text-red-500 text-xs mt-1">{{ errors.brand_id[0] }}</p>
+                            </div>
+
+                            <div class="lg:col-span-1">
+                                <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Hình ảnh</label>
+                                <input type="file" id="image" @change="onFileChange" accept="image/*"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-3" />
+                                <div class="flex items-center space-x-4">
                                     <img v-if="currentImageUrl" :src="currentImageUrl" alt="Product Image"
-                                        style="width: 150px;">
-                                    <span v-else>Không có ảnh hiện tại</span>
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" id="removeMainImage"
-                                            v-model="removeMainImage">
-                                        <label class="form-check-label" for="removeMainImage">Xóa ảnh chính</label>
-                                    </div>
+                                        class="w-32 h-32 object-cover rounded-md border border-gray-300 shadow-sm" />
+                                    <span v-else class="text-gray-500 text-sm">Không có ảnh hiện tại</span>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label for="description">Mô tả</label>
-                                        <textarea class="form-control" id="description" rows="5"
-                                            v-model="product.description"></textarea>
-                                    </div>
+                                <div class="flex items-center mt-2">
+                                    <input type="checkbox" id="removeMainImage"
+                                        class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        v-model="removeMainImage">
+                                    <label for="removeMainImage" class="ml-2 block text-sm text-gray-900">Xóa ảnh chính</label>
                                 </div>
-                            </div>
-<div class="col-12">
-    <ScentGroupSelector
-        v-model:selectedScentGroupIds="product.scentGroups.selectedScentGroupIds"
-        v-model:scentGroupsData="product.scentGroups.scentGroupsData"
-        :allScentGroups="allScentGroups"
-    />
-    <small v-if="errors.scent_groups" class="form-text text-danger">{{
-        errors.scent_groups[0] }}</small>
-
-    <div v-if="sortedScentProfiles.length > 0" class="mt-3">
-        <h6>Mức độ hương:</h6>
-        <div class="scent-strength-bars">
-            <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
-                class="scent-bar-item mb-2 d-flex align-items-center">
-                <span class="scent-name me-2" :style="{
-                    'min-width': '120px',
-                    'max-width': '120px',
-                    'white-space': 'nowrap',
-                    'overflow': 'hidden',
-                    'text-overflow': 'ellipsis',
-                }">{{ scent.scent_group_name }}:</span>
-                <div class="progress flex-grow-1" style="height: 20px;">
-                    <div class="progress-bar" role="progressbar"
-                        :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
-                        :aria-valuenow="scent.strength" aria-valuemin="0"
-                        aria-valuemax="100">
-                        <span
-                            :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
-                            {{ scent.strength }}%
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-                        </div>
-
-
-                        <hr class="my-4">
-
-                        <div class="row">
-                            <div class="col-12">
-                                <UsageProfile v-model:usageProfileData="product.usageProfile" />
-                                <small v-if="errors.usage_profile" class="form-text text-danger">{{
-                                    errors.usage_profile[0] }}</small>
                             </div>
                         </div>
 
-                        <hr class="my-4">
+                        <div class="col-span-full">
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                            <textarea id="description" rows="5"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                v-model="product.description"></textarea>
+                        </div>
 
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h4 class="mb-3">Biến thể Sản phẩm</h4>
-                                <button type="button" class="btn btn-success btn-sm mb-3" @click="addVariant">
-                                    <i class="fa fa-plus"></i> Thêm biến thể
-                                </button>
+                        <div class="col-span-full">
+                            <ScentGroupSelector
+                                v-model:selectedScentGroupIds="product.scentGroups.selectedScentGroupIds"
+                                v-model:scentGroupsData="product.scentGroups.scentGroupsData"
+                                :allScentGroups="allScentGroups" />
+                            <p v-if="errors.scent_groups" class="text-red-500 text-xs mt-1">{{ errors.scent_groups[0] }}</p>
 
-                                <div v-if="product.variants && product.variants.length > 0">
-                                    <div v-for="(variant, vIndex) in product.variants" :key="variant.id || vIndex"
-                                        class="card mb-3 border">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            Biến thể #{{ vIndex + 1 }}
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                @click="removeVariant(vIndex)">
-                                                Xóa biến thể
-                                            </button>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label :for="`sku-${vIndex}`">SKU</label>
-                                                        <input type="text" class="form-control" :id="`sku-${vIndex}`"
-                                                            v-model="variant.sku" placeholder="SKU của biến thể">
-                                                        <small v-if="errors[`variants.${vIndex}.sku`]"
-                                                            class="form-text text-danger">{{
-                                                                errors[`variants.${vIndex}.sku`][0] }}</small>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label :for="`variant-price-${vIndex}`">Giá biến thể</label>
-                                                        <input type="number" class="form-control"
-                                                            :id="`variant-price-${vIndex}`"
-                                                            v-model.number="variant.price" step="0.01"
-                                                            placeholder="Giá của biến thể">
-                                                        <small v-if="errors[`variants.${vIndex}.price`]"
-                                                            class="form-text text-danger">{{
-                                                                errors[`variants.${vIndex}.price`][0] }}</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label :for="`stock-${vIndex}`">Tồn kho</label>
-                                                        <input type="number" class="form-control"
-                                                            :id="`stock-${vIndex}`" v-model.number="variant.stock"
-                                                            placeholder="Số lượng tồn kho">
-                                                        <small v-if="errors[`variants.${vIndex}.stock`]"
-                                                            class="form-text text-danger">{{
-                                                                errors[`variants.${vIndex}.stock`][0] }}</small>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label :for="`barcode-${vIndex}`">Mã vạch</label>
-                                                        <input type="text" class="form-control"
-                                                            :id="`barcode-${vIndex}`" v-model="variant.barcode"
-                                                            placeholder="Mã vạch (nếu có)">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label :for="`status-${vIndex}`">Trạng thái</label>
-                                                        <select class="form-select" :id="`status-${vIndex}`"
-                                                            v-model="variant.status">
-                                                            <option value="available">Có sẵn</option>
-                                                            <option value="discontinued">Ngừng sản xuất</option>
-                                                            <option value="out_of_stock">Hết hàng</option>
-                                                        </select>
-                                                        <small v-if="errors[`variants.${vIndex}.status`]"
-                                                            class="form-text text-danger">{{
-                                                                errors[`variants.${vIndex}.status`][0] }}</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-12">
-                                                    <div class="form-group">
-                                                        <label :for="`variant-description-${vIndex}`">Mô tả biến thể
-                                                            (tùy chọn)</label>
-                                                        <textarea class="form-control"
-                                                            :id="`variant-description-${vIndex}`" rows="2"
-                                                            v-model="variant.description"></textarea>
-                                                    </div>
-                                                </div>
+                            <div v-if="sortedScentProfiles.length > 0" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h6 class="text-base font-semibold text-gray-800 mb-3">Mức độ hương:</h6>
+                                <div class="space-y-3">
+                                    <div v-for="scent in sortedScentProfiles" :key="scent.scent_group_id"
+                                        class="flex items-center">
+                                        <span class="text-sm font-medium text-gray-700 flex-shrink-0"
+                                            :style="{
+                                                'min-width': '120px',
+                                                'max-width': '120px',
+                                                'white-space': 'nowrap',
+                                                'overflow': 'hidden',
+                                                'text-overflow': 'ellipsis',
+                                            }">{{ scent.scent_group_name }}:</span>
+                                        <div class="relative flex-grow h-5 bg-gray-200 rounded-full overflow-hidden ml-4">
+                                            <div class="absolute inset-0 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out" role="progressbar"
+                                                :style="{ width: scent.strength + '%', backgroundColor: scent.scent_group_color_code }"
+                                                :aria-valuenow="scent.strength" aria-valuemin="0"
+                                                aria-valuemax="100">
+                                                <span class="text-xs font-semibold"
+                                                    :style="{ color: isDarkColor(scent.scent_group_color_code) ? 'white' : 'black' }">
+                                                    {{ scent.strength }}%
+                                                </span>
                                             </div>
-
-                                            <h5 class="mt-3">Thuộc tính của biến thể</h5>
-                                            <button type="button" class="btn btn-info btn-sm mb-2"
-                                                @click="addAttributeToVariant(vIndex)">
-                                                <i class="fa fa-plus"></i> Thêm thuộc tính
-                                            </button>
-
-                                            <div v-for="(attrVal, avIndex) in variant.attributes"
-                                                :key="attrVal.value_id || avIndex" class="row mb-2 align-items-center">
-                                                <div class="col-md-4">
-                                                    <select class="form-select" v-model="attrVal.attribute_id"
-                                                        @change="onAttributeChange(vIndex, avIndex)">
-                                                        <option value="" disabled>Chọn thuộc tính</option>
-                                                        <option v-for="attr in attributes" :key="attr.id"
-                                                            :value="attr.id">
-                                                            {{ attr.name }}
-                                                        </option>
-                                                    </select>
-                                                    <small
-                                                        v-if="errors[`variants.${vIndex}.attributes.${avIndex}.attribute_id`]"
-                                                        class="form-text text-danger">{{
-                                                            errors[`variants.${vIndex}.attributes.${avIndex}.attribute_id`][0]
-                                                        }}</small>
-                                                </div>
-                                                <div class="col-md-5">
-                                                    <select class="form-select" v-model="attrVal.value_id"
-                                                        :disabled="!attrVal.attribute_id">
-                                                        <option value="" disabled>Chọn giá trị</option>
-                                                        <option v-for="val in getAttributeValues(attrVal.attribute_id)"
-                                                            :key="val.id" :value="val.id">
-                                                            {{ val.value }}
-                                                        </option>
-                                                    </select>
-                                                    <small
-                                                        v-if="errors[`variants.${vIndex}.attributes.${avIndex}.value_id`]"
-                                                        class="form-text text-danger">{{
-                                                            errors[`variants.${vIndex}.attributes.${avIndex}.value_id`][0]
-                                                        }}</small>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                        @click="removeAttributeFromVariant(vIndex, avIndex)">
-                                                        Xóa
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <p v-if="!variant.attributes || variant.attributes.length === 0"
-                                                class="text-muted">Chưa có thuộc tính nào cho biến thể này.</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else class="alert alert-info">
-                                    Sản phẩm này hiện không có biến thể nào. Thêm biến thể mới để quản lý.
-                                </div>
                             </div>
                         </div>
 
-                        <div class="card-action mt-4">
-                            <button type="submit" class="btn btn-success me-2">
+                        <hr class="my-6 border-gray-300" />
+
+                        <div class="col-span-full">
+                            <UsageProfile v-model:usageProfileData="product.usageProfile" />
+                            <p v-if="errors.usage_profile" class="text-red-500 text-xs mt-1">{{ errors.usage_profile[0] }}</p>
+                        </div>
+
+                        <hr class="my-6 border-gray-300" />
+
+                        <div class="col-span-full">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-4">Biến thể Sản phẩm</h4>
+                            <button type="button" @click="addVariant"
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mb-4">
+                                <i class="fa fa-plus mr-2"></i> Thêm biến thể
+                            </button>
+
+                            <div v-if="product.variants && product.variants.length > 0" class="space-y-6">
+                                <div v-for="(variant, vIndex) in product.variants" :key="variant.id || vIndex"
+                                    class="bg-white rounded-lg shadow-md border border-gray-200">
+                                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                                        <h5 class="text-md font-medium text-gray-700">Biến thể #{{ vIndex + 1 }}</h5>
+                                        <button type="button" @click="removeVariant(vIndex)"
+                                            class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            Xóa biến thể
+                                        </button>
+                                    </div>
+                                    <div class="p-4 space-y-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label :for="`sku-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                                                <input type="text" :id="`sku-${vIndex}`" v-model="variant.sku" placeholder="SKU của biến thể"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                                <p v-if="errors[`variants.${vIndex}.sku`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.sku`][0] }}</p>
+                                            </div>
+                                            <div>
+                                                <label :for="`variant-price-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">Giá biến thể</label>
+                                                <input type="number" :id="`variant-price-${vIndex}`" v-model.number="variant.price" step="0.01" placeholder="Giá của biến thể"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                                <p v-if="errors[`variants.${vIndex}.price`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.price`][0] }}</p>
+                                            </div>
+                                            <div>
+                                                <label :for="`stock-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">Tồn kho</label>
+                                                <input type="number" :id="`stock-${vIndex}`" v-model.number="variant.stock" placeholder="Số lượng tồn kho"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                                <p v-if="errors[`variants.${vIndex}.stock`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.stock`][0] }}</p>
+                                            </div>
+                                            <div>
+                                                <label :for="`barcode-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">Mã vạch</label>
+                                                <input type="text" :id="`barcode-${vIndex}`" v-model="variant.barcode" placeholder="Mã vạch (nếu có)"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            </div>
+                                            <div class="col-span-full">
+                                                <label :for="`status-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                                                <select :id="`status-${vIndex}`" v-model="variant.status"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                                    <option value="available">Có sẵn</option>
+                                                    <option value="discontinued">Ngừng sản xuất</option>
+                                                    <option value="out_of_stock">Hết hàng</option>
+                                                </select>
+                                                <p v-if="errors[`variants.${vIndex}.status`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.status`][0] }}</p>
+                                            </div>
+                                            <div class="col-span-full">
+                                                <label :for="`variant-description-${vIndex}`" class="block text-sm font-medium text-gray-700 mb-1">Mô tả biến thể (tùy chọn)</label>
+                                                <textarea :id="`variant-description-${vIndex}`" rows="2" v-model="variant.description"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <h5 class="text-base font-semibold text-gray-800 mt-4 mb-2">Thuộc tính của biến thể</h5>
+                                        <button type="button" @click="addAttributeToVariant(vIndex)"
+                                            class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 mb-3">
+                                            <i class="fa fa-plus mr-2"></i> Thêm thuộc tính
+                                        </button>
+
+                                        <div v-for="(attrVal, avIndex) in variant.attributes" :key="attrVal.value_id || avIndex"
+                                            class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mb-3">
+                                            <div>
+                                                <select v-model="attrVal.attribute_id" @change="onAttributeChange(vIndex, avIndex)"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                                    <option value="" disabled>Chọn thuộc tính</option>
+                                                    <option v-for="attr in attributes" :key="attr.id" :value="attr.id">
+                                                        {{ attr.name }}
+                                                    </option>
+                                                </select>
+                                                <p v-if="errors[`variants.${vIndex}.attributes.${avIndex}.attribute_id`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.attributes.${avIndex}.attribute_id`][0] }}</p>
+                                            </div>
+                                            <div>
+                                                <select v-model="attrVal.value_id" :disabled="!attrVal.attribute_id"
+                                                    class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed">
+                                                    <option value="" disabled>Chọn giá trị</option>
+                                                    <option v-for="val in getAttributeValues(attrVal.attribute_id)" :key="val.id" :value="val.id">
+                                                        {{ val.value }}
+                                                    </option>
+                                                </select>
+                                                <p v-if="errors[`variants.${vIndex}.attributes.${avIndex}.value_id`]" class="text-red-500 text-xs mt-1">{{ errors[`variants.${vIndex}.attributes.${avIndex}.value_id`][0] }}</p>
+                                            </div>
+                                            <div>
+                                                <button type="button" @click="removeAttributeFromVariant(vIndex, avIndex)"
+                                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                    Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p v-if="!variant.attributes || variant.attributes.length === 0"
+                                            class="text-gray-500 text-sm mt-3">Chưa có thuộc tính nào cho biến thể này.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-md">
+                                Sản phẩm này hiện không có biến thể nào. Thêm biến thể mới để quản lý.
+                            </div>
+                        </div>
+
+                        <div class="flex justify-start space-x-4 mt-8">
+                            <button type="submit"
+                                class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Cập nhật Sản phẩm
                             </button>
-                            <router-link :to="{ name: 'products' }" class="btn btn-primary">
+                            <router-link :to="{ name: 'products' }"
+                                class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Quay lại
                             </router-link>
                         </div>
@@ -337,7 +308,9 @@ const route = useRoute();
 const categories = ref([]);
 const brands = ref([]);
 const attributes = ref([]); // Stores all attributes with their nested values
-
+// --- NEW STATE FOR GALLERY IMAGES ---
+const newGalleryImages = ref([]); // Lưu trữ các File object của ảnh mới upload
+const galleryImagesToDelete = ref([]); // Lưu trữ IDs của các ảnh cũ muốn xóa
 // Dữ liệu cho ScentGroupSelector
 const allScentGroups = ref([]); // Tất cả nhóm hương có sẵn từ API
 
@@ -369,6 +342,7 @@ const product = ref({
         sillage_range_m: '',
     },
     variants: [],
+    gallery_images: [] // Sẽ chứa các ảnh gallery hiện có từ API
 });
 
 // Form-related state
@@ -387,10 +361,21 @@ watch(() => product.value.name, (newName) => {
 // --- Utility Functions ---
 
 const getImageUrl = (imagePath) => {
+    if (!imagePath) return null; // Handle null or empty paths
+
     if (imagePath instanceof File) {
         return URL.createObjectURL(imagePath);
     }
-    return imagePath ? `http://localhost:8000/storage/${imagePath}` : null;
+
+    // Check if the imagePath is already a full HTTP/HTTPS URL.
+    // This is the ideal scenario for your current backend output.
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath; // Use the provided URL directly
+    }
+
+    // Fallback for relative paths, though your backend might not send these for main images now.
+    // Keep this if you anticipate receiving relative paths like 'products/image.jpg' from other APIs or contexts.
+    return `http://localhost:8000/storage/${imagePath}`;
 };
 
 const generateSlug = (text) => {
@@ -430,6 +415,68 @@ watch(removeMainImage, (newValue) => {
         }
     }
 });
+
+// --- NEW: Gallery Image Handling ---
+
+// Khi chọn ảnh mới từ input
+const onGalleryFilesChange = (e) => {
+    const files = e.target.files;
+    for (let i = 0; i < files.length; i++) {
+        // Thêm ảnh mới vào newGalleryImages
+        newGalleryImages.value.push(files[i]);
+        // Đồng thời thêm vào product.gallery_images để hiển thị ngay lập tức
+        // Gán một ID tạm thời (âm) để phân biệt với ảnh cũ từ DB
+        product.value.gallery_images.push({
+            id: -Date.now() - i, // ID âm duy nhất
+            path: files[i], // Lưu trữ File object trực tiếp để preview
+            isNew: true, // Đánh dấu đây là ảnh mới
+            order: product.value.gallery_images.length // Gán thứ tự ban đầu
+        });
+    }
+    // Xóa giá trị của input file để có thể chọn lại cùng file
+    e.target.value = '';
+};
+
+// Xóa ảnh cũ hoặc ảnh mới trong preview
+const removeGalleryImage = (imageToRemove) => {
+    Swal.fire({
+        title: 'Bạn có chắc chắn?',
+        text: "Ảnh này sẽ bị xóa khỏi thư viện!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Có, xóa nó đi!',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            product.value.gallery_images = product.value.gallery_images.filter(img => {
+                if (img.id === imageToRemove.id) {
+                    // Nếu là ảnh cũ từ DB, thêm ID vào danh sách xóa
+                    if (!img.isNew) {
+                        galleryImagesToDelete.value.push(img.id);
+                    }
+                    return false; // Loại bỏ ảnh này khỏi mảng hiển thị
+                }
+                return true;
+            });
+            // Cập nhật lại thứ tự
+            updateGalleryImageOrder();
+            Swal.fire(
+                'Đã xóa!',
+                'Ảnh đã được đánh dấu để xóa khi lưu sản phẩm.',
+                'success'
+            );
+        }
+    });
+};
+
+// Cập nhật thứ tự sau khi kéo thả
+const updateGalleryImageOrder = () => {
+    product.value.gallery_images.forEach((image, index) => {
+        image.order = index + 1; // Đặt thứ tự dựa trên vị trí trong mảng
+    });
+};
 
 
 // --- Data Fetching ---
@@ -474,10 +521,18 @@ const fetchProduct = async () => {
                     attribute_id: av.pivot.attribute_id,
                     value_id: av.pivot.attribute_value_id
                 })) : []
+            })) : [],
+            gallery_images: data.data.images ? data.data.images.map((path, index) => ({
+                id: data.data.image_ids ? data.data.image_ids[index] : index, // Giả định có mảng image_ids
+                path: path,
+                isNew: false,
+                order: index + 1
             })) : []
         };
 
         currentImageUrl.value = getImageUrl(product.value.image);
+        newGalleryImages.value = [];
+        galleryImagesToDelete.value = [];
     } catch (error) {
         console.error('Lỗi khi lấy sản phẩm:', error);
         Swal.fire({
@@ -536,8 +591,12 @@ const fetchCategory = async () => {
  */
 const fetchBrand = async () => {
     try {
+        // 'data' here will directly be the array from your Postman result
         const { data } = await axios.get('http://localhost:8000/api/admin/brands');
-        brands.value = data.data;
+
+        // Assign the 'data' (which is the array) directly to brands.value
+        brands.value = data; // FIX IS HERE
+
         console.log('Brands loaded successfully:', brands.value);
     } catch (error) {
         console.error('Lỗi khi tải thương hiệu:', error);
@@ -664,23 +723,46 @@ const updateProduct = async () => {
         }
 
         // Append Scent Groups data
-          const formattedScentGroups = product.value.scentGroups.selectedScentGroupIds
+        const formattedScentGroups = product.value.scentGroups.selectedScentGroupIds
             .filter(id => id && id > 0) // Lọc bỏ các giá trị null, undefined, 0, hoặc không phải số
             .map(id => ({
                 id: id,
-                strength: product.value.scentGroups.scentGroupsData[id]?.strength || 50 
+                strength: product.value.scentGroups.scentGroupsData[id]?.strength || 50
             }));
-console.log('Sending scent_groups:', formattedScentGroups);
-formData.append('scent_groups', JSON.stringify(formattedScentGroups));
-        // --- Bắt đầu sửa đổi cho Usage Profile ---
+        console.log('Sending scent_groups:', formattedScentGroups);
+        formData.append('scent_groups', JSON.stringify(formattedScentGroups));
+
         // Duyệt qua từng trường của usageProfile và thêm vào FormData
         for (const key in product.value.usageProfile) {
             const value = product.value.usageProfile[key];
             // Thêm tiền tố 'usage_profile' để Laravel dễ dàng nhận diện và validate
             formData.append(`usage_profile[${key}]`, value === null || value === undefined ? '' : value);
         }
-        // --- Kết thúc sửa đổi cho Usage Profile ---
 
+        // --- Append Gallery Images Data ---
+        // 1. Ảnh mới (File objects)
+        newGalleryImages.value.forEach((file, index) => {
+            formData.append(`new_gallery_images[${index}]`, file);
+        });
+
+        // 2. ID của các ảnh cũ cần xóa
+        if (galleryImagesToDelete.value.length > 0) {
+            formData.append('deleted_gallery_image_ids', JSON.stringify(galleryImagesToDelete.value));
+        }
+
+        // 3. Thứ tự và ID của các ảnh gallery hiện có (cả cũ và mới đã được hiển thị)
+        // Đây là cách bạn gửi thông tin thứ tự về backend
+        const existingGalleryImagesData = product.value.gallery_images
+            .filter(img => !img.isNew) // Chỉ gửi thông tin của ảnh cũ (để cập nhật thứ tự)
+            .map(img => ({
+                id: img.id,
+                order: img.order
+            }));
+        // Các ảnh mới sẽ được xử lý riêng thông qua new_gallery_images và sẽ được gán ID và thứ tự mới ở backend.
+
+        if (existingGalleryImagesData.length > 0) {
+            formData.append('existing_gallery_images_order', JSON.stringify(existingGalleryImagesData));
+        }
         // Prepare and append variants data
         const variantsData = product.value.variants.map(variant => {
             const variantCopy = { ...variant };

@@ -1,43 +1,76 @@
 <template>
-  <div class="container py-5">
-    <h1 class="text-center mb-5 text-primary">{{ isEditMode ? 'Cập nhật' : 'Thêm mới' }} Thuộc tính</h1>
+  <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 max-w-2xl">
+    <h1 class="text-center mb-12 text-4xl font-extrabold text-gray-800 sm:text-5xl tracking-tight">
+      {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }} <span class="text-purple-600">Thuộc tính</span>
+    </h1>
 
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-primary text-white">
-        <h2 class="h5 mb-0">Thông tin Thuộc tính</h2>
+    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+        <h2 class="text-2xl font-semibold flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          Thông tin Thuộc tính
+        </h2>
       </div>
-      <div class="card-body">
+      <div class="p-8">
         <form @submit.prevent="saveAttribute" v-if="attribute && attribute.name !== undefined">
-          <div class="mb-3">
-            <label for="attribute-name" class="form-label">Tên thuộc tính</label>
+          <div class="mb-6">
+            <label for="attribute-name" class="block text-gray-700 text-lg font-semibold mb-3">Tên thuộc tính</label>
             <input
               type="text"
               id="attribute-name"
               v-model="attribute.name"
               placeholder="Ví dụ: Color"
-              class="form-control"
-              :class="{'is-invalid': errors.name}"
+              class="shadow-sm appearance-none border rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-3 focus:ring-purple-200 focus:border-purple-500 transition-all duration-200 text-lg"
+              :class="{'border-red-500 ring-1 ring-red-300': errors.name}"
               required
             />
-            <div v-if="errors.name" class="invalid-feedback">{{ errors.name[0] }}</div>
+            <p v-if="errors.name" class="text-red-600 text-sm italic mt-2">{{ errors.name[0] }}</p>
           </div>
 
-          <div class="d-flex justify-content-end">
-            <router-link :to="{ name: 'AttributeIndex' }" class="btn btn-secondary me-2">Hủy</router-link>
-            <button type="submit" class="btn btn-primary">Lưu Thuộc tính</button>
+          <div class="flex justify-end gap-4 mt-8">
+            <router-link :to="{ name: 'AttributeIndex' }" class="px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 shadow-md">
+              Hủy
+            </router-link>
+            <button type="submit" class="px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 bg-purple-600 hover:bg-purple-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 shadow-md">
+              Lưu Thuộc tính
+            </button>
           </div>
         </form>
-        <div v-else class="text-center text-muted py-4">
+        <div v-else class="text-center text-gray-500 py-12 text-xl">
           Đang tải dữ liệu hoặc không tìm thấy thuộc tính...
         </div>
       </div>
     </div>
 
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-      <div id="liveToast" class="toast" :class="{'show': toast.show, 'text-bg-success': toast.type === 'success', 'text-bg-danger': toast.type === 'error'}" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">{{ toast.message }}</div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div class="fixed bottom-8 right-8 p-4 z-50">
+      <div
+        id="liveToast"
+        class="min-w-[300px] p-6 rounded-xl shadow-2xl text-white transition-all duration-500 transform ease-out"
+        :class="{
+          'opacity-100 translate-y-0': toast.show,
+          'opacity-0 translate-y-full': !toast.show,
+          'bg-green-600': toast.type === 'success',
+          'bg-red-600': toast.type === 'error'
+        }"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg v-else-if="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2A9 9 0 111 12a9 9 0 0118 0z" />
+            </svg>
+            <span class="text-lg font-semibold">{{ toast.message }}</span>
+          </div>
+          <button type="button" @click="toast.show = false" class="ml-4 text-white hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -45,17 +78,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue'; // Thêm nextTick
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-
-let liveToastInstance = null;
 
 const route = useRoute();
 const router = useRouter();
 
-// Khởi tạo attribute với các giá trị mặc định để tránh undefined
-const attribute = ref({ id: null, name: '' }); 
+const attribute = ref({ id: null, name: '' });
 const errors = ref({});
 const toast = ref({ show: false, message: '', type: '' });
 
@@ -65,38 +95,22 @@ const showToast = (message, type = 'success') => {
   toast.value.message = message;
   toast.value.type = type;
   toast.value.show = true;
-  nextTick(() => {
-    const toastEl = document.getElementById('liveToast');
-    if (toastEl && window.bootstrap && window.bootstrap.Toast) {
-      if (liveToastInstance) {
-        liveToastInstance.dispose();
-      }
-      liveToastInstance = new window.bootstrap.Toast(toastEl, { delay: 3000 });
-      liveToastInstance.show();
-      toastEl.addEventListener('hidden.bs.toast', () => {
-        toast.value.show = false;
-        liveToastInstance = null;
-      }, { once: true });
-    } else {
-        console.error("Bootstrap Toast is not available globally or toast element not found.");
-    }
-  });
+  setTimeout(() => {
+    toast.value.show = false;
+  }, 3000);
 };
 
 const fetchAttribute = async (id) => {
   try {
     const response = await axios.get(`/admin/attributes/${id}`);
-    // Kiểm tra kỹ dữ liệu trả về từ API
     if (response.data && response.data.data && typeof response.data.data === 'object') {
       attribute.value = response.data.data;
     } else {
-      // Nếu dữ liệu không hợp lệ, hiển thị lỗi và chuyển hướng
       showToast('Dữ liệu thuộc tính không hợp lệ từ API.', 'error');
       router.push({ name: 'AttributeIndex' });
     }
   } catch (error) {
     console.error('Lỗi khi lấy thuộc tính:', error);
-    // Xử lý các mã lỗi cụ thể từ API
     if (error.response && error.response.status === 404) {
       showToast('Không tìm thấy thuộc tính này.', 'error');
     } else if (error.response && error.response.status === 401) {
@@ -104,14 +118,13 @@ const fetchAttribute = async (id) => {
     } else {
       showToast('Có lỗi xảy ra khi tải dữ liệu thuộc tính.', 'error');
     }
-    // Luôn chuyển hướng về trang danh sách nếu có lỗi khi tải dữ liệu
-    router.push({ name: 'AttributeIndex' }); 
+    router.push({ name: 'AttributeIndex' });
   }
 };
 
 const saveAttribute = async () => {
   try {
-    errors.value = {}; // Reset lỗi
+    errors.value = {};
     if (isEditMode.value) {
       await axios.put(`/admin/attributes/${attribute.value.id}`, attribute.value);
       showToast('Thuộc tính đã được cập nhật thành công!');
@@ -119,13 +132,13 @@ const saveAttribute = async () => {
       await axios.post('/admin/attributes', attribute.value);
       showToast('Thuộc tính đã được thêm mới thành công!');
     }
-    router.push({ name: 'AttributeIndex' }); // Chuyển hướng về trang danh sách
+    router.push({ name: 'AttributeIndex' });
   } catch (error) {
     console.error('Lỗi khi lưu thuộc tính:', error);
     if (error.response && error.response.status === 422) {
       errors.value = error.response.data.errors;
     } else if (error.response && error.response.status === 401) {
-        showToast('Không được phép. Vui lòng đăng nhập.', 'error');
+      showToast('Không được phép. Vui lòng đăng nhập.', 'error');
     } else {
       showToast('Có lỗi xảy ra khi lưu thuộc tính.', 'error');
     }
@@ -134,7 +147,6 @@ const saveAttribute = async () => {
 
 onMounted(() => {
   if (isEditMode.value) {
-    // Đảm bảo route.params.id tồn tại trước khi gọi API
     if (route.params.id) {
       fetchAttribute(route.params.id);
     } else {

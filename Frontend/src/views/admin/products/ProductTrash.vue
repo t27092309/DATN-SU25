@@ -1,66 +1,66 @@
 <template>
-    <div class="container">
+    <div class="container mx-auto px-4 py-8">
         <div class="page-inner">
-            <div class="page-header">
-                <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-                <ul class="breadcrumbs mb-3">
+            <div class="mb-6">
+                <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+                <ul class="flex items-center space-x-2 text-gray-600 text-sm">
                     <li class="nav-home">
-                        <router-link :to="{ name: 'AdminDashboard' }">
-                            <i class="icon-home"></i>
+                        <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+                            <i class="fas fa-home"></i>
                         </router-link>
                     </li>
                     <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                        <i class="fas fa-chevron-right text-xs"></i>
                     </li>
                     <li class="nav-item">
-                        <router-link :to="{ name: 'products' }">Quản lý Sản phẩm</router-link>
+                        <router-link :to="{ name: 'products' }" class="hover:text-blue-600">Quản lý Sản phẩm</router-link>
                     </li>
                     <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                        <i class="fas fa-chevron-right text-xs"></i>
                     </li>
                     <li class="nav-item">
-                        <a href="#">{{ route.meta.title }}</a>
+                        <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
                     </li>
                 </ul>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title d-flex justify-content-between align-items-center">
-                        <h1>{{ route.meta.title }}</h1>
-                    </div>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-semibold">{{ route.meta.title }}</h1>
                 </div>
                 <div class="card-body">
                     <div v-if="trashedProducts.length > 0">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">STT</th>
-                                    <th scope="col">Tên</th>
-                                    <th scope="col">Ảnh</th>
-                                    <th scope="col">Ngày xóa</th>
-                                    <th scope="col">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="text-center" v-for="(product, index) in trashedProducts" :key="product.id">
-                                    <td>{{ index + 1 }}</td>
-                                    <td>{{ product.name }}</td>
-                                    <td>
-                                        <img :src="product.image_url" :alt="product.name"
-                                            style="width: 100px; height: auto; object-fit: cover;">
-                                    </td>
-                                    <td>{{ formatDate(product.deleted_at) }}</td>
-                                    <td class="">
-                                        <button @click="confirmRestoreProduct(product.id)"
-                                            class="btn btn-sm btn-outline-success mt-2">Khôi phục</button>
-                                        <button @click="confirmForceDeleteProduct(product.id)"
-                                            class="btn btn-sm btn-outline-danger mt-2">Xóa vĩnh viễn</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr class="text-center">
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ảnh</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày xóa</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="text-center" v-for="(product, index) in trashedProducts" :key="product.id">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <img :src="product.image_url" :alt="product.name"
+                                                class="w-24 h-auto object-cover rounded-md mx-auto">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(product.deleted_at) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-col space-y-2 items-center justify-center">
+                                            <button @click="confirmRestoreProduct(product.id)"
+                                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Khôi phục</button>
+                                            <button @click="confirmForceDeleteProduct(product.id)"
+                                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Xóa vĩnh viễn</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    <div v-else class="text-center py-4">
+                    </div>
+                    <div v-else class="text-center py-4 text-gray-500 italic">
                         <p>Thùng rác trống.</p>
                     </div>
                 </div>
@@ -167,10 +167,3 @@ onMounted(() => {
     fetchTrashedProducts();
 });
 </script>
-
-<style scoped>
-/* CSS cho ProductTrash.vue */
-img {
-    border-radius: 5px;
-}
-</style>

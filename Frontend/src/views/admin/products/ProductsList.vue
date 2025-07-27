@@ -1,100 +1,126 @@
 <template>
-    <div class="container">
+    <div class="container mx-auto px-4 py-8">
         <div class="page-inner">
-            <div class="page-header">
-                <h3 class="fw-bold mb-3">{{ route.meta.title }}</h3>
-                <ul class="breadcrumbs mb-3">
+            <div class="mb-6">
+                <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
+                <ul class="flex items-center space-x-2 text-gray-600 text-sm">
                     <li class="nav-home">
-                        <router-link :to="{ name: 'AdminDashboard' }">
-                            <i class="icon-home"></i>
+                        <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+                            <i class="fas fa-home"></i>
                         </router-link>
                     </li>
                     <li class="separator">
-                        <i class="icon-arrow-right"></i>
+                        <i class="fas fa-chevron-right text-xs"></i>
                     </li>
                     <li class="nav-item">
-                        <a href="#">{{ route.meta.title }}</a>
+                        <a href="#" class="hover:text-blue-600">{{ route.meta.title }}</a>
                     </li>
                 </ul>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title d-flex justify-content-between align-items-center">
-                        <h1>{{ route.meta.title }}</h1>
-                        <div class="d-flex gap-2">
-                            <router-link :to="{ name: 'trashedProducts' }"
-                                class="btn btn-sm btn-outline-secondary custom-hover-secondary">
-                                <i class="fas fa-trash"></i> Thùng rác
-                            </router-link>
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-semibold">{{ route.meta.title }}</h1>
+                    <div class="flex space-x-2">
+                        <router-link :to="{ name: 'trashedProducts' }"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                            <i class="fas fa-trash mr-2"></i> Thùng rác
+                        </router-link>
 
-                            <router-link :to="{ name: 'addProduct' }"
-                                class="btn btn-sm btn-outline-success custom-hover-link">
-                                Thêm sản phẩm
-                            </router-link>
-                        </div>
+                        <router-link :to="{ name: 'addProduct' }"
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition ease-in-out duration-150">
+                            Thêm sản phẩm
+                        </router-link>
                     </div>
                 </div>
                 <div class="card-body">
                     <div v-if="products.length > 0">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">STT</th>
-                                    <th scope="col">Tên</th>
-                                    <th scope="col">Ảnh</th>
-                                    <th scope="col">Giá</th>
-                                    <th scope="col">Danh mục</th>
-                                    <th scope="col">Giới tính</th>
-                                    <th scope="col">Slug</th>
-                                    <th scope="col">Thương hiệu</th>
-                                    <th scope="col">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="text-center" v-for="(product, index) in products" :key="product.id">
-                                    <td>{{ (pagination.current_page - 1) * pagination.per_page + index + 1 }}</td>
-                                    <td>{{ product.name }}</td>
-                                    <td>
-                                        <img :src="product.image" :alt="product.name"
-                                            style="width: 150px; height: auto; object-fit: cover;">
-                                    </td>
-                                    <td>{{ formatCurrency(product.price) }}</td>
-                                    <td>{{ product.category_name }}</td>
-                                    <td>{{ getGenderDisplay(product.gender) }}</td>
-                                    <td>{{ product.slug }}</td>
-                                    <td>{{ product.brand }}</td>
-                                    <td class="">
-                                        <router-link :to="{ name: 'detailProduct', params: { id: product.id } }"
-                                            class="btn btn-sm btn-outline-info mt-2">Xem</router-link>
-                                        <router-link :to="{ name: 'editProduct', params: { id: product.id } }"
-                                            class="btn btn-sm btn-outline-warning mt-2">Sửa</router-link>
-                                        <button @click="confirmDeleteProduct(product.id)"
-                                            class="btn btn-sm btn-outline-danger mt-2">Xóa</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            STT</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tên</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ảnh</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Giá</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Danh mục</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Giới tính</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Thương hiệu</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr v-for="(product, index) in products" :key="product.id">
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                            {{ (pagination.current_page - 1) * pagination.per_page + index + 1 }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ product.name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <img :src="product.image" :alt="product.name"
+                                                class="w-24 h-auto object-cover rounded-md mx-auto">
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                                            {{ formatCurrency(product.price) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ product.category_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ getGenderDisplay(product.gender) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ product.brand }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                            <router-link :to="{ name: 'detailProduct', params: { id: product.id } }"
+                                                class="text-blue-600 hover:text-blue-900 mr-2">Xem</router-link>
+                                            <router-link :to="{ name: 'editProduct', params: { id: product.id } }"
+                                                class="text-yellow-600 hover:text-yellow-900 mr-2">Sửa</router-link>
+                                            <button @click="confirmDeleteProduct(product.id)"
+                                                class="text-red-600 hover:text-red-900">Xóa</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                        <nav>
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item" :class="{ 'disabled': !pagination.prev_page_url }">
-                                    <button class="page-link" @click="fetchProducts(pagination.current_page - 1)"
-                                        :disabled="!pagination.prev_page_url">Trước</button>
+                        <nav class="mt-4">
+                            <ul class="flex justify-center items-center space-x-2">
+                                <li :class="{ 'opacity-50 cursor-not-allowed': !pagination.prev_page_url }">
+                                    <button @click="fetchProducts(pagination.current_page - 1)"
+                                        :disabled="!pagination.prev_page_url"
+                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        Trước
+                                    </button>
                                 </li>
 
-                                <li class="page-item disabled">
-                                    <span class="page-link">Trang {{ pagination.current_page }} / {{
-                                        pagination.last_page }}</span>
+                                <li
+                                    class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-gray-100">
+                                    Trang {{ pagination.current_page }} / {{ pagination.last_page }}
                                 </li>
 
-                                <li class="page-item" :class="{ 'disabled': !pagination.next_page_url }">
-                                    <button class="page-link" @click="fetchProducts(pagination.current_page + 1)"
-                                        :disabled="!pagination.next_page_url">Sau</button>
+                                <li :class="{ 'opacity-50 cursor-not-allowed': !pagination.next_page_url }">
+                                    <button @click="fetchProducts(pagination.current_page + 1)"
+                                        :disabled="!pagination.next_page_url"
+                                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        Sau
+                                    </button>
                                 </li>
                             </ul>
                         </nav>
                     </div>
-                    <div v-else class="text-center py-4">
+                    <div v-else class="text-center py-8 text-gray-600">
                         <p>Không có sản phẩm nào để hiển thị.</p>
                     </div>
                 </div>
@@ -206,24 +232,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.custom-hover-link {
-    color: #198754;
-}
-
-.custom-hover-link:hover {
-    color: white !important;
-}
-
-.custom-hover-secondary {
-    color: #6c757d;
-}
-
-.custom-hover-secondary:hover {
-    color: white !important;
-    background-color: #6c757d;
-}
-
 img {
-    border-radius: 5px;
+    border-radius: 0.375rem;
+    /* rounded-md in Tailwind */
 }
 </style>

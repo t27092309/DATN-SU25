@@ -2,7 +2,7 @@
 export default {
   content: [
     './index.html',
-    './src/**/*.{vue,js,ts,jsx,tsx}',  // ✅ Bắt buộc phải có dòng này để quét mọi file .vue trong src/
+    './src/**/*.{vue,js,ts,jsx,tsx}',
   ],
   safelist: [
     'group-hover:opacity-100',

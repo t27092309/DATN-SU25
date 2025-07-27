@@ -1,111 +1,112 @@
 <template>
-  <div class="container">
+  <div class="container mx-auto p-4 md:p-8">
     <div class="page-inner">
-      <div class="page-header">
-        <h3 class="fw-bold mb-3">Danh mục</h3>
-        <ul class="breadcrumbs mb-3">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-bold text-3xl mb-3">Danh mục</h3>
+        <ul class="flex items-center space-x-2 text-gray-600 mb-3">
           <li class="nav-home">
-            <a href="#"><i class="icon-home"></i></a>
+            <a href="#" class="hover:text-blue-500"><i class="icon-home"></i></a>
           </li>
           <li class="separator">
             <i class="icon-arrow-right"></i>
           </li>
+          <li>Quản lý danh mục</li>
         </ul>
       </div>
-      <div class="row">
-        <div class="col-md-12">
-          <div class="card">
+      <div class="flex flex-wrap -mx-4">
+        <div class="w-full md:w-1/2 lg:w-2/5 px-4 mb-8">
+          <div class="bg-white rounded-lg shadow p-6">
             <div class="card-header">
-              <div class="card-title">Quản lý danh mục</div>
+              <div class="text-2xl font-semibold mb-4">Quản lý danh mục</div>
             </div>
             <div class="card-body">
-              <div class="row">
-                <!-- Form thêm danh mục -->
-                <div class="col-md-6 col-lg-4">
-                  <form @submit.prevent="addCategory" class="mb-5">
-                    <div class="form-group">
-                      <h5 class="card-title">Thêm mới danh mục</h5>
-                    </div>
-                    <div class="form-group">
-                      <label for="name">Tên danh mục</label>
-                      <input
-                        type="text"
-                        v-model="category.name"
-                        class="form-control"
-                        id="name"
-                        placeholder="Nhập tên danh mục"
-                        required
-                      />
-                      <small class="form-text text-muted">Ví dụ: Nước hoa nam</small>
-                    </div>
-                    <div class="card-action">
-                      <button type="submit" class="btn btn-primary">Thêm danh mục</button>
-                    </div>
-                    <p v-if="addMessage" :class="addMessageClass">{{ addMessage }}</p>
-                  </form>
+              <form @submit.prevent="addCategory" class="mb-8">
+                <div class="mb-4">
+                  <h5 class="text-xl font-semibold mb-4">Thêm mới danh mục</h5>
                 </div>
+                <div class="mb-4">
+                  <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Tên danh mục</label>
+                  <input
+                    type="text"
+                    v-model="category.name"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    id="name"
+                    placeholder="Nhập tên danh mục"
+                    required
+                  />
+                  <small class="text-gray-500 text-sm mt-1 block">Ví dụ: Nước hoa nam</small>
+                </div>
+                <div class="flex items-center justify-between">
+                  <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Thêm danh mục
+                  </button>
+                </div>
+                <p v-if="addMessage" :class="addMessageClass" class="mt-4 text-sm">{{ addMessage }}</p>
+              </form>
+            </div>
+          </div>
+        </div>
 
-                <!-- Bảng hiển thị danh mục -->
-                <div class="col-md-6 col-lg-8">
-                  <div class="table-responsive">
-                    <table class="display table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Tên danh mục</th>
-                          <th style="width: 10%">Hành động</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="category in categories" :key="category.id">
-                          <td>{{ category.name || '-' }}</td>
-                          <td>
-                            <div class="form-button-action">
-                              <button
-                                type="button"
-                                title="Chỉnh sửa danh mục"
-                                class="btn btn-link btn-primary btn-lg"
-                                @click="editCategory(category.id)"
-                              >
-                                <i class="fa fa-edit"></i>
-                              </button>
-                              <button
-                                type="button"
-                                title="Xóa"
-                                class="btn btn-link btn-danger"
-                                @click="openDeleteModal(category.id)"
-                              >
-                                <i class="fa fa-times"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <p v-if="listMessage" :class="listMessageClass">{{ listMessage }}</p>
-                  </div>
-                </div>
-              </div>
+        <div class="w-full md:w-1/2 lg:w-3/5 px-4">
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white border border-gray-200">
+                <thead>
+                  <tr>
+                    <th class="py-3 px-4 border-b text-left text-gray-600 font-bold uppercase text-sm">Tên danh mục</th>
+                    <th style="width: 10%" class="py-3 px-4 border-b text-left text-gray-600 font-bold uppercase text-sm">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="category in categories" :key="category.id" class="border-b">
+                    <td class="py-3 px-4">{{ category.name || '-' }}</td>
+                    <td class="py-3 px-4">
+                      <div class="flex space-x-2">
+                        <button
+                          type="button"
+                          title="Chỉnh sửa danh mục"
+                          class="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                          @click="editCategory(category.id)"
+                        >
+                          <i class="fa fa-edit"></i>
+                        </button>
+                        <button
+                          type="button"
+                          title="Xóa"
+                          class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                          @click="openDeleteModal(category.id)"
+                        >
+                          <i class="fa fa-times"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p v-if="listMessage" :class="listMessageClass" class="mt-4 text-sm">{{ listMessage }}</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal xác nhận xóa -->
-    <div v-if="showDeleteModal" class="modal fade show" style="display: block">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Xác nhận xóa</h5>
-            <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <p>Bạn có chắc muốn xóa danh mục này?</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="showDeleteModal = false">Hủy</button>
-            <button class="btn btn-danger" @click="confirmDelete">Xóa</button>
-          </div>
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+      <div class="relative p-6 bg-white w-96 max-w-sm mx-auto rounded-lg shadow-xl">
+        <div class="flex justify-between items-start pb-3">
+          <h5 class="text-xl font-bold">Xác nhận xóa</h5>
+          <button type="button" class="text-gray-400 hover:text-gray-600" @click="showDeleteModal = false">
+            <span class="sr-only">Close</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body mb-4">
+          <p>Bạn có chắc muốn xóa danh mục này?</p>
+        </div>
+        <div class="flex justify-end space-x-4">
+          <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded" @click="showDeleteModal = false">Hủy</button>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="confirmDelete">Xóa</button>
         </div>
       </div>
     </div>
@@ -223,101 +224,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.container {
-  max-width: 1200px;
-  margin: 50px auto;
-}
-.form-group {
-  margin-bottom: 20px;
-}
-.form-control {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-}
-.form-text {
-  font-size: 14px;
-}
-.btn-primary {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-.btn-link.btn-primary {
-  color: #007bff;
-}
-.btn-link.btn-primary:hover {
-  color: #0056b3;
-}
-.btn-link.btn-danger {
-  color: #dc3545;
-}
-.btn-link.btn-danger:hover {
-  color: #b02a37;
-}
-.form-button-action {
-  display: flex;
-  gap: 10px;
-}
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-}
-.table th {
-  background-color: #f8f9fa;
-}
-.text-success {
-  color: green;
-  margin-top: 15px;
-}
-.text-danger {
-  color: red;
-  margin-top: 15px;
-}
-.text-info {
-  color: #17a2b8;
-  margin-top: 15px;
-}
-.mb-5 {
-  margin-bottom: 3rem;
-}
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.breadcrumbs {
-  display: flex;
-  list-style: none;
-  padding: 0;
-}
-.breadcrumbs li {
-  margin-right: 10px;
-}
-.modal {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-.modal-dialog {
-  margin: 100px auto;
-}
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-}
-</style>
