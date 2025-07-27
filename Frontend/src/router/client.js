@@ -19,6 +19,8 @@ import Orders from "@/views/client/user/Orders.vue";
 import CategoryProducts from "@/views/client/CategoryProducts.vue";
 import ProductDetail from "@/views/client/Product.vue";
 import OrderDetail from "@/views/client/order/OrderDetail.vue";
+import OrderHistory from "@/views/client/OrderHistory.vue";
+import OrderDetails from "@/views/client/OrderDetails.vue";
 
 const routes = [
   {
@@ -83,6 +85,16 @@ const routes = [
         name: "SearchResult",
         component: SearchResult,
         props: true,
+      },
+      {
+        path: "/order-history",
+        name: "OrderHistory",
+        component: OrderHistory,
+      },
+      {
+        path: "/order-details/:orderId",
+        name: "OrderDetails",
+        component: OrderDetails,
       },
 
       //----User Path-----
