@@ -1,0 +1,125 @@
+[33md701847[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/payment-online[m[33m, [m[1;31morigin/feature/payment-online[m[33m)[m fix env momo
+[33mcbe8d89[m api thanh toán momo
+[33m7901d58[m Merge pull request #86 from t27092309/feature/admin-data-ui
+[33m1574ecd[m refactor:Them sua san pham(bao gom ScentGroup va UsageProfile)
+[33m3a553df[m Merge pull request #85 from t27092309/feature/admin-data-ui
+[33ma4ce6bd[m refactor: Them san pham ko co bien the
+[33m5cd4bf6[m Merge pull request #84 from t27092309/feature/admin-data-ui
+[33m9f26edd[m feat: Theo doi don hang, Them phuong thuc van chuyen
+[33mf2be5eb[m Merge pull request #83 from t27092309/feature/admin-quan-li-don-hang
+[33m20054c2[m Merge pull request #82 from t27092309/feature/admin-quan-li-don-hang
+[33meea29aa[m merge with develop
+[33m31ba85b[m  resolve conflict
+[33mb2c717e[m[33m ([m[1;31morigin/feature/admin-quan-li-don-hang[m[33m)[m quan li don hang admin
+[33m3cbd36b[m Thùng rác mã giảm giá
+[33mcb07cf4[m refactor: seed dia chi
+[33m0903f47[m refactor: Tat seeder gay loi
+[33m2bfe803[m Merge pull request #81 from t27092309/feature/client-data-ui
+[33me470c33[m[33m ([m[1;31morigin/feature/client-data-ui[m[33m)[m refactor: Thanh toan
+[33m15bc52f[m Merge pull request #80 from t27092309/feature/admin-data-ui
+[33m580f22e[m Merge branch 'develop' into feature/admin-data-ui
+[33m29b51a8[m Merge pull request #79 from t27092309/feature/client-data-ui
+[33m03a73a9[m feat:Thanh toan
+[33m4df5293[m bugfix: ko hien brand
+[33m755cd6d[m refactor: Usage_limit
+[33m88821e2[m feat:Thanh toan
+[33me69edbd[m Merge pull request #78 from t27092309/feature/api-payment
+[33m3024f48[m gắn tinymce vào mô tả ở brand
+[33m85ebb1e[m[33m ([m[1;31morigin/feature/api-payment[m[33m)[m thêm bảng order_addresses
+[33m1a6c0fc[m feat:CRUD Brands
+[33m58a9005[m Merge pull request #77 from t27092309/feature/admin-data-ui
+[33m50331c5[m refactor:Xoa mem
+[33m04ce6a1[m Merge pull request #75 from t27092309/feature/client-data-ui
+[33m266bed6[m Merge pull request #74 from t27092309/feature/crud-attribute
+[33m31c22c5[m Merge from develop
+[33m77ed077[m[33m ([m[1;31morigin/feature/crud-attribute[m[33m)[m refactor: Pagination
+[33m4e79168[m refactor: Cart
+[33m3c4d251[m Merge pull request #73 from t27092309/feature/crud-scent-groups
+[33ma37b2b3[m[33m ([m[1;31morigin/feature/crud-scent-groups[m[33m, [m[1;32mfeature/crud-scent-groups[m[33m)[m feat: thêm xóa mềm scent-group
+[33mb713916[m Merge pull request #72 from t27092309/feature/crud-attribute
+[33m929eb30[m Merge branch 'develop' into feature/crud-attribute
+[33m257f333[m feat:Trash
+[33m9d158f0[m Merge pull request #71 from t27092309/feature/api-payment
+[33m84d8db5[m Merge pull request #69 from t27092309/feature/crud-coupons
+[33m755225a[m thanh toán cho client
+[33m3d59516[m[33m ([m[1;31morigin/feature/crud-coupons[m[33m, [m[1;32mfeature/crud-coupons[m[33m)[m feat: thêm xóa mềm coupon
+[33m4dcfb33[m Soft delete category
+[33md6459f3[m Merge pull request #68 from t27092309/feature/crud-attribute
+[33meee20ac[m merge develop
+[33m7393ca1[m[33m ([m[1;31morigin/feature/crud-categories[m[33m, [m[1;32mfeature/crud-categories[m[33m)[m feat: thêm xóa mềm danh mục
+[33ma220124[m Product Gallery
+[33mb8aab99[m Complete
+[33m4f54c27[m CRUD Attribute, AttributeValue
+[33mc3a1ba3[m continue
+[33m02d1505[m Merge pull request #65 from t27092309/feature/cart-with-product-variants
+[33m0f7956e[m CRUD Attribute
+[33m781aaac[m[33m ([m[1;31morigin/feature/cart-with-product-variants[m[33m, [m[1;32mfeature/cart-with-product-variants[m[33m)[m cập nhật giỏ hàng
+[33m8307791[m Soft delete Product
+[33mc95658c[m[33m ([m[1;31morigin/feature/crud-san-pham[m[33m)[m xóa mềm sản phẩm
+[33m66d3e48[m Them vao gio hang, xem gio hang
+[33mc503b6d[m feat:them vao gio hang, xem gio hang
+[33m6007618[m Merge pull request #62 from t27092309/feature/crud-coupons
+[33m2e04e51[m feat: thêm start_date, end_date, min_order_amount, max_discount
+[33m148c715[m Merge pull request #61 from t27092309/feature/cart-with-product-variants
+[33m3a0075c[m feat:thêm chức năng quản lý giỏ hàng bên client
+[33m3cceea9[m Merge pull request #60 from t27092309/feature/client-data-ui
+[33mb4eb9b5[m Search Products
+[33mae755da[m Your commit message here
+[33m53dae91[m Fix select cate & brand
+[33m291f34f[m Merge pull request #59 from t27092309/feature/client-data-ui
+[33mbde1803[m feat:default admin, staff account
+[33mf738f0c[m Merge pull request #58 from t27092309/feature/client-ui
+[33m747c8dc[m[33m ([m[1;31morigin/feature/client-ui[m[33m)[m Merge branch 'feature/client-data-ui' into feature/client-ui
+[33m83a1528[m Merge branch 'develop' into feature/client-data-ui
+[33md364e0e[m feat:Trang thanh toan
+[33m06bc444[m refactor: Hien thi them 1 so thong tin
+[33maa1abfa[m Merge pull request #57 from t27092309/bugfix/fe
+[33mf82c213[m Merge pull request #56 from t27092309/feature/client-data-ui
+[33m47c96cb[m feat:Chi tiet san pham
+[33mc325814[m Merge pull request #55 from t27092309/develop
+[33m9f1bc29[m[33m ([m[1;31morigin/feature/api-search[m[33m)[m Merge pull request #53 from t27092309/feature/api-search
+[33m6d65f4a[m APi tìm kiếm sản phẩm và chỉnh sửa chi tiết sản phẩm
+[33m9a2085a[m feat:Dia chi thuc te
+[33mc28e98c[m[33m ([m[1;31morigin/bugfix/fe[m[33m)[m Fix thêm ảnh bằng file
+[33m01c2b73[m README
+[33m27c94bd[m Merge branch 'develop' into feature/client-data-ui
+[33m92288bb[m Merge pull request #50 from t27092309/bugfix/fe
+[33m27322c3[m Update fix loi
+[33m44f29f4[m Merge pull request #48 from t27092309/feature/api-personal-account
+[33m62de2d5[m .env.example
+[33mb0dd126[m[33m ([m[1;31morigin/feature/api-personal-account[m[33m)[m cap nhat dia chi tinh-huyen-xa
+[33m565bab6[m Fix loi API admin
+[33mbaa6a42[m Mô tả thay đổi
+[33mf297b96[m Merge pull request #45 from t27092309/feature/product-detail
+[33m1e80c9c[m[33m ([m[1;31morigin/feature/product-detail[m[33m)[m api chi tiết sản phẩm
+[33mddc47f3[m Merge pull request #44 from t27092309/feature/client-data-ui
+[33m5e67de8[m feat:CRUD dia chi ca nhan
+[33m91eef21[m Merge branch 'develop' into feature/client-data-ui
+[33m62f6fcb[m feat: Them giao dien dia chi
+[33m56ce855[m Merge pull request #43 from t27092309/feature/api-personal-account
+[33mec42093[m cap nhat profile
+[33m27b8bae[m Merge branch 'develop' into feature/api-personal-account
+[33mc90113b[m Cập nhật UserProfileController
+[33m2d4e815[m Merge pull request #41 from t27092309/feature/api-personal-account
+[33m5643d58[m xem update ho so user ds them sua xoa va dat lam mac dinh dia chi
+[33m69c44ec[m Merge pull request #40 from t27092309/feature/client-data-ui
+[33m64e8efd[m refactor: Tai khoan
+[33m3628ae8[m Merge pull request #39 from t27092309/feature/client-data-ui
+[33m618e0e0[m feat: Them thong bao dang ky thanh cong
+[33m81cfee8[m feat:Dang ky, Dang nhap
+[33m6aabb60[m Merge pull request #38 from t27092309/feature/crud-san-pham
+[33mf491640[m CRUD scent_groups
+[33ma5de9b3[m chinh sua crud san pham
+[33mf013c3e[m Merge pull request #37 from t27092309/feature/client-ui
+[33m0779232[m Giao dien quan ly don hang
+[33m829fa21[m feat: Giao dien trang tai khoan
+[33m87b8b81[m Merge pull request #36 from t27092309/feature/laravel-sanctum
+[33me358133[m[33m ([m[1;31morigin/feature/laravel-sanctum[m[33m)[m dang nhap dang ki dang xuat va laravel sanctum
+[33m82fe963[m Merge pull request #35 from t27092309/feature/live-chat
+[33m24dfa6d[m[33m ([m[1;31morigin/feature/live-chat[m[33m)[m Setup chat Tawk.to
+[33m4df5254[m Merge pull request #34 from t27092309/feature/client-ui
+[33m750bc9d[m Them gio hang, chat
+[33mf080678[m Merge pull request #33 from t27092309/feature/crud-san-pham
+[33me1b6b48[m Merge pull request #32 from t27092309/feature/crud-scent-groups
+[33me546863[m Merge pull request #31 from t27092309/feature/crud-coupons
+[33mcb2f0a2[m update cru
