@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Payment;
@@ -107,12 +108,19 @@ class CheckoutController extends Controller
             if (!empty($attributeParts)) {
                 $variantName .= ' (' . implode(' / ', $attributeParts) . ')';
             }
+            $thumbnailUrl = 'https://via.placeholder.com/64'; // Default placeholder
 
+            // Kiểm tra xem product và thumbnail_url có tồn tại không
+            if ($variant->product && $variant->product->image) {
+                // Lấy đường dẫn tương đối từ database
+                $relativePath = $variant->product->image;
+                $thumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($relativePath), '/');
+            }
             $formattedItems[] = [
                 'id' => $item->id,
                 'product_id' => $variant->product->id ?? null,
                 'product_name' => $variant->product->name ?? 'Sản phẩm không rõ',
-                'thumbnail_url' => $variant->product->thumbnail_url ?? 'https://via.placeholder.com/64',
+                'thumbnail_url' => $thumbnailUrl,
                 'price' => $variant->price,
                 'quantity' => $item->quantity,
                 'variant' => [
@@ -155,7 +163,19 @@ class CheckoutController extends Controller
         if (!empty($attributeParts)) {
             $variantName .= ' (' . implode(' / ', $attributeParts) . ')';
         }
+            $thumbnailUrl = 'https://via.placeholder.com/64'; // Default placeholder
 
+            // Kiểm tra xem product và thumbnail_url có tồn tại không
+            if ($variant->product && $variant->product->thumbnail_url) {
+                // Lấy đường dẫn tương đối từ database
+                $relativePath = $variant->product->thumbnail_url;
+
+                // Chuyển đổi thành đường dẫn tuyệt đối
+                // config('app.url') sẽ lấy giá trị từ .env APP_URL, ví dụ: http://localhost:8000
+                // Storage::url() sẽ tạo đường dẫn công khai cho file trong storage
+                // ltrim(..., '/') để đảm bảo không có dấu // nếu Storage::url đã thêm / ở đầu
+                $thumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($relativePath), '/');
+            }
         return response()->json([
             'data' => [
                 'id' => $variant->id,
@@ -163,7 +183,7 @@ class CheckoutController extends Controller
                 'product' => [ // Trả về thông tin product đầy đủ hơn cho frontend
                     'id' => $variant->product->id ?? null,
                     'name' => $variant->product->name ?? 'Sản phẩm không rõ',
-                    'image' => $variant->product->thumbnail_url ?? 'https://via.placeholder.com/64',
+                    'image' => $thumbnail_url ?? 'https://via.placeholder.com/64',
                 ],
                 'price' => $variant->price,
                 'stock' => $variant->stock,
@@ -281,8 +301,8 @@ class CheckoutController extends Controller
 
             // Fetch the selected shipping method
             $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])
-                                            ->where('is_active', true)
-                                            ->first();
+                ->where('is_active', true)
+                ->first();
 
             if (!$shippingMethod) {
                 DB::rollBack();
@@ -472,8 +492,8 @@ class CheckoutController extends Controller
 
         // Fetch the selected shipping method
         $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])
-                                        ->where('is_active', true)
-                                        ->first();
+            ->where('is_active', true)
+            ->first();
 
         if (!$shippingMethod) {
             return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);

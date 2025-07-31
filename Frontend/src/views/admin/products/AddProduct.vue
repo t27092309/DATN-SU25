@@ -327,7 +327,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <p v-else class="text-gray-500 text-base italic mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
+                            <p v-else class="text-gray-500 text-base italic mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-md">
                                 <i class="fas fa-info-circle mr-2"></i> Chưa có biến thể nào được tạo. Vui lòng chọn thuộc tính và giá
                                 trị ở trên để tạo biến thể.
                             </p>

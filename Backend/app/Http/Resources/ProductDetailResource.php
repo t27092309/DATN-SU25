@@ -95,8 +95,14 @@ class ProductDetailResource extends JsonResource
                 });
             }),
 
-            'images' => $this->whenLoaded('images', function () {
-                return $this->images->map(fn($img) => $img->image_url);
+           'images' => $this->whenLoaded('images', function () {
+                return $this->images->map(function ($img) {
+                    // Check if the path exists before trying to generate a URL
+                    if ($img->path) {
+                        return config('app.url') . '/' . ltrim(Storage::url($img->path), '/');
+                    }
+                    return null; // Return null if path is not set for an image
+                });
             }),
         ];
     }

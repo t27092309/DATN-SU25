@@ -16,8 +16,6 @@ const router = useRouter();
 // --- State variables ---
 const checkoutItems = ref([]);
 const message = ref('');
-const usePoints = ref(false);
-const userPoints = ref(0);
 const isLoading = ref(false);
 const loading = ref(false);
 const error = ref(null);
@@ -108,16 +106,9 @@ const shippingFee = computed(() => {
   return selectedMethod ? parseFloat(selectedMethod.price) : 0; // Use 'price'
 });
 
-const usedPointsAmount = computed(() => {
-  const maxUsablePoints = totalAmountBeforeShippingAndVoucher.value + shippingFee.value - voucherDiscount.value;
-  return usePoints.value ? Math.min(userPoints.value, Math.max(0, maxUsablePoints)) : 0;
-});
 
 const finalTotalAmount = computed(() => {
   let total = totalAmountBeforeShippingAndVoucher.value + shippingFee.value - voucherDiscount.value;
-  if (usePoints.value) {
-    total -= usedPointsAmount.value;
-  }
   return Math.max(0, total);
 });
 
@@ -136,53 +127,53 @@ const hasNewAddressDetails = computed(() => {
 
 const canPlaceOrder = computed(() => {
   return (useNewAddressForm.value && hasNewAddressDetails.value || (!useNewAddressForm.value && selectedAddressId.value !== null)) &&
-           checkoutItems.value.length > 0 &&
-           selectedShippingMethodId.value !== null; // Ensure a shipping method is selected
+    checkoutItems.value.length > 0 &&
+    selectedShippingMethodId.value !== null; // Ensure a shipping method is selected
 });
 
 // UPDATED: Estimated delivery dates based on selected shipping method (using new fields from API)
 const estimatedDeliveryDate = computed(() => {
-    const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
-    if (selectedMethod && selectedMethod.delivery_time_min !== undefined && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
-        const today = new Date();
-        const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric' });
+  const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
+  if (selectedMethod && selectedMethod.delivery_time_min !== undefined && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
+    const today = new Date();
+    const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric' });
 
-        if (selectedMethod.delivery_time_unit === 'hours') {
-            // For hourly deliveries, provide a direct range in hours
-            return `Trong vòng ${selectedMethod.delivery_time_min} - ${selectedMethod.delivery_time_max} giờ`;
-        } else if (selectedMethod.delivery_time_unit === 'days') {
-            const deliveryStartDate = new Date(today);
-            deliveryStartDate.setDate(today.getDate() + selectedMethod.delivery_time_min);
-            const deliveryEndDate = new Date(today);
-            deliveryEndDate.setDate(today.getDate() + selectedMethod.delivery_time_max);
-            return `${formatter.format(deliveryStartDate)} - ${formatter.format(deliveryEndDate)}`;
-        }
+    if (selectedMethod.delivery_time_unit === 'hours') {
+      // For hourly deliveries, provide a direct range in hours
+      return `Trong vòng ${selectedMethod.delivery_time_min} - ${selectedMethod.delivery_time_max} giờ`;
+    } else if (selectedMethod.delivery_time_unit === 'days') {
+      const deliveryStartDate = new Date(today);
+      deliveryStartDate.setDate(today.getDate() + selectedMethod.delivery_time_min);
+      const deliveryEndDate = new Date(today);
+      deliveryEndDate.setDate(today.getDate() + selectedMethod.delivery_time_max);
+      return `${formatter.format(deliveryStartDate)} - ${formatter.format(deliveryEndDate)}`;
     }
-    return 'Chưa xác định';
+  }
+  return 'Chưa xác định';
 });
 
 // UPDATED: Delivery Guarantee Date (using new fields from API)
 const deliveryGuaranteeDate = computed(() => {
-    const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
-    if (selectedMethod && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
-        const today = new Date();
-        let guaranteeDaysOffset = 0;
+  const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
+  if (selectedMethod && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
+    const today = new Date();
+    let guaranteeDaysOffset = 0;
 
-        if (selectedMethod.delivery_time_unit === 'days') {
-            guaranteeDaysOffset = selectedMethod.delivery_time_max + 1; // E.g., if max is 3 days, guarantee by 4th day
-        } else if (selectedMethod.delivery_time_unit === 'hours') {
-            // For hourly, a common approach is end of next day for guarantee
-            // Adjust this logic if your guarantee is different (e.g., specific hour)
-            guaranteeDaysOffset = 1; // Guarantee by end of next day
-        }
-
-        const guaranteeDate = new Date(today);
-        guaranteeDate.setDate(today.getDate() + guaranteeDaysOffset);
-
-        const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' });
-        return formatter.format(guaranteeDate);
+    if (selectedMethod.delivery_time_unit === 'days') {
+      guaranteeDaysOffset = selectedMethod.delivery_time_max + 1; // E.g., if max is 3 days, guarantee by 4th day
+    } else if (selectedMethod.delivery_time_unit === 'hours') {
+      // For hourly, a common approach is end of next day for guarantee
+      // Adjust this logic if your guarantee is different (e.g., specific hour)
+      guaranteeDaysOffset = 1; // Guarantee by end of next day
     }
-    return 'Chưa xác định';
+
+    const guaranteeDate = new Date(today);
+    guaranteeDate.setDate(today.getDate() + guaranteeDaysOffset);
+
+    const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    return formatter.format(guaranteeDate);
+  }
+  return 'Chưa xác định';
 });
 
 
@@ -272,9 +263,9 @@ async function fetchCheckoutItemsFromCart(itemIds) {
       return {
         id: item.id,
         product: {
-            id: item.product_id,
-            name: item.product_name,
-            thumbnail_url: item.thumbnail_url
+          id: item.product_id,
+          name: item.product_name,
+          thumbnail_url: item.thumbnail_url
         },
         quantity: item.quantity,
         variant: {
@@ -374,36 +365,27 @@ async function fetchUserAddresses() {
   }
 }
 
-async function fetchUserPoints() {
-  try {
-    const response = await axios.get('/api/user/points');
-    userPoints.value = response.data.points || 0;
-  } catch (err) {
-    console.error('Lỗi khi tải điểm của người dùng:', err);
-    userPoints.value = 0;
-  }
-}
 
 // NEW: Fetch all shipping methods and set a default if available
 async function fetchAndSetDefaultShippingMethods() {
-    loadingShippingMethods.value = true;
-    shippingMethodsError.value = null;
-    try {
-        // Fetch from the new API endpoint
-        const response = await axios.get('/shipping-methods');
-        // UPDATED: Adjust based on your API response structure (direct array under 'shipping_methods')
-        shippingMethods.value = response.data.shipping_methods;
+  loadingShippingMethods.value = true;
+  shippingMethodsError.value = null;
+  try {
+    // Fetch from the new API endpoint
+    const response = await axios.get('/shipping-methods');
+    // UPDATED: Adjust based on your API response structure (direct array under 'shipping_methods')
+    shippingMethods.value = response.data.shipping_methods;
 
-        // Set a default selected method if none is chosen and methods are available
-        if (shippingMethods.value.length > 0 && !selectedShippingMethodId.value) {
-            selectedShippingMethodId.value = shippingMethods.value[0].id;
-        }
-    } catch (err) {
-        console.error('Error fetching shipping methods:', err);
-        shippingMethodsError.value = 'Không thể tải các phương thức vận chuyển.';
-    } finally {
-        loadingShippingMethods.value = false;
+    // Set a default selected method if none is chosen and methods are available
+    if (shippingMethods.value.length > 0 && !selectedShippingMethodId.value) {
+      selectedShippingMethodId.value = shippingMethods.value[0].id;
     }
+  } catch (err) {
+    console.error('Error fetching shipping methods:', err);
+    shippingMethodsError.value = 'Không thể tải các phương thức vận chuyển.';
+  } finally {
+    loadingShippingMethods.value = false;
+  }
 }
 
 // Handler for when a shipping method is selected in the modal
@@ -569,7 +551,6 @@ onMounted(async () => {
 
   await Promise.all([
     fetchUserAddresses(),
-    fetchUserPoints(),
     fetchAndSetDefaultShippingMethods() // NEW: Fetch and set default shipping methods
   ]);
 });
@@ -635,8 +616,8 @@ watch(userAddresses, (newAddresses) => {
           class="py-4 border-b border-gray-200 last:border-b-0">
           <div class="grid grid-cols-5 items-center">
             <div class="col-span-2 flex items-center">
-              <img :src="item.product?.image || 'https://via.placeholder.com/64'"
-                :alt="item.product?.name || 'Sản phẩm'" class="w-16 h-16 mr-3 border rounded object-cover">
+              <img :src="item.thumbnail_url || 'https://via.placeholder.com/64'" :alt="item.product_name || 'Sản phẩm'"
+                class="w-16 h-16 mr-3 border rounded object-cover">
               <div>
                 <p class="text-gray-800">{{ item.product?.name || 'Sản phẩm không rõ tên' }}</p>
                 <p v-if="item.variant && item.variant.name" class="text-gray-500 text-sm">
@@ -657,7 +638,7 @@ watch(userAddresses, (newAddresses) => {
         <div class="col-span-1 text-gray-500">Phương thức vận chuyển:</div>
         <div class="col-span-2">
           <span class="font-medium">
-            {{ shippingMethods.find(m => m.id === selectedShippingMethodId)?.name || 'Chưa chọn' }}
+            {{shippingMethods.find(m => m.id === selectedShippingMethodId)?.name || 'Chưa chọn'}}
           </span>
           <button @click="showShippingMethodModal = true" class="ml-2 text-blue-500 hover:underline">Thay Đổi</button>
           <p class="text-xs text-gray-500 mt-1">Dự kiến nhận hàng: {{ estimatedDeliveryDate }}</p>
@@ -720,16 +701,6 @@ watch(userAddresses, (newAddresses) => {
         :checkout-items="checkoutItems" @update:is-visible="showVoucherModal = $event"
         @couponSelected="handleCouponSelection" />
 
-      <div class="flex justify-between items-center border-t border-gray-200 pt-4">
-        <div class="flex items-center">
-          <span class="text-orange-500 text-xl mr-2">Floréa Xu</span> <span class="text-gray-700">Xu <span
-              class="text-gray-500 text-sm">Dùng {{ formatCurrencyWithoutSymbol(userPoints) }} Xu</span></span>
-        </div>
-        <div class="flex items-center">
-          <span class="text-gray-500 mr-2">[-{{ formatCurrency(usedPointsAmount) }}]</span>
-          <input type="checkbox" class="form-checkbox h-5 w-5 text-red-600 rounded" v-model="usePoints" />
-        </div>
-      </div>
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-sm mt-4">
@@ -756,10 +727,6 @@ watch(userAddresses, (newAddresses) => {
         <div class="flex justify-end items-center mb-2">
           <span class="mr-4 text-gray-500">Voucher giảm giá</span>
           <span class="w-24">-{{ formatCurrency(voucherDiscount) }}</span>
-        </div>
-        <div class="flex justify-end items-center mb-2">
-          <span class="mr-4 text-gray-500">Giảm giá từ xu</span>
-          <span class="w-24">-{{ formatCurrency(usedPointsAmount) }}</span>
         </div>
         <div class="flex justify-end items-center text-lg font-bold mt-4">
           <span class="mr-4">Tổng thanh toán</span>
@@ -799,19 +766,13 @@ watch(userAddresses, (newAddresses) => {
       :use-new-address-form="useNewAddressForm" @update:is-visible="showAddressModal = $event"
       @addressSelected="handleAddressSelection" />
 
-    <ShippingMethodSelectionModal
-      :is-visible="showShippingMethodModal"
-      :current-selected-method-id="selectedShippingMethodId"
-      @update:is-visible="showShippingMethodModal = $event"
-      @methodSelected="handleShippingMethodSelected"
-    />
+    <ShippingMethodSelectionModal :is-visible="showShippingMethodModal"
+      :current-selected-method-id="selectedShippingMethodId" @update:is-visible="showShippingMethodModal = $event"
+      @methodSelected="handleShippingMethodSelected" />
   </div>
 </template>
 
 <style scoped>
-/* Ensure your Tailwind CSS is correctly imported/configured */
-@import '@/assets/tailwind.css';
-
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;

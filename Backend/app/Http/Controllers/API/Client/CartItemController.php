@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Import DB facade for transactions
+use Illuminate\Support\Facades\Storage;
 
 class CartItemController extends Controller
 {
@@ -89,6 +90,7 @@ class CartItemController extends Controller
 
             $availableVariants = [];
             $currentProduct = null;
+            $fullThumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($productImage), '/');
 
             if ($item->variant && $item->variant->product) {
                 $currentProduct = $item->variant->product;
@@ -126,7 +128,7 @@ class CartItemController extends Controller
                 'slug' => $productSlug,
                 'price' => round($displayPrice, 2),
                 'quantity' => $item->quantity,
-                'thumbnail_url' => $productImage,
+                'thumbnail_url' => $fullThumbnailUrl,
                 'variant' => $variantData,
                 'available_variants' => $availableVariants,
             ];

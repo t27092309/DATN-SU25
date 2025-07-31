@@ -48,7 +48,7 @@
                                                 :disabled="availableVariant.stock < item.quantity"
                                                 :class="{ 'text-gray-400': availableVariant.stock < item.quantity }">
                                                 {{ truncateText(availableVariant.name, 30) }}
-                                                <span v-if="availableVariant.stock < item.quantity">(Hết hàng: {{
+                                                <span v-if="availableVariant.stock < item.quantity ">(Hết hàng: {{
                                                     availableVariant.stock }})
                                                 </span>
                                             </option>
@@ -112,23 +112,23 @@
                     class="bg-white p-4 flex justify-between items-center rounded-b-md shadow-md sticky bottom-0 z-10">
                     <div class="flex items-center space-x-4">
                         <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox h-5 w-5 text-red-500 rounded"
+                            <input type="checkbox"
+                                class="outline-none focus:outline-none form-checkbox h-5 w-5 text-red-500 rounded"
                                 :checked="isAllSelected" @change="toggleSelectAll" />
                             <span class="ml-2 text-gray-700">Chọn Tất Cả ({{ totalSelectedItemsInCart }})</span>
                         </label>
                         <button class="text-blue-500 hover:underline" @click="handleRemoveSelectedItems">Xóa</button>
                         <button class="text-blue-500 hover:underline">Bỏ sản phẩm không hoạt động</button>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-0 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600">
+                            </div>
+                            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Florea Xu</span>
+                        </label>
                     </div>
                     <div class="flex items-center">
                         <div class="flex items-center mr-6">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" value="" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-600">
-                                </div>
-                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Shopee Xu</span>
-                            </label>
-                            <span class="ms-2 text-gray-500 text-sm">Bạn chưa chọn sản phẩm ⓘ</span>
                         </div>
                         <span class="text-gray-700 font-medium">Tổng cộng ({{ totalSelectedItemsInCart }} Sản
                             phẩm):</span>
