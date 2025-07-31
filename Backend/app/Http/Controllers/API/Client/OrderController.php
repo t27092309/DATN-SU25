@@ -115,65 +115,83 @@ class OrderController extends Controller
      * @param Order $order
      * @return array
      */
-    private function formatOrderData(Order $order): array
-    {
-        $items = $order->orderItems->map(function ($item) {
-            // Reconstruct variant name with attributes
-            $variantNameParts = [];
-            if ($item->productVariant && $item->productVariant->attributeValues) {
-                foreach ($item->productVariant->attributeValues as $attrValue) {
-                    if ($attrValue->attribute && $attrValue->value) {
-                        $variantNameParts[] = $attrValue->attribute->name . ': ' . $attrValue->value;
-                    }
+private function formatOrderData(Order $order): array
+{
+    $items = $order->orderItems->map(function ($item) {
+        // Reconstruct variant name with attributes
+        $variantNameParts = [];
+        if ($item->productVariant && $item->productVariant->attributeValues) {
+            foreach ($item->productVariant->attributeValues as $attrValue) {
+                if ($attrValue->attribute && $attrValue->value) {
+                    $variantNameParts[] = $attrValue->attribute->name . ': ' . $attrValue->value;
                 }
             }
-            $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
+        }
+        $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
 
-            return [
-                'id' => $item->id,
-                'product_name' => $item->productVariant->product->name ?? 'N/A',
-                'product_image' => $item->productVariant->product->image ?? 'https://via.placeholder.com/64',
-                'variant_name' => $displayVariantName, // Tên biến thể đã được định dạng
-                'quantity' => $item->quantity,
-                'price_each' => $item->price_each,
-                'subtotal' => $item->price_each * $item->quantity,
-            ];
-        });
+        // --- MODIFIED IMAGE URL LOGIC ---
+        $productImage = 'https://via.placeholder.com/64'; // Default placeholder
+
+        if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
+            // Assuming $item->productVariant->product->image stores the path like 'products/main_images/image.jpg'
+            // Use Laravel's asset() helper to get the full URL, which handles 'storage' symlink if configured.
+            // If you are using 'php artisan storage:link', this is the correct way.
+            $productImage = asset('storage/' . $item->productVariant->product->image);
+
+            // If the asset() helper still produces 'http://localhost' instead of 'http://127.0.0.1:8000'
+            // and you specifically need 127.0.0.1:8000, you can manually construct it:
+            // $appUrl = config('app.url'); // This usually comes from .env APP_URL
+            // $productImage = str_replace($appUrl, 'http://127.0.0.1:8000', asset('storage/' . $item->productVariant->product->image));
+            // Or a more direct construction:
+            // $productImage = 'http://127.0.0.1:8000/storage/' . ltrim($item->productVariant->product->image, '/');
+        }
+        // --- END MODIFIED IMAGE URL LOGIC ---
 
         return [
-            'id' => $order->id,
-            'user_id' => $order->user_id,
-            'total_price' => $order->total_price,
-            'status' => $order->status,
-            'notes' => $order->notes,
-            'coupon_id' => $order->coupon_id,
-            'payment_method' => $order->payment_method,
-            'shipping_fee' => $order->shipping_fee,
-            'created_at' => $order->created_at->toDateTimeString(),
-            'updated_at' => $order->updated_at->toDateTimeString(),
-            'order_address' => $order->orderAddress ? [
-                'recipient_name' => $order->orderAddress->recipient_name,
-                'phone_number' => $order->orderAddress->phone_number,
-                'address_line' => $order->orderAddress->address_line,
-                'ward' => $order->orderAddress->ward,
-                'district' => $order->orderAddress->district,
-                'province' => $order->orderAddress->province,
-                'full_address' => implode(', ', array_filter([
-                    $order->orderAddress->address_line,
-                    $order->orderAddress->ward,
-                    $order->orderAddress->district,
-                    $order->orderAddress->province
-                ]))
-            ] : null,
-            'payment_info' => $order->payment ? [
-                'payment_method' => $order->payment->payment_method,
-                'amount' => $order->payment->amount,
-                'payment_status' => $order->payment->payment_status,
-                'paid_at' => $order->payment->paid_at ? $order->payment->paid_at->toDateTimeString() : null,
-            ] : null,
-            'items' => $items,
+            'id' => $item->id,
+            'product_name' => $item->productVariant->product->name ?? 'N/A',
+            'product_image' => $productImage, // Tên biến thể đã được định dạng
+            'variant_name' => $displayVariantName,
+            'quantity' => $item->quantity,
+            'price_each' => $item->price_each,
+            'subtotal' => $item->price_each * $item->quantity,
         ];
-    }
+    });
+
+    return [
+        'id' => $order->id,
+        'user_id' => $order->user_id,
+        'total_price' => $order->total_price,
+        'status' => $order->status,
+        'notes' => $order->notes,
+        'coupon_id' => $order->coupon_id,
+        'payment_method' => $order->payment_method,
+        'shipping_fee' => $order->shipping_fee,
+        'created_at' => $order->created_at->toDateTimeString(),
+        'updated_at' => $order->updated_at->toDateTimeString(),
+        'order_address' => $order->orderAddress ? [
+            'recipient_name' => $order->orderAddress->recipient_name,
+            'phone_number' => $order->orderAddress->phone_number,
+            'address_line' => $order->orderAddress->address_line,
+            'ward' => $order->orderAddress->ward,
+            'district' => $order->orderAddress->district,
+            'province' => $order->orderAddress->province,
+            'full_address' => implode(', ', array_filter([
+                $order->orderAddress->address_line,
+                $order->orderAddress->ward,
+                $order->orderAddress->district,
+                $order->orderAddress->province
+            ]))
+        ] : null,
+        'payment_info' => $order->payment ? [
+            'payment_method' => $order->payment->payment_method,
+            'amount' => $order->payment->amount,
+            'payment_status' => $order->payment->payment_status,
+            'paid_at' => $order->payment->paid_at ? $order->payment->paid_at->toDateTimeString() : null,
+        ] : null,
+        'items' => $items,
+    ];
+}
     public function getOrderCounts(Request $request)
     {
         $user = Auth::user();
@@ -243,8 +261,8 @@ class OrderController extends Controller
 
         // Kiểm tra trạng thái hiện tại của đơn hàng
         // Chỉ cho phép hủy nếu trạng thái là 'pending' (chờ xác nhận)
-        if ($order->status !== 'pending') {
-            return response()->json(['message' => 'Chỉ có thể hủy các đơn hàng đang ở trạng thái "Chờ xác nhận".'], Response::HTTP_BAD_REQUEST);
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return response()->json(['message' => 'Chỉ có thể hủy các đơn hàng đang ở trạng thái "Chờ xác nhận" hoặc "Đang xử lý".'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
@@ -259,7 +277,7 @@ class OrderController extends Controller
             foreach ($order->orderItems as $item) {
                 $variant = $item->productVariant;
                 if ($variant) {
-                    $variant->increment('stock_quantity', $item->quantity);
+                    $variant->increment('stock', $item->quantity);
                     // Bạn có thể cân nhắc thêm log hoặc kiểm tra lỗi ở đây
                 }
             }

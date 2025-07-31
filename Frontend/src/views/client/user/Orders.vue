@@ -7,7 +7,7 @@
         :class="['flex-shrink-0 px-3 sm:px-6 py-3 text-base font-medium border-b-2 transition-colors duration-200 flex items-center justify-center',
           activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
         <span>{{ tab.label }}</span>
-        <span v-if="tab.count !== undefined && tab.count > 0"
+        <span v-if="tab.count !== undefined && tab.count > 0 && !['all', 'completed', 'cancelled'].includes(tab.value)"
           class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count }}</span>
       </button>
     </div>
@@ -39,10 +39,15 @@
         class="border border-gray-200 rounded-lg p-5 bg-white shadow-md hover:shadow-lg transition-shadow duration-200">
 
         <div class="flex justify-between items-center mb-4 text-sm border-b pb-3">
-          <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
-            class="text-blue-600 hover:underline font-semibold text-base">
-            Mã Đơn hàng: #{{ order.id }}
-          </router-link>
+          <div>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="text-blue-600 hover:underline font-semibold text-base">
+              Mã Đơn hàng: #{{ order.id }}
+            </router-link>
+            <p class="text-xs text-gray-500 mt-1">
+              Ngày đặt: {{ formatDate(order.created_at) }}
+            </p>
+          </div>
           <p :class="['font-bold text-base', getStatusClass(order.status)]">{{ getStatusText(order.status) }}</p>
         </div>
 
@@ -115,6 +120,10 @@
             </button>
           </template>
           <template v-else-if="order.status === 'processing'">
+            <button @click="cancelOrder(order.id)"
+              class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 shadow-sm">
+              Hủy Đơn Hàng
+            </button>
             <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
               Xem Chi Tiết
@@ -208,6 +217,10 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
     }
 
     const response = await api.get(url);
+
+    // --- ADD CONSOLE.LOG HERE ---
+    console.log('API Response data:', response.data);
+
     orders.value = response.data.orders;
     pagination.value = response.data.pagination;
   } catch (err) {
@@ -222,7 +235,12 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
     isLoading.value = false;
   }
 };
-
+// Helper Function
+const formatDate = (datetimeString) => {
+  if (!datetimeString) return 'N/A';
+  const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+  return new Date(datetimeString).toLocaleDateString('vi-VN', options);
+};
 // MỚI: Hàm để lấy số lượng đơn hàng cho từng trạng thái
 const fetchOrderCounts = async () => {
   try {
@@ -350,6 +368,4 @@ const contactSeller = (idDonHang) => {
 // Bạn có thể thêm các hàm cho "Mua Lại", "Đặt Lại", "Xem Lý Do Hủy", "Thanh Toán Ngay" tương tự
 </script>
 
-<style scoped>
-@import '@/assets/tailwind.css';
-</style>
+<style scoped></style>

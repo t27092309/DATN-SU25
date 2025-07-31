@@ -1,12 +1,12 @@
 <template>
   <div class="flex flex-col md:flex-row max-w-7xl mx-auto min-h-screen bg-gray-100">
-    <main class="flex-1 p-4 md:p-8 order-2 md:order-1">
+    <main class="flex-1 p-4 md:p-8 order-2 md:order-2">
       <div class="bg-white shadow-md rounded-lg p-6 h-full">
         <router-view></router-view>
       </div>
     </main>
 
-    <aside class="w-full md:w-64 p-4 order-1 md:order-2 flex-shrink-0">
+    <aside class="w-full md:w-64 p-4 order-1 md:order-1 flex-shrink-0">
       <div class="flex items-center mb-6">
         <div>
           <p class="font-semibold text-gray-800">{{ userName }}</p>
@@ -119,8 +119,3 @@ const selectMenuItem = (menuItem) => {
   }
 };
 </script>
-
-<style scoped>
-@import '@/assets/tailwind.css';
-/* @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'); */
-</style>
