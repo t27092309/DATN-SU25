@@ -95,7 +95,7 @@ class OrderController extends Controller
                 'orderItems.productVariant.product',
                 'orderItems.productVariant.attributeValues.attribute', // Tải chi tiết thuộc tính
                 'orderAddress',
-                'payment'
+                'primaryPayment'
             ])
             ->first();
 
@@ -115,83 +115,83 @@ class OrderController extends Controller
      * @param Order $order
      * @return array
      */
-private function formatOrderData(Order $order): array
-{
-    $items = $order->orderItems->map(function ($item) {
-        // Reconstruct variant name with attributes
-        $variantNameParts = [];
-        if ($item->productVariant && $item->productVariant->attributeValues) {
-            foreach ($item->productVariant->attributeValues as $attrValue) {
-                if ($attrValue->attribute && $attrValue->value) {
-                    $variantNameParts[] = $attrValue->attribute->name . ': ' . $attrValue->value;
+    private function formatOrderData(Order $order): array
+    {
+        $items = $order->orderItems->map(function ($item) {
+            // Reconstruct variant name with attributes
+            $variantNameParts = [];
+            if ($item->productVariant && $item->productVariant->attributeValues) {
+                foreach ($item->productVariant->attributeValues as $attrValue) {
+                    if ($attrValue->attribute && $attrValue->value) {
+                        $variantNameParts[] = $attrValue->attribute->name . ': ' . $attrValue->value;
+                    }
                 }
             }
-        }
-        $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
+            $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
 
-        // --- MODIFIED IMAGE URL LOGIC ---
-        $productImage = 'https://via.placeholder.com/64'; // Default placeholder
+            // --- MODIFIED IMAGE URL LOGIC ---
+            $productImage = 'https://via.placeholder.com/64'; // Default placeholder
 
-        if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
-            // Assuming $item->productVariant->product->image stores the path like 'products/main_images/image.jpg'
-            // Use Laravel's asset() helper to get the full URL, which handles 'storage' symlink if configured.
-            // If you are using 'php artisan storage:link', this is the correct way.
-            $productImage = asset('storage/' . $item->productVariant->product->image);
+            if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
+                // Assuming $item->productVariant->product->image stores the path like 'products/main_images/image.jpg'
+                // Use Laravel's asset() helper to get the full URL, which handles 'storage' symlink if configured.
+                // If you are using 'php artisan storage:link', this is the correct way.
+                $productImage = asset('storage/' . $item->productVariant->product->image);
 
-            // If the asset() helper still produces 'http://localhost' instead of 'http://127.0.0.1:8000'
-            // and you specifically need 127.0.0.1:8000, you can manually construct it:
-            // $appUrl = config('app.url'); // This usually comes from .env APP_URL
-            // $productImage = str_replace($appUrl, 'http://127.0.0.1:8000', asset('storage/' . $item->productVariant->product->image));
-            // Or a more direct construction:
-            // $productImage = 'http://127.0.0.1:8000/storage/' . ltrim($item->productVariant->product->image, '/');
-        }
-        // --- END MODIFIED IMAGE URL LOGIC ---
+                // If the asset() helper still produces 'http://localhost' instead of 'http://127.0.0.1:8000'
+                // and you specifically need 127.0.0.1:8000, you can manually construct it:
+                // $appUrl = config('app.url'); // This usually comes from .env APP_URL
+                // $productImage = str_replace($appUrl, 'http://127.0.0.1:8000', asset('storage/' . $item->productVariant->product->image));
+                // Or a more direct construction:
+                // $productImage = 'http://127.0.0.1:8000/storage/' . ltrim($item->productVariant->product->image, '/');
+            }
+            // --- END MODIFIED IMAGE URL LOGIC ---
+
+            return [
+                'id' => $item->id,
+                'product_name' => $item->productVariant->product->name ?? 'N/A',
+                'product_image' => $productImage, // Tên biến thể đã được định dạng
+                'variant_name' => $displayVariantName,
+                'quantity' => $item->quantity,
+                'price_each' => $item->price_each,
+                'subtotal' => $item->price_each * $item->quantity,
+            ];
+        });
 
         return [
-            'id' => $item->id,
-            'product_name' => $item->productVariant->product->name ?? 'N/A',
-            'product_image' => $productImage, // Tên biến thể đã được định dạng
-            'variant_name' => $displayVariantName,
-            'quantity' => $item->quantity,
-            'price_each' => $item->price_each,
-            'subtotal' => $item->price_each * $item->quantity,
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'total_price' => $order->total_price,
+            'status' => $order->status,
+            'notes' => $order->notes,
+            'coupon_id' => $order->coupon_id,
+            'payment_method' => $order->payment_method,
+            'shipping_fee' => $order->shipping_fee,
+            'created_at' => $order->created_at->toDateTimeString(),
+            'updated_at' => $order->updated_at->toDateTimeString(),
+            'order_address' => $order->orderAddress ? [
+                'recipient_name' => $order->orderAddress->recipient_name,
+                'phone_number' => $order->orderAddress->phone_number,
+                'address_line' => $order->orderAddress->address_line,
+                'ward' => $order->orderAddress->ward,
+                'district' => $order->orderAddress->district,
+                'province' => $order->orderAddress->province,
+                'full_address' => implode(', ', array_filter([
+                    $order->orderAddress->address_line,
+                    $order->orderAddress->ward,
+                    $order->orderAddress->district,
+                    $order->orderAddress->province
+                ]))
+            ] : null,
+            'payment_info' => $order->payment ? [
+                'payment_method' => $order->payment->payment_method,
+                'amount' => $order->payment->amount,
+                'payment_status' => $order->payment->payment_status,
+                'paid_at' => $order->payment->paid_at ? $order->payment->paid_at->toDateTimeString() : null,
+            ] : null,
+            'items' => $items,
         ];
-    });
-
-    return [
-        'id' => $order->id,
-        'user_id' => $order->user_id,
-        'total_price' => $order->total_price,
-        'status' => $order->status,
-        'notes' => $order->notes,
-        'coupon_id' => $order->coupon_id,
-        'payment_method' => $order->payment_method,
-        'shipping_fee' => $order->shipping_fee,
-        'created_at' => $order->created_at->toDateTimeString(),
-        'updated_at' => $order->updated_at->toDateTimeString(),
-        'order_address' => $order->orderAddress ? [
-            'recipient_name' => $order->orderAddress->recipient_name,
-            'phone_number' => $order->orderAddress->phone_number,
-            'address_line' => $order->orderAddress->address_line,
-            'ward' => $order->orderAddress->ward,
-            'district' => $order->orderAddress->district,
-            'province' => $order->orderAddress->province,
-            'full_address' => implode(', ', array_filter([
-                $order->orderAddress->address_line,
-                $order->orderAddress->ward,
-                $order->orderAddress->district,
-                $order->orderAddress->province
-            ]))
-        ] : null,
-        'payment_info' => $order->payment ? [
-            'payment_method' => $order->payment->payment_method,
-            'amount' => $order->payment->amount,
-            'payment_status' => $order->payment->payment_status,
-            'paid_at' => $order->payment->paid_at ? $order->payment->paid_at->toDateTimeString() : null,
-        ] : null,
-        'items' => $items,
-    ];
-}
+    }
     public function getOrderCounts(Request $request)
     {
         $user = Auth::user();
@@ -214,30 +214,60 @@ private function formatOrderData(Order $order): array
         ]);
     }
 
-    public function markAsDelivered(Order $order) // Sử dụng Route Model Binding
+    public function markAsDelivered(Order $order)
     {
         $user = Auth::user();
 
+        // LOG 1: Bắt đầu xử lý yêu cầu và kiểm tra thông tin user, order
+        Log::info('Bắt đầu xử lý yêu cầu xác nhận đã nhận hàng.', [
+            'order_id_from_route' => $order->id,
+            'user_id' => $user->id,
+            'current_order_status' => $order->status
+        ]);
+
         // Kiểm tra xem đơn hàng có thuộc về người dùng hiện tại không
         if ($order->user_id !== $user->id) {
+            // LOG 2: Lỗi phân quyền
+            Log::warning('Lỗi phân quyền: User không sở hữu đơn hàng.', [
+                'order_id' => $order->id,
+                'user_id' => $user->id,
+                'owner_id' => $order->user_id
+            ]);
             return response()->json(['message' => 'Bạn không có quyền truy cập đơn hàng này.'], Response::HTTP_FORBIDDEN);
         }
 
         // Kiểm tra trạng thái hiện tại của đơn hàng
-        // Chỉ cho phép đánh dấu 'delivered' nếu trạng thái hiện tại là 'shipped' (Đang giao hàng)
         if ($order->status !== 'shipped') {
+            // LOG 3: Lỗi trạng thái không hợp lệ
+            Log::warning('Lỗi trạng thái đơn hàng không hợp lệ.', [
+                'order_id' => $order->id,
+                'user_id' => $user->id,
+                'current_status' => $order->status,
+                'expected_status' => 'shipped'
+            ]);
             return response()->json(['message' => 'Đơn hàng không ở trạng thái "Đang giao hàng" để xác nhận đã nhận.'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            $order->status = 'completed';
-            $order->delivered_at = now(); // Ghi lại thời điểm giao hàng
+            $order->status = 'delivered';
+            $order->delivered_at = now();
             $order->save();
 
+            // LOG 4: Thành công
+            Log::info('Cập nhật trạng thái đơn hàng thành công.', [
+                'order_id' => $order->id,
+                'new_status' => $order->status,
+                'delivered_at' => $order->delivered_at
+            ]);
             return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng.'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            // Ghi log lỗi để dễ dàng debug
-            \Log::error('Lỗi khi đánh dấu đơn hàng đã giao: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
+            // LOG 5: Lỗi khi cập nhật vào database
+            Log::error('Lỗi khi cập nhật trạng thái đơn hàng.', [
+                'order_id' => $order->id,
+                'user_id' => $user->id,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['message' => 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

@@ -470,6 +470,7 @@ const placeOrder = async () => {
   }
 
   loading.value = true;
+  let paymentInfo = null;
 
   try {
     const isBuyNow = route.query.buy_now === 'true';
@@ -495,15 +496,25 @@ const placeOrder = async () => {
 
       response = await axios.post('checkout/buy-now', orderData);
     } else {
+      const cartItemIdsString = route.query.cart_item_ids;
+      const cartItemIds = cartItemIdsString ? cartItemIdsString.split(',').map(Number) : [];
+
+      // Thêm cart_item_ids vào payload trước khi gửi đi
+      orderData.cart_item_ids = cartItemIds;
       response = await axios.post('checkout/place-order', orderData);
     }
+    console.log('Phản hồi từ backend:', response.data);
 
     const paymentInfo = response.data.payment_info;
 
-    if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.redirect_url) {
-      window.location.href = paymentInfo.redirect_url;
+    if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl) {
+      // Nếu là thanh toán MoMo và cần điều hướng
+      console.log('Redirecting to MoMo PayUrl:', paymentInfo.payUrl);
+      window.location.href = paymentInfo.payUrl;
     } else {
-      alert(`${response.data.message} ${paymentInfo?.message || ''}`);
+      // Xử lý các trường hợp KHÔNG CẦN điều hướng (ví dụ: COD)
+      // hoặc MoMo trả về lỗi KHÔNG yêu cầu điều hướng.
+      alert(`${response.data.message || 'Đặt hàng thành công!'} ${paymentInfo?.message || ''}`);
       router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
     }
 
@@ -520,7 +531,9 @@ const placeOrder = async () => {
       errorMessage.value = 'Không thể đặt hàng. Vui lòng thử lại.';
     }
   } finally {
-    loading.value = false;
+    if (!(paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl)) {
+      loading.value = false;
+    }
   }
 };
 
@@ -713,7 +726,8 @@ watch(userAddresses, (newAddresses) => {
       </div>
 
       <PaymentMethodSelectionModal :is-visible="showPaymentMethodModal" :current-selected-method="selectedPaymentMethod"
-        @update:is-visible="showPaymentMethodModal = $event" @methodSelected="handlePaymentMethodSelection" />
+        :payment-methods="paymentMethods" @update:is-visible="showPaymentMethodModal = $event"
+        @methodSelected="handlePaymentMethodSelection" />
 
       <div class="text-right text-gray-700 mt-4">
         <div class="flex justify-end items-center mb-2">

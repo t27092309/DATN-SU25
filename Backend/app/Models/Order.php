@@ -10,7 +10,7 @@ class Order extends Model
     use HasFactory;
 
     // Định nghĩa các hằng số cho trạng thái đơn hàng
-    public const STATUS_PENDING = 'pending'; // Chờ xử lý (có thể chờ thanh toán hoặc chờ xác nhận)
+    public const STATUS_PENDING = 'pending'; // Chờ xử lý (Chờ xác nhận)
     public const STATUS_PENDING_PAYMENT = 'pending_payment'; // Đang chờ thanh toán (thanh toán online)
     public const STATUS_PAYMENT_FAILED = 'payment_failed'; // Thanh toán thất bại
     public const STATUS_PROCESSING = 'processing'; // Đang xử lý
