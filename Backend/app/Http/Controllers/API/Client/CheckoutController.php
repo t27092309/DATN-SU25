@@ -22,12 +22,22 @@ use Symfony\Component\HttpFoundation\Response;
 use Carbon\Carbon;
 use Exception;
 
-// Import các service hoặc class xử lý payment gateways (sẽ thêm sau)
-// use App\Services\MomoPaymentService;
-// use App\Services\VnPayPaymentService;
+// Import các service hoặc class xử lý payment gateways
+use App\Services\MomoPaymentService;
+use App\Services\VnPayPaymentService;
 
 class CheckoutController extends Controller
 {
+
+    protected $momoService;
+    protected $vnpayService;
+
+    // Constructor to inject services (recommended)
+    public function __construct(MomoPaymentService $momoService, VnPayPaymentService $vnpayService)
+    {
+        $this->momoService = $momoService;
+        $this->vnpayService = $vnpayService;
+    }
     /**
      * Lấy chi tiết các sản phẩm được chọn từ giỏ hàng để hiển thị ở trang checkout.
      * @param Request $request
@@ -164,19 +174,19 @@ class CheckoutController extends Controller
         if (!empty($attributeParts)) {
             $variantName .= ' (' . implode(' / ', $attributeParts) . ')';
         }
-            $thumbnailUrl = 'https://via.placeholder.com/64'; // Default placeholder
+        $thumbnailUrl = 'https://via.placeholder.com/64'; // Default placeholder
 
-            // Kiểm tra xem product và thumbnail_url có tồn tại không
-            if ($variant->product && $variant->product->thumbnail_url) {
-                // Lấy đường dẫn tương đối từ database
-                $relativePath = $variant->product->thumbnail_url;
+        // Kiểm tra xem product và thumbnail_url có tồn tại không
+        if ($variant->product && $variant->product->thumbnail_url) {
+            // Lấy đường dẫn tương đối từ database
+            $relativePath = $variant->product->thumbnail_url;
 
-                // Chuyển đổi thành đường dẫn tuyệt đối
-                // config('app.url') sẽ lấy giá trị từ .env APP_URL, ví dụ: http://localhost:8000
-                // Storage::url() sẽ tạo đường dẫn công khai cho file trong storage
-                // ltrim(..., '/') để đảm bảo không có dấu // nếu Storage::url đã thêm / ở đầu
-                $thumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($relativePath), '/');
-            }
+            // Chuyển đổi thành đường dẫn tuyệt đối
+            // config('app.url') sẽ lấy giá trị từ .env APP_URL, ví dụ: http://localhost:8000
+            // Storage::url() sẽ tạo đường dẫn công khai cho file trong storage
+            // ltrim(..., '/') để đảm bảo không có dấu // nếu Storage::url đã thêm / ở đầu
+            $thumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($relativePath), '/');
+        }
         return response()->json([
             'data' => [
                 'id' => $variant->id,
@@ -227,26 +237,13 @@ class CheckoutController extends Controller
     {
         $user = $request->user();
 
-        // LOG 1: Kiểm tra payload nhận được từ frontend
         Log::info('Nhận yêu cầu đặt hàng:', $request->all());
 
         $allowedPaymentMethods = Payment::PAYMENT_METHODS;
 
-        $cart = Cart::with([
-            'items.variant' => function ($query) {
-                $query->with('product', 'attributeValues.attribute');
-            }
-        ])->where('user_id', $user->id)->where('status', 'active')->first();
-
-        if (!$cart || $cart->items->isEmpty()) {
-            Log::warning('Giỏ hàng rỗng khi đặt hàng cho user: ' . $user->id);
-            return response()->json(['message' => 'Giỏ hàng rỗng.'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // LOG 2: Kiểm tra dữ liệu giỏ hàng
-        Log::info('Giỏ hàng được tìm thấy:', ['cart_id' => $cart->id, 'item_count' => $cart->items->count()]);
-
         $validated = $request->validate([
+            'cart_item_ids' => 'required|array',
+            'cart_item_ids.*' => 'integer|exists:cart_items,id',
             'address_id' => 'nullable|exists:user_addresses,id',
             'recipient_name' => 'nullable|string|max:255',
             'phone_number' => 'nullable|string|max:20',
@@ -257,33 +254,44 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:500',
             'coupon_code' => 'nullable|string',
             'payment_method' => 'required|string|in:' . implode(',', $allowedPaymentMethods),
-            'shipping_method_id' => 'required|exists:shipping_methods,id,is_active,1', // Validate selected shipping method
+            'shipping_method_id' => 'required|exists:shipping_methods,id,is_active,1',
         ]);
 
-        // LOG 3: Kiểm tra dữ liệu đã được validate
-        Log::info('Dữ liệu đã validate:', $validated);
+        $cartItemIds = $validated['cart_item_ids'];
+
+        // --- Thay đổi lớn ở đây: Chỉ lấy các cart items được chọn ---
+        $cartItems = CartItem::whereIn('id', $cartItemIds)
+            ->whereHas('cart', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['variant.product', 'variant.attributeValues.attribute'])
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            Log::warning('Không tìm thấy sản phẩm hợp lệ để đặt hàng cho user: ' . $user->id);
+            return response()->json(['message' => 'Không có sản phẩm hợp lệ để đặt hàng.'], Response::HTTP_BAD_REQUEST);
+        }
+        // -----------------------------------------------------------
+
+        Log::info('Các sản phẩm được chọn để đặt hàng:', ['item_count' => $cartItems->count(), 'item_ids' => $cartItems->pluck('id')]);
+
 
         $addressData = $this->resolveAddressData($user, $validated);
         if ($addressData instanceof \Illuminate\Http\JsonResponse) {
-            // LOG 4: Lỗi từ resolveAddressData
             Log::warning('Lỗi địa chỉ từ resolveAddressData cho user ' . $user->id . ': ' . $addressData->getContent());
             return $addressData;
         }
 
-        // LOG 5: Dữ liệu địa chỉ sau khi resolve
         Log::info('Dữ liệu địa chỉ đã được giải quyết:', $addressData);
-
 
         DB::beginTransaction();
 
         try {
-            $totalItemsPrice = 0; // Tổng giá trị các sản phẩm trong giỏ
-            foreach ($cart->items as $item) {
+            $totalItemsPrice = 0;
+            foreach ($cartItems as $item) { // Vòng lặp bây giờ chỉ xử lý các item được chọn
                 $variant = $item->variant;
-                // Kiểm tra tồn kho và trạng thái của sản phẩm ngay trước khi đặt hàng
                 if (!$variant || $variant->stock < $item->quantity || $variant->status === 'unavailable') {
                     DB::rollBack();
-                    // LOG 6: Lỗi tồn kho/trạng thái sản phẩm
                     Log::warning('Sản phẩm không đủ tồn kho/không sẵn: ', [
                         'user_id' => $user->id,
                         'cart_item_id' => $item->id,
@@ -297,77 +305,61 @@ class CheckoutController extends Controller
                 $totalItemsPrice += $variant->price * $item->quantity;
             }
 
-            // LOG 7: Tổng tiền sản phẩm trước khi tính phí ship/voucher
             Log::info('Tổng tiền sản phẩm (totalItemsPrice): ' . $totalItemsPrice);
 
-            // Fetch the selected shipping method
-            $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])
-                ->where('is_active', true)
-                ->first();
-
+            $shippingMethod = ShippingMethod::where('id', $validated['shipping_method_id'])->where('is_active', true)->first();
             if (!$shippingMethod) {
                 DB::rollBack();
                 Log::warning('Phương thức vận chuyển không hợp lệ hoặc không hoạt động: ' . ($validated['shipping_method_id'] ?? 'N/A'));
                 return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);
             }
 
-            $shippingFee = $shippingMethod->price; // Use price from selected shipping method
+            $shippingFee = $shippingMethod->price;
             Log::info('Phí vận chuyển: ' . $shippingFee . ' từ phương thức: ' . $shippingMethod->name);
-
 
             $coupon = null;
             $couponDiscount = 0;
-            $finalTotal = $totalItemsPrice; // Khởi tạo tổng cuối cùng với tổng giá sản phẩm
+            $finalTotal = $totalItemsPrice;
 
-            // Áp dụng mã giảm giá nếu có
             if (!empty($validated['coupon_code'])) {
                 try {
                     $couponResult = $this->applyCoupon($validated['coupon_code'], $totalItemsPrice, $user);
                     $coupon = $couponResult['coupon'];
                     $couponDiscount = $couponResult['discount'];
-                    $finalTotal = max(0, $totalItemsPrice - $couponDiscount); // Đảm bảo tổng tiền không âm sau giảm giá
-                    // LOG 8: Thông tin voucher đã áp dụng
+                    $finalTotal = max(0, $totalItemsPrice - $couponDiscount);
                     Log::info('Voucher đã áp dụng:', ['code' => $validated['coupon_code'], 'discount' => $couponDiscount]);
                 } catch (Exception $e) {
                     DB::rollBack();
-                    // LOG 9: Lỗi khi áp dụng voucher
                     Log::warning('Lỗi khi áp dụng voucher cho user ' . $user->id . ': ' . $e->getMessage());
                     return response()->json(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
                 }
             }
 
-            $finalTotal += $shippingFee; // Cộng phí vận chuyển vào tổng cuối cùng
-
-            // LOG 10: Tổng tiền cuối cùng trước khi tạo order
+            $finalTotal += $shippingFee;
             Log::info('Tổng tiền cuối cùng trước khi tạo Order (finalTotal): ' . $finalTotal);
 
 
-            // Tạo đơn hàng (Order)
             $order = Order::create([
                 'user_id' => $user->id,
-                'total_price' => $finalTotal, // Tổng giá sau giảm giá + phí vận chuyển
-                'status' => Order::STATUS_PENDING, // Trạng thái ban đầu
+                'total_price' => $finalTotal,
+                'status' => Order::STATUS_PENDING,
                 'notes' => $validated['notes'] ?? null,
-                'coupon_id' => $coupon?->id, // Lưu ID coupon nếu có
+                'coupon_id' => $coupon?->id,
                 'shipping_fee' => $shippingFee,
-                'shipping_method_id' => $shippingMethod->id, // Store shipping method ID
-                'discount_amount' => $couponDiscount, // Lưu số tiền giảm giá đã áp dụng
+                'shipping_method_id' => $shippingMethod->id,
+                'discount_amount' => $couponDiscount,
             ]);
 
-            // LOG 11: Đơn hàng đã tạo
             Log::info('Đã tạo đơn hàng:', ['order_id' => $order->id, 'total_price' => $order->total_price]);
 
-            // Tạo địa chỉ cho đơn hàng (OrderAddress)
             OrderAddress::create(array_merge(['order_id' => $order->id], $addressData));
 
-            // LOG 12: Địa chỉ đơn hàng đã tạo
             Log::info('Đã tạo địa chỉ cho đơn hàng:', ['order_id' => $order->id, 'address' => $addressData]);
 
 
-            // Tạo các mục đơn hàng (OrderItems) và cập nhật tồn kho
-            foreach ($cart->items as $item) {
+            foreach ($cartItems as $item) { // Vòng lặp bây giờ chỉ xử lý các item được chọn
                 $variant = $item->variant;
-                // Xây dựng tên biến thể (variant name) chi tiết để lưu vào OrderItem
+
                 $variantName = $variant->product->name;
                 $attributeParts = [];
                 if ($variant->relationLoaded('attributeValues')) {
@@ -391,20 +383,22 @@ class CheckoutController extends Controller
                     'variant_status' => $variant->status,
                     'variant_description' => $variant->description,
                 ]);
-                // Giảm tồn kho và tăng số lượng đã bán
+
                 $variant->decrement('stock', $item->quantity);
                 $variant->increment('sold', $item->quantity);
 
+
                 //lưu vào inventory_logs
-                InventoryLog::create([
-                    'product_variant_id' => $variant->id,
-                    'user_id' => $user->id,
-                    'type' => 'import',
-                    'quantity_change' => $item->quantity,
-                    'note' => 'Hoàn tồn khi hủy đơn - Order #' . $order->id,
-                ]);
+//                 InventoryLog::create([
+//                     'product_variant_id' => $variant->id,
+//                     'user_id' => $user->id,
+//                     'type' => 'import',
+//                     'quantity_change' => $item->quantity,
+//                     'note' => 'Hoàn tồn khi hủy đơn - Order #' . $order->id,
+//                 ]);
 
                 // LOG 13: Cập nhật tồn kho cho mỗi item
+
                 Log::info('Đã xử lý item đơn hàng và cập nhật tồn kho:', [
                     'order_id' => $order->id,
                     'variant_id' => $variant->id,
@@ -413,10 +407,10 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Đánh dấu giỏ hàng là đã chuyển đổi thành đơn hàng
-            $cart->update(['status' => 'converted']);
-            Log::info('Giỏ hàng đã được đánh dấu là "converted": ' . $cart->id);
-
+            // --- Thay đổi lớn tiếp theo: Xóa các CartItem đã mua ---
+            CartItem::whereIn('id', $cartItemIds)->delete();
+            Log::info('Đã xóa các sản phẩm khỏi giỏ hàng sau khi đặt hàng thành công:', ['cart_item_ids' => $cartItemIds]);
+            // ----------------------------------------------------
 
             // Tăng used_count của coupon nếu được sử dụng
             if ($coupon) {
@@ -424,28 +418,23 @@ class CheckoutController extends Controller
                 Log::info('Used count của coupon đã tăng: ' . $coupon->code);
             }
 
-            // Xử lý thanh toán và tạo bản ghi trong bảng `payments`
             $paymentResult = $this->processPayment($order, $validated['payment_method'], $finalTotal);
-            // LOG 14: Kết quả từ processPayment
             Log::info('Kết quả xử lý thanh toán:', $paymentResult);
 
-
-            // Cập nhật trạng thái đơn hàng dựa trên kết quả thanh toán từ processPayment
             if ($paymentResult['status'] === Payment::PAYMENT_STATUS_PAID || $paymentResult['status'] === 'completed') {
-                $order->update(['status' => Order::STATUS_PROCESSING]); // Đã thanh toán, chuyển sang xử lý
+                $order->update(['status' => Order::STATUS_PENDING]);
             } elseif ($paymentResult['status'] === Payment::PAYMENT_STATUS_PENDING) {
-                $order->update(['status' => Order::STATUS_PENDING]); // COD hoặc thanh toán đang chờ xử lý
+                $order->update(['status' => Order::STATUS_PENDING]);
             } elseif ($paymentResult['status'] === 'redirect') {
                 $order->update(['status' => Order::STATUS_PENDING_PAYMENT]);
             } else {
-                // Có lỗi trong quá trình xử lý payment
                 $order->update(['status' => Order::STATUS_PAYMENT_FAILED]);
                 DB::rollBack();
                 Log::error('Lỗi trong quá trình xử lý thanh toán cho order ' . $order->id . ': ' . ($paymentResult['message'] ?? 'Không rõ lỗi.'));
                 return response()->json(['message' => $paymentResult['message']], Response::HTTP_BAD_REQUEST);
             }
 
-            DB::commit(); // Hoàn tất transaction nếu mọi thứ thành công
+            DB::commit();
             Log::info('Transaction đặt hàng thành công cho user: ' . $user->id . ' order: ' . $order->id);
 
             return response()->json([
@@ -454,8 +443,7 @@ class CheckoutController extends Controller
                 'payment_info' => $paymentResult,
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback nếu có bất kỳ lỗi nào xảy ra
-            // LOG 16: Lỗi tổng quát trong quá trình đặt hàng
+            DB::rollBack();
             Log::error('Lỗi tổng quát khi đặt hàng từ giỏ cho user ' . $user->id . ': ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Có lỗi khi đặt hàng. Vui lòng thử lại.', 'error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -590,7 +578,7 @@ class CheckoutController extends Controller
 
             // Cập nhật trạng thái đơn hàng dựa trên kết quả thanh toán
             if ($paymentResult['status'] === Payment::PAYMENT_STATUS_PAID || $paymentResult['status'] === 'completed') {
-                $order->update(['status' => Order::STATUS_PROCESSING]);
+                $order->update(['status' => Order::STATUS_PENDING]);
             } elseif ($paymentResult['status'] === Payment::PAYMENT_STATUS_PENDING) {
                 $order->update(['status' => Order::STATUS_PENDING]);
             } elseif ($paymentResult['status'] === 'redirect') {
@@ -623,99 +611,115 @@ class CheckoutController extends Controller
      */
     private function processPayment(Order $order, string $paymentMethod, float $amount): array
     {
-        $paymentStatus = 'pending'; // Trạng thái mặc định cho các phương thức online
-        $paidAt = null;
-        $transactionId = null;
-        $payerId = null;
-        $paymentDetails = null;
-        $redirectUrl = null; // Dành cho các cổng thanh toán cần redirect
+        Log::info('processPayment: Bắt đầu xử lý thanh toán.', [
+            'order_id' => $order->id,
+            'payment_method' => $paymentMethod,
+            'amount' => $amount
+        ]);
+
+        // Tạo bản ghi Payment
+        $payment = Payment::create([
+            'order_id' => $order->id,
+            'payment_method' => $paymentMethod,
+            'amount' => $amount,
+            'payment_status' => Payment::PAYMENT_STATUS_PENDING, // Luôn pending ban đầu
+            'payment_details' => [], // Mảng rỗng ban đầu để lưu chi tiết sau
+        ]);
+
+        Log::info('processPayment: Đã tạo bản ghi Payment.', ['payment_id' => $payment->id]);
 
         try {
             switch ($paymentMethod) {
                 case 'cash':
-                    $paymentStatus = Payment::PAYMENT_STATUS_PAID; // COD được coi là "paid" ngay khi đơn hàng được tạo thành công
-                    $paidAt = now();
-                    $message = 'Thanh toán khi nhận hàng (COD). Đơn hàng sẽ được xử lý.';
-                    break;
+                    $payment->update([
+                        'payment_status' => Payment::PAYMENT_STATUS_PENDING, // Vẫn pending cho COD
+                        'paid_at' => null, // Chưa thanh toán thực tế
+                        'transaction_id' => 'COD_' . $order->id . '_' . now()->format('YmdHis'), // ID giao dịch nội bộ
+                        'payment_details' => ['message' => 'Thanh toán khi nhận hàng.']
+                    ]);
+                    Log::info('processPayment: Xử lý COD hoàn tất.', ['payment_id' => $payment->id, 'status' => $payment->payment_status]);
+                    return [
+                        'status' => 'completed', // Coi như bước khởi tạo hoàn tất, không cần redirect
+                        'message' => 'Thanh toán COD đã được ghi nhận. Đơn hàng sẽ được xử lý.',
+                        'payment_status' => $payment->payment_status,
+                        'payment_id' => $payment->id,
+                        'method' => 'cash'
+                    ];
 
                 case 'momo':
-                    // TODO: Gọi MomoPaymentService để tạo yêu cầu thanh toán
-                    // Ví dụ:
-                    // $momoService = new MomoPaymentService();
-                    // $momoResponse = $momoService->createPayment($order->id, $amount, $order->order_code);
-                    // if ($momoResponse['status'] === 'success') {
-                    //    $transactionId = $momoResponse['transactionId'];
-                    //    $redirectUrl = $momoResponse['payUrl'];
-                    //    $paymentDetails = $momoResponse['rawResponse']; // Lưu toàn bộ response từ Momo
-                    //    $message = 'Đang chuyển hướng đến cổng thanh toán Momo...';
-                    //    $paymentStatus = Payment::PAYMENT_STATUS_PENDING; // Hoặc 'awaiting_payment'
-                    // } else {
-                    //    $message = 'Lỗi khi tạo yêu cầu thanh toán Momo: ' . $momoResponse['message'];
-                    //    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
-                    // }
-                    // Tạm thời để pending và message cho momo
-                    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
-                    $message = 'Thanh toán qua Momo đang được phát triển.';
-                    break;
+                    Log::info('processPayment: Chuẩn bị gọi MoMo Payment Gateway.', ['payment_id' => $payment->id]);
+                    // Call the MomoPaymentService
+                    $momoResponse = $this->momoService->createPayment($amount, $order->id, $payment->id, "Thanh toan don hang #{$order->id}");
+
+                    if ($momoResponse['status'] === 'success') {
+                        // Update payment record with MoMo details
+                        $payment->update([
+                            'transaction_id' => $momoResponse['transId'] ?? null, // MoMo transId if available from initial request
+                            'payment_details' => $momoResponse['rawResponse'] // Store full raw response
+                        ]);
+                        Log::info('processPayment: Nhận được payUrl từ MoMo.', ['payUrl' => $momoResponse['payUrl']]);
+
+                        return [
+                            'status' => 'redirect', // Indicate that a redirect is needed
+                            'message' => 'Chuyển hướng đến cổng thanh toán MoMo.',
+                            'payment_status' => Payment::PAYMENT_STATUS_PENDING, // Still pending until IPN confirms
+                            'payment_id' => $payment->id,
+                            'payUrl' => $momoResponse['payUrl'],
+                            'method' => 'momo'
+                        ];
+                    } else {
+                        // MoMo initial request failed
+                        $payment->update([
+                            'payment_status' => Payment::PAYMENT_STATUS_FAILED,
+                            'payment_details' => $momoResponse['rawResponse'] ?? ['error' => $momoResponse['message']]
+                        ]);
+                        Log::error('processPayment: Lỗi khi tạo yêu cầu MoMo.', ['response' => $momoResponse]);
+                        throw new Exception($momoResponse['message'] ?? 'Lỗi không xác định khi tạo yêu cầu thanh toán MoMo.');
+                    }
 
                 case 'vnpay':
-                    // TODO: Gọi VnPayPaymentService để tạo yêu cầu thanh toán
-                    // Ví dụ:
-                    // $vnpayService = new VnPayPaymentService();
-                    // $vnpayResponse = $vnpayService->createPayment($order->id, $amount, $order->order_code);
-                    // if ($vnpayResponse['status'] === 'success') {
-                    //    $transactionId = $vnpayResponse['transactionId'];
-                    //    $redirectUrl = $vnpayResponse['payUrl'];
-                    //    $paymentDetails = $vnpayResponse['rawResponse']; // Lưu toàn bộ response từ VnPay
-                    //    $message = 'Đang chuyển hướng đến cổng thanh toán VNPAY...';
-                    //    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
-                    // } else {
-                    //    $message = 'Lỗi khi tạo yêu cầu thanh toán VNPAY: ' . $vnpayResponse['message'];
-                    //    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
-                    // }
-                    // Tạm thời để pending và message cho vnpay
-                    $paymentStatus = Payment::PAYMENT_STATUS_PENDING;
-                    $message = 'Thanh toán qua VNPAY đang được phát triển.';
-                    break;
+                    Log::info('processPayment: Chuẩn bị gọi VNPay Payment Gateway.', ['payment_id' => $payment->id]);
+                    // Call the VnPayPaymentService
+                    $vnpayResponse = $this->vnpayService->createPayment($amount, $order->id, $payment->id, request()->ip(), "Thanh toan don hang #{$order->id}");
+
+                    if ($vnpayResponse['status'] === 'success') {
+                        // Update payment record with VNPay details (if any immediate transaction ID is returned)
+                        $payment->update([
+                            'payment_details' => $vnpayResponse['rawResponse'] // Store full raw response
+                        ]);
+                        Log::info('processPayment: Nhận được payUrl từ VNPay.', ['payUrl' => $vnpayResponse['payUrl']]);
+
+                        return [
+                            'status' => 'redirect', // Indicate that a redirect is needed
+                            'message' => 'Chuyển hướng đến cổng thanh toán VNPay.',
+                            'payment_status' => Payment::PAYMENT_STATUS_PENDING, // Still pending until IPN confirms
+                            'payment_id' => $payment->id,
+                            'payUrl' => $vnpayResponse['payUrl'],
+                            'method' => 'vnpay'
+                        ];
+                    } else {
+                        // VNPay initial request failed
+                        $payment->update([
+                            'payment_status' => Payment::PAYMENT_STATUS_FAILED,
+                            'payment_details' => $vnpayResponse['rawResponse'] ?? ['error' => $vnpayResponse['message']]
+                        ]);
+                        Log::error('processPayment: Lỗi khi tạo yêu cầu VNPay.', ['response' => $vnpayResponse]);
+                        throw new Exception($vnpayResponse['message'] ?? 'Lỗi không xác định khi tạo yêu cầu thanh toán VNPay.');
+                    }
 
                 default:
-                    $message = 'Phương thức thanh toán không hợp lệ.';
-                    $paymentStatus = Payment::PAYMENT_STATUS_FAILED;
-                    break;
+                    Log::error('processPayment: Phương thức thanh toán không hợp lệ.', ['method' => $paymentMethod]);
+                    throw new Exception('Phương thức thanh toán không hợp lệ.');
             }
-
-            $payment = Payment::create([
-                'order_id' => $order->id,
-                'payment_method' => $paymentMethod,
-                'amount' => $amount,
-                'transaction_id' => $transactionId,
-                'payer_id' => $payerId,
-                'payment_status' => $paymentStatus,
-                'paid_at' => $paidAt,
-                'payment_details' => $paymentDetails,
+        } catch (Exception $e) {
+            // Log the error and mark payment as failed if an exception occurs
+            Log::error("Lỗi trong processPayment cho Order ID {$order->id}: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $payment->update([
+                'payment_status' => Payment::PAYMENT_STATUS_FAILED,
+                'payment_details' => array_merge($payment->payment_details ?? [], ['error_message' => $e->getMessage()])
             ]);
-
-            $result = [
-                'status' => ($payment->payment_status === Payment::PAYMENT_STATUS_PAID || $payment->payment_status === Payment::PAYMENT_STATUS_PENDING) ? 'completed' : 'failed', // "completed" cho cả paid và pending (nếu có redirect)
-                'message' => $message,
-                'payment_status' => $payment->payment_status,
-                'payment_method' => $payment->payment_method,
-                'paid_at' => $payment->paid_at ? $payment->paid_at->toDateTimeString() : null,
-                'transaction_id' => $payment->transaction_id,
-            ];
-
-            if ($redirectUrl) {
-                $result['status'] = 'redirect'; // Đánh dấu là cần redirect
-                $result['redirect_url'] = $redirectUrl;
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            Log::error("Lỗi khi xử lý Payment cho Order ID {$order->id}: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return [
-                'status' => 'failed',
-                'message' => 'Lỗi hệ thống khi xử lý thanh toán: ' . $e->getMessage(),
-            ];
+            // Re-throw the exception to be caught by the main transaction block in placeOrder/buyNow
+            throw $e;
         }
     }
 

@@ -34,5 +34,22 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'momo' => [
+        'partner_code' => env('MOMO_PARTNER_CODE'),
+        'access_key' => env('MOMO_ACCESS_KEY'),
+        'secret_key' => env('MOMO_SECRET_KEY'),
+        'endpoint' => env('MOMO_ENDPOINT'),
+        'return_url' => env('MOMO_RETURN_URL'),
+        'notify_url' => env('MOMO_IPN_URL'), // IPN URL
+    ],
+
+    'vnpay' => [
+        'tmn_code' => env('VNPAY_TMN_CODE'),
+        'hash_secret' => env('VNPAY_HASH_SECRET'),
+        'url' => env('VNPAY_URL'), // VNPAY payment gateway URL
+        'return_url' => env('VNPAY_RETURN_URL'),
+        // VNPAY often doesn't have a separate notify URL for initial request,
+        // but for IPN/Webhook, it's usually the return_url acting as IPN.
+    ],
 
 ];

@@ -350,9 +350,9 @@ class ProductController extends Controller
             'remove_main_image' => 'boolean', // Flag to delete main image
 
             // --- CẬP NHẬT: Thêm validation cho gallery_images (bao gồm cả ảnh cũ và thứ tự)
-            'gallery_images' => 'nullable|array', // Mảng các đối tượng {id: ..., order: ..., path: ...} hoặc chỉ order cho ảnh mới
-            'gallery_images.*.id' => 'nullable|integer|exists:product_images,id', // ID của ảnh hiện có
-            'gallery_images.*.order' => 'required|integer|min:0', // Thứ tự của ảnh, bắt buộc cho cả ảnh cũ và ảnh mới
+            // 'gallery_images' => 'nullable|array', // Mảng các đối tượng {id: ..., order: ..., path: ...} hoặc chỉ order cho ảnh mới
+            // 'gallery_images.*.id' => 'nullable|integer|exists:product_images,id', // ID của ảnh hiện có
+            // 'gallery_images.*.order' => 'required|integer|min:0', // Thứ tự của ảnh, bắt buộc cho cả ảnh cũ và ảnh mới
             // 'gallery_images.*.path' => 'nullable|string', // Đường dẫn của ảnh cũ (không cần validate nếu đã validate id)
 
             // Dùng một trường riêng cho ảnh mới được upload lên
@@ -426,11 +426,11 @@ class ProductController extends Controller
                 'variants.json' => 'Dữ liệu biến thể không hợp lệ.', // If variants sent as JSON string
 
                 // --- CẬP NHẬT: Thông báo lỗi cho gallery_images ---
-                'gallery_images.array' => 'Dữ liệu ảnh phụ không hợp lệ.',
-                'gallery_images.*.id.exists' => 'Ảnh phụ cần cập nhật không tồn tại.',
-                'gallery_images.*.order.required' => 'Thứ tự ảnh phụ là bắt buộc.',
-                'gallery_images.*.order.integer' => 'Thứ tự ảnh phụ phải là số nguyên.',
-                'gallery_images.*.order.min' => 'Thứ tự ảnh phụ không được nhỏ hơn 0.',
+                // 'gallery_images.array' => 'Dữ liệu ảnh phụ không hợp lệ.',
+                // 'gallery_images.*.id.exists' => 'Ảnh phụ cần cập nhật không tồn tại.',
+                // 'gallery_images.*.order.required' => 'Thứ tự ảnh phụ là bắt buộc.',
+                // 'gallery_images.*.order.integer' => 'Thứ tự ảnh phụ phải là số nguyên.',
+                // 'gallery_images.*.order.min' => 'Thứ tự ảnh phụ không được nhỏ hơn 0.',
 
                 'new_additional_images.*.image' => 'Tệp ảnh mới phải là hình ảnh.',
                 'new_additional_images.*.mimes' => 'Ảnh mới phải có định dạng: jpeg, png, jpg, gif, svg.',

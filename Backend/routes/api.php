@@ -26,7 +26,11 @@ use App\Http\Controllers\API\Client\LocationController;
 use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
 
-
+// Payment API (public, no auth required)
+Route::post('/payment/create', [PaymentController::class, 'createPayment']);
+Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
+Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
+Route::post('/payment/momo/ipn', [PaymentController::class, 'handleMomoIpn']);
 Route::middleware([CorsMiddleware::class])->group(function () {
 
     // route admin yêu cầu xác thực
@@ -46,10 +50,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::post('/check-coupon', [CheckoutController::class, 'checkCoupon']);
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
 
-        // Payment API (public, no auth required)
-        Route::post('/payment/create', [PaymentController::class, 'createPayment']);
-        Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
-        Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
+
 
 
         // Route đăng xuất

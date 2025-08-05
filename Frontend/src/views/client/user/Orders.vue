@@ -7,7 +7,7 @@
         :class="['flex-shrink-0 px-3 sm:px-6 py-3 text-base font-medium border-b-2 transition-colors duration-200 flex items-center justify-center',
           activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
         <span>{{ tab.label }}</span>
-        <span v-if="tab.count !== undefined && tab.count > 0 && !['all', 'completed', 'cancelled'].includes(tab.value)"
+        <span v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled'].includes(tab.value)"
           class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count }}</span>
       </button>
     </div>
@@ -88,8 +88,12 @@
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Liên Hệ Người Bán
             </button>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
           </template>
-          <template v-else-if="order.status === 'completed'">
+          <template v-else-if="order.status === 'delivered'">
             <button
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Mua Lại
@@ -118,6 +122,10 @@
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Hủy Đơn Hàng
             </button>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
           </template>
           <template v-else-if="order.status === 'processing'">
             <button @click="cancelOrder(order.id)"
@@ -180,7 +188,7 @@ const orderTabs = ref([
   { label: 'Chờ xác nhận', value: 'pending', count: 0 },
   { label: 'Đang xử lý', value: 'processing', count: 0 },
   { label: 'Đang giao hàng', value: 'shipped', count: 0 },
-  { label: 'Đã giao hàng', value: 'completed', count: 0 },
+  { label: 'Đã giao hàng', value: 'delivered', count: 0 },
   { label: 'Đã hủy', value: 'cancelled', count: 0 },
 ]);
 
@@ -290,7 +298,7 @@ const getStatusText = (status) => {
     case 'pending': return 'Chờ xác nhận';
     case 'processing': return 'Đang xử lý';
     case 'shipped': return 'Đang giao hàng';
-    case 'completed': return 'Đã giao hàng';
+    case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
     default: return 'Không rõ';
   }
@@ -301,7 +309,7 @@ const getStatusClass = (status) => {
     case 'pending': return 'text-yellow-600'; // Chờ xác nhận
     case 'processing': return 'text-blue-600'; // Đang xử lý
     case 'shipped': return 'text-purple-600'; // Đang giao hàng
-    case 'completed': return 'text-green-600'; // Đã giao hàng
+    case 'delivered': return 'text-green-600'; // Đã giao hàng
     case 'cancelled': return 'text-gray-500'; // Đã hủy
     default: return 'text-gray-800';
   }

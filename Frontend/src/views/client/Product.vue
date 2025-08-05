@@ -41,8 +41,8 @@
             </div>
 
             <div class="text-4xl font-bold text-red-500 mb-2">{{ formatPrice(selectedVariantPrice) }}</div>
-            <p class="text-sm text-gray-500 mb-6">Giá cho Khách hàng thân thiết <i class="fas fa-chevron-down ml-1"></i>
-            </p>
+            <!-- <p class="text-sm text-gray-500 mb-6">Giá cho Khách hàng thân thiết <i class="fas fa-chevron-down ml-1"></i>
+            </p> -->
 
             <div v-if="groupedAttributes.length > 0" class="mb-8">
               <div v-for="attrGroup in groupedAttributes" :key="attrGroup.name" class="mb-6">
@@ -91,12 +91,12 @@
                   @click="quantity++">+</button>
               </div>
             </div>
-            <div
+            <!-- <div
               class="bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg flex items-center mb-6 mt-4">
               <i class="fas fa-gift mr-2"></i>
               <span>Giảm <span class="font-bold">100K</span> khi thanh toán qua Fundiin (<a href="#"
                   class="underline">xem thêm</a>)</span>
-            </div>
+            </div> -->
             <div class="flex gap-4 mt-6">
               <button
                 class="flex-1 py-3 px-6 border border-red-500 text-red-500 rounded-lg font-bold hover:bg-red-50 hover:text-red-600 transition-colors duration-200"

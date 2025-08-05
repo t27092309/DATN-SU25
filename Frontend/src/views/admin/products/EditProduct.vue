@@ -518,8 +518,8 @@ const fetchProduct = async () => {
                 stock: variant.stock !== null ? parseInt(variant.stock) : null,
                 status: variant.status || 'available',
                 attributes: variant.attributes ? variant.attributes.map(av => ({
-                    attribute_id: av.pivot.attribute_id,
-                    value_id: av.pivot.attribute_value_id
+                    attribute_id: av.attribute_id, // CHANGED FROM av.pivot.attribute_id
+                    value_id: av.attribute_value_id // CHANGED FROM av.pivot.attribute_value_id
                 })) : []
             })) : [],
             gallery_images: data.data.images ? data.data.images.map((path, index) => ({
