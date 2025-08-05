@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\Api\Admin\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
@@ -92,6 +93,12 @@ Route::middleware([CorsMiddleware::class])->group(function () {
                 Route::put('{order}/note', 'updateNote');
                 Route::get('{order}/payments', 'getPayments');
             });
+
+            //Route quản lý kho hàng bên admin
+            Route::get('inventory/overview', [AdminInventoryController::class, 'overview']);
+            Route::post('inventory/adjust-stock', [AdminInventoryController::class, 'adjustStock']);
+            Route::get('/inventory', [AdminInventoryController::class, 'index']);
+
 
             Route::apiResource('shipping-methods', AdminShippingMethodController::class);
 

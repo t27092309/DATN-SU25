@@ -35,4 +35,8 @@ class ProductVariant extends Model
             'attribute_value_id'               // Khóa ngoại của AttributeValue trên bảng pivot
         );
     }
+    public function inventoryLogs()
+    {
+        return $this->hasMany(InventoryLog::class);
+    }
 }
