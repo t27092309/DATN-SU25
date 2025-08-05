@@ -38,7 +38,7 @@ class Payment extends Model
         'amount',
         'transaction_id',
         'payer_id',
-        'payment_status', // Có thể thêm validation trong migration hoặc form request
+        'payment_status',
         'paid_at',
         'payment_details',
     ];

@@ -4,22 +4,26 @@
 
     <div v-if="isLoading" class="text-center py-8">
       <p class="text-gray-600">Đang tải chi tiết đơn hàng...</p>
-      </div>
+    </div>
 
-    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+      role="alert">
       <strong class="font-bold">Lỗi!</strong>
       <span class="block sm:inline"> {{ error }}</span>
       <div class="mt-4 text-center">
-        <router-link :to="{ name: 'Orders' }" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+        <router-link :to="{ name: 'Orders' }"
+          class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
           Quay lại danh sách đơn hàng
         </router-link>
       </div>
     </div>
 
-    <div v-else-if="!order" class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative text-center">
+    <div v-else-if="!order"
+      class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative text-center">
       <p>Không tìm thấy đơn hàng này.</p>
       <div class="mt-4 text-center">
-        <router-link :to="{ name: 'Orders' }" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+        <router-link :to="{ name: 'Orders' }"
+          class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
           Quay lại danh sách đơn hàng
         </router-link>
       </div>
@@ -30,36 +34,49 @@
         <div>
           <h2 class="text-2xl font-semibold text-gray-800 mb-4">Thông tin chung</h2>
           <p class="text-gray-700 mb-2"><span class="font-medium">Mã đơn hàng:</span> #{{ order.id }}</p>
-          <p class="text-gray-700 mb-2"><span class="font-medium">Ngày đặt:</span> {{ formatDate(order.created_at) }}</p>
+          <p class="text-gray-700 mb-2"><span class="font-medium">Ngày đặt:</span> {{ formatDate(order.created_at) }}
+          </p>
           <p class="text-gray-700 mb-2"><span class="font-medium">Trạng thái:</span>
             <span :class="getStatusClass(order.status)" class="px-3 py-1 rounded-full text-sm font-medium ml-2">
               {{ getStatusText(order.status) }}
             </span>
           </p>
-          <p class="text-gray-700 mb-2"><span class="font-medium">Tổng tiền:</span> <span class="font-bold text-green-600 text-xl">{{ formatCurrency(order.total_price) }}</span></p>
-          <p class="text-gray-700 mb-2"><span class="font-medium">Phí vận chuyển:</span> {{ formatCurrency(order.shipping_fee) }}</p>
-          <p class="text-gray-700 mb-2"><span class="font-medium">Phương thức thanh toán:</span> {{ getPaymentMethodText(order.payment_method) }}</p>
-          <p v-if="order.notes" class="text-gray-700 mb-2"><span class="font-medium">Ghi chú:</span> {{ order.notes }}</p>
+          <p class="text-gray-700 mb-2"><span class="font-medium">Tổng tiền:</span> <span
+              class="font-bold text-green-600 text-xl">{{ formatCurrency(order.total_price) }}</span></p>
+          <p class="text-gray-700 mb-2"><span class="font-medium">Phí vận chuyển:</span> {{
+            formatCurrency(order.shipping_fee) }}</p>
+          <p class="text-gray-700 mb-2" v-if="order.payment_info">
+            <span class="font-medium">Phương thức thanh toán:</span> {{
+              getPaymentMethodText(order.payment_info.payment_method) }}
+          </p>
+          <p v-if="order.notes" class="text-gray-700 mb-2"><span class="font-medium">Ghi chú:</span> {{ order.notes }}
+          </p>
         </div>
 
         <div>
           <h2 class="text-2xl font-semibold text-gray-800 mb-4">Địa chỉ giao hàng</h2>
           <div v-if="order.order_address">
-            <p class="text-gray-700 mb-1"><span class="font-medium">Người nhận:</span> {{ order.order_address.recipient_name }}</p>
-            <p class="text-gray-700 mb-1"><span class="font-medium">Số điện thoại:</span> {{ order.order_address.phone_number }}</p>
-            <p class="text-gray-700 mb-1"><span class="font-medium">Địa chỉ:</span> {{ order.order_address.full_address }}</p>
+            <p class="text-gray-700 mb-1"><span class="font-medium">Người nhận:</span> {{
+              order.order_address.recipient_name }}</p>
+            <p class="text-gray-700 mb-1"><span class="font-medium">Số điện thoại:</span> {{
+              order.order_address.phone_number }}</p>
+            <p class="text-gray-700 mb-1"><span class="font-medium">Địa chỉ:</span> {{ order.order_address.full_address
+              }}</p>
           </div>
           <p v-else class="text-gray-600 italic">Không có thông tin địa chỉ.</p>
 
           <h2 class="text-2xl font-semibold text-gray-800 mb-4 mt-6">Thông tin thanh toán</h2>
           <div v-if="order.payment_info">
             <p class="text-gray-700 mb-1"><span class="font-medium">Trạng thái thanh toán:</span>
-              <span :class="getPaymentStatusClass(order.payment_info.payment_status)" class="px-3 py-1 rounded-full text-sm font-medium ml-2">
+              <span :class="getPaymentStatusClass(order.payment_info.payment_status)"
+                class="px-3 py-1 rounded-full text-sm font-medium ml-2">
                 {{ getPaymentStatusText(order.payment_info.payment_status) }}
               </span>
             </p>
-            <p class="text-gray-700 mb-1"><span class="font-medium">Số tiền đã thanh toán:</span> {{ formatCurrency(order.payment_info.amount) }}</p>
-            <p v-if="order.payment_info.paid_at" class="text-gray-700 mb-1"><span class="font-medium">Thời gian thanh toán:</span> {{ formatDate(order.payment_info.paid_at) }}</p>
+            <p class="text-gray-700 mb-1"><span class="font-medium">Số tiền thanh toán:</span> {{
+              formatCurrency(order.payment_info.amount) }}</p>
+            <p v-if="order.payment_info.paid_at" class="text-gray-700 mb-1"><span class="font-medium">Thời gian thanh
+                toán:</span> {{ formatDate(order.payment_info.paid_at) }}</p>
           </div>
           <p v-else class="text-gray-600 italic">Chưa có thông tin thanh toán.</p>
         </div>
@@ -97,7 +114,8 @@
       </div>
 
       <div class="mt-8 text-center">
-        <router-link :to="{ name: 'Orders' }" class="inline-block bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-300">
+        <router-link :to="{ name: 'Orders' }"
+          class="inline-block bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors duration-300">
           Quay lại danh sách đơn hàng
         </router-link>
       </div>
@@ -179,7 +197,7 @@ const getStatusClass = (status) => {
     case 'pending': return 'bg-yellow-200 text-yellow-800';
     case 'processing': return 'bg-blue-200 text-blue-800';
     case 'shipped': return 'bg-purple-200 text-purple-800';
-    case 'completed': return 'bg-green-200 text-green-800';
+    case 'delivered': return 'bg-green-200 text-green-800';
     case 'cancelled': return 'bg-red-200 text-red-800';
     default: return 'bg-gray-200 text-gray-800';
   }
@@ -190,7 +208,7 @@ const getStatusText = (status) => {
     case 'pending': return 'Chờ xác nhận';
     case 'processing': return 'Đang xử lý';
     case 'shipped': return 'Đang giao hàng';
-    case 'completed': return 'Đã giao hàng';
+    case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
     default: return 'Không rõ';
   }
@@ -198,7 +216,7 @@ const getStatusText = (status) => {
 
 const getPaymentMethodText = (method) => {
   switch (method) {
-    case 'cod': return 'Thanh toán khi nhận hàng (COD)';
+    case 'cash': return 'Thanh toán khi nhận hàng (COD)';
     case 'vnpay': return 'VNPay';
     case 'momo': return 'Momo';
     default: return 'Không rõ';
@@ -223,7 +241,3 @@ const getPaymentStatusText = (status) => {
   }
 };
 </script>
-
-<style scoped>
-@import '@/assets/tailwind.css';
-</style>
