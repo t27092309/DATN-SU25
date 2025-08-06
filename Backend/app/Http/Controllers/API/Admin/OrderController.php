@@ -18,6 +18,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        // Tạo query builder để lấy danh sách đơn hàng
         $query = Order::with(['user', 'orderItems.productVariant', 'orderAddress', 'payments'])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->search, function ($q) use ($request) {
@@ -26,15 +27,50 @@ class OrderController extends Controller
                         $sub->where('name', 'like', '%' . $request->search . '%');
                     })
                     ->orWhereHas('user', function ($sub) use ($request) {
-                        $sub->where('phone_number', 'like', '%' . $request->search . '%'); // Tìm kiếm theo SĐT của User
+                        $sub->where('phone_number', 'like', '%' . $request->search . '%');
                     })
                     ->orWhereHas('orderAddress', function ($sub) use ($request) {
-                        $sub->where('phone_number', 'like', '%' . $request->search . '%'); // Tìm kiếm theo SĐT trong OrderAddress
+                        $sub->where('phone_number', 'like', '%' . $request->search . '%');
                     });
             })
-            ->latest();
+            ->orderBy('updated_at', 'desc');
 
-        return OrderResource::collection($query->paginate(15));
+        // Lấy danh sách đơn hàng đã được phân trang
+        $orders = $query->paginate(15);
+
+        // Tạo một query mới để đếm số lượng đơn hàng theo từng trạng thái
+        // Việc này cần thiết để đảm bảo việc đếm không bị ảnh hưởng bởi pagination.
+        // Bạn có thể cache kết quả này để tối ưu hiệu suất
+        $counts = [
+            'all' => Order::count(),
+            'pending' => Order::where('status', 'pending')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'shipped' => Order::where('status', 'shipped')->count(),
+            'delivered' => Order::where('status', 'delivered')->count(),
+            'cancelled' => Order::where('status', 'cancelled')->count(),
+        ];
+
+        // Trả về dữ liệu JSON bao gồm cả danh sách đơn hàng và số lượng đếm
+        return response()->json([
+            'data' => OrderResource::collection($orders)->resolve(),
+            'counts' => $counts,
+            'meta' => [
+                'current_page' => $orders->currentPage(),
+                'from' => $orders->firstItem(),
+                'last_page' => $orders->lastPage(),
+                'links' => $orders->linkCollection()->toArray(),
+                'path' => $orders->path(),
+                'per_page' => $orders->perPage(),
+                'to' => $orders->lastItem(),
+                'total' => $orders->total(),
+            ],
+            'links' => [
+                'first' => $orders->url(1),
+                'last' => $orders->url($orders->lastPage()),
+                'prev' => $orders->previousPageUrl(),
+                'next' => $orders->nextPageUrl(),
+            ],
+        ]);
     }
 
 
@@ -100,6 +136,4 @@ class OrderController extends Controller
         $order->load('payments');
         return PaymentResource::collection($order->payments);
     }
-
-  
 }

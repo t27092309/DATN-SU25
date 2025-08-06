@@ -2,7 +2,6 @@
   <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
       <div class="mb-6">
-        <h3 class="text-3xl font-bold mb-3">Quản lý mã giảm giá</h3>
         <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
             <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
@@ -13,7 +12,7 @@
             <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#" class="text-blue-600">Mã Giảm Giá</a>
+            <span class="font-semibold">{{ $route.meta.title }}</span>
           </li>
         </ul>
       </div>
@@ -39,16 +38,21 @@
                       <thead class="bg-gray-50">
                         <tr>
                           <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã</th>
-                          <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
-                          <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã
                           </th>
                           <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hết hạn</th>
-                           <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại
+                          </th>
+                          <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá
+                            trị
+                          </th>
+                          <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hết
+                            hạn</th>
+                          <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng
+                            thái</th>
                           <th scope="col"
                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             style="width: 15%">Hành động</th>
@@ -61,7 +65,8 @@
                 </div>
 
                 <div class="w-full px-4 mx-auto">
-                  <form @submit.prevent="isEditing ? updateCoupon() : addCoupon()" class="mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
+                  <form @submit.prevent="isEditing ? updateCoupon() : addCoupon()"
+                    class="mb-8 p-6 bg-gray-50 rounded-lg shadow-inner">
                     <div class="mb-4">
                       <h5 class="text-xl font-semibold text-gray-800 mb-4">
                         {{ isEditing ? 'Chỉnh sửa mã giảm giá' : 'Thêm mới mã giảm giá' }}
@@ -78,7 +83,8 @@
                           <small class="text-gray-500 text-xs mt-1">Ví dụ: SALE2025</small>
                         </div>
                         <div class="form-group-item">
-                          <label for="discount_type" class="block text-gray-700 text-sm font-bold mb-2">Loại giảm giá</label>
+                          <label for="discount_type" class="block text-gray-700 text-sm font-bold mb-2">Loại giảm
+                            giá</label>
                           <select v-model="coupon.discount_type"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="discount_type" required>
@@ -86,58 +92,85 @@
                             <option value="percent">Phần trăm (%)</option>
                             <option value="fixed">Cố định (VNĐ)</option>
                           </select>
-                           <small class="text-gray-500 text-xs mt-1">Chọn loại giảm giá: Phần trăm hoặc cố định.</small>
+                          <small class="text-gray-500 text-xs mt-1">Chọn loại giảm giá: Phần trăm hoặc cố định.</small>
                         </div>
                         <div class="form-group-item">
-                          <label for="discount_value" class="block text-gray-700 text-sm font-bold mb-2">Giá trị giảm</label>
+                          <label for="discount_value" class="block text-gray-700 text-sm font-bold mb-2">Giá trị
+                            giảm</label>
                           <input type="number" v-model="coupon.discount_value"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             id="discount_value" placeholder="Nhập giá trị giảm" required />
-                          <small class="text-gray-500 text-xs mt-1">Ví dụ: 20 (cho 20%) hoặc 100000 (cho 100,000 VNĐ)</small>
+                          <small class="text-gray-500 text-xs mt-1">Ví dụ: 20 (cho 20%) hoặc 100000 (cho 100,000
+                            VNĐ)</small>
                         </div>
-                         <div class="form-group-item">
-                          <label for="expires_at" class="block text-gray-700 text-sm font-bold mb-2">Ngày hết hạn</label>
-                          <input type="datetime-local" v-model="coupon.expires_at" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="expires_at" />
+                        <div class="form-group-item">
+                          <label for="expires_at" class="block text-gray-700 text-sm font-bold mb-2">Ngày hết
+                            hạn</label>
+                          <input type="datetime-local" v-model="coupon.expires_at"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="expires_at" />
                           <small class="text-gray-500 text-xs mt-1">Để trống nếu không có ngày hết hạn</small>
                         </div>
                       </div>
 
                       <div>
                         <div class="form-group-item">
-                          <label for="usage_limit" class="block text-gray-700 text-sm font-bold mb-2">Giới hạn sử dụng (Tổng)</label>
-                          <input type="number" v-model="coupon.usage_limit" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="usage_limit" placeholder="Số lần sử dụng tối đa" />
+                          <label for="usage_limit" class="block text-gray-700 text-sm font-bold mb-2">Giới hạn sử dụng
+                            (Tổng)</label>
+                          <input type="number" v-model="coupon.usage_limit"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="usage_limit" placeholder="Số lần sử dụng tối đa" />
                           <small class="text-gray-500 text-xs mt-1">Để trống nếu không giới hạn</small>
                         </div>
                         <div class="form-group-item">
-                          <label for="per_user_limit" class="block text-gray-700 text-sm font-bold mb-2">Giới hạn mỗi người dùng</label>
-                          <input type="number" v-model="coupon.per_user_limit" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="per_user_limit" placeholder="Số lần sử dụng mỗi người" required />
-                           <small class="text-gray-500 text-xs mt-1">Số lần mã có thể được dùng bởi một người (mặc định là 1)</small>
-                        </div>
-                         <div class="form-group-item">
-                          <label for="min_order_amount" class="block text-gray-700 text-sm font-bold mb-2">Đơn hàng tối thiểu (VNĐ)</label>
-                          <input type="number" step="0.01" v-model="coupon.min_order_amount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="min_order_amount" placeholder="Giá trị đơn hàng tối thiểu" />
-                          <small class="text-gray-500 text-xs mt-1">Để trống nếu không yêu cầu giá trị đơn hàng tối thiểu</small>
+                          <label for="per_user_limit" class="block text-gray-700 text-sm font-bold mb-2">Giới hạn mỗi
+                            người dùng</label>
+                          <input type="number" v-model="coupon.per_user_limit"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="per_user_limit" placeholder="Số lần sử dụng mỗi người" required />
+                          <small class="text-gray-500 text-xs mt-1">Số lần mã có thể được dùng bởi một người (mặc định
+                            là 1)</small>
                         </div>
                         <div class="form-group-item">
-                          <label for="max_discount" class="block text-gray-700 text-sm font-bold mb-2">Giảm tối đa (VNĐ)</label>
-                          <input type="number" step="0.01" v-model="coupon.max_discount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="max_discount" placeholder="Giá trị giảm tối đa" />
-                          <small class="text-gray-500 text-xs mt-1">Chỉ áp dụng cho giảm giá phần trăm. Để trống nếu không giới hạn.</small>
+                          <label for="min_order_amount" class="block text-gray-700 text-sm font-bold mb-2">Đơn hàng tối
+                            thiểu (VNĐ)</label>
+                          <input type="number" step="0.01" v-model="coupon.min_order_amount"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="min_order_amount" placeholder="Giá trị đơn hàng tối thiểu" />
+                          <small class="text-gray-500 text-xs mt-1">Để trống nếu không yêu cầu giá trị đơn hàng tối
+                            thiểu</small>
+                        </div>
+                        <div class="form-group-item">
+                          <label for="max_discount" class="block text-gray-700 text-sm font-bold mb-2">Giảm tối đa
+                            (VNĐ)</label>
+                          <input type="number" step="0.01" v-model="coupon.max_discount"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="max_discount" placeholder="Giá trị giảm tối đa" />
+                          <small class="text-gray-500 text-xs mt-1">Chỉ áp dụng cho giảm giá phần trăm. Để trống nếu
+                            không giới hạn.</small>
                         </div>
                         <div class="form-group-item" v-if="isEditing">
-                          <label for="used_count" class="block text-gray-700 text-sm font-bold mb-2">Số lần đã dùng</label>
-                          <input type="number" v-model="coupon.used_count" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed leading-tight focus:outline-none focus:shadow-outline" id="used_count" readonly />
-                          <small class="text-gray-500 text-xs mt-1">Số lần mã đã được sử dụng (không thể sửa thủ công)</small>
+                          <label for="used_count" class="block text-gray-700 text-sm font-bold mb-2">Số lần đã
+                            dùng</label>
+                          <input type="number" v-model="coupon.used_count"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 cursor-not-allowed leading-tight focus:outline-none focus:shadow-outline"
+                            id="used_count" readonly />
+                          <small class="text-gray-500 text-xs mt-1">Số lần mã đã được sử dụng (không thể sửa thủ
+                            công)</small>
                         </div>
                         <div class="form-group-item form-group-checkbox">
                           <label for="is_active" class="block text-gray-700 text-sm font-bold mb-2">Trạng thái</label>
                           <div class="flex items-center">
-                            <input type="checkbox" v-model="coupon.is_active" class="form-checkbox h-5 w-5 text-blue-600" id="is_active" />
-                            <span class="ml-2 text-gray-700">{{ coupon.is_active ? 'Hoạt động' : 'Không hoạt động' }}</span>
+                            <input type="checkbox" v-model="coupon.is_active"
+                              class="form-checkbox h-5 w-5 text-blue-600" id="is_active" />
+                            <span class="ml-2 text-gray-700">{{ coupon.is_active ? 'Hoạt động' : 'Không hoạt động'
+                              }}</span>
                           </div>
                           <small class="text-gray-500 text-xs mt-1">Chuyển đổi trạng thái hoạt động của mã.</small>
                         </div>
                       </div>
-                    </div> <div class="flex items-center space-x-2 mt-4">
+                    </div>
+                    <div class="flex items-center space-x-2 mt-4">
                       <button type="submit"
                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         {{ isEditing ? 'Cập nhật mã giảm giá' : 'Thêm mã giảm giá' }}
@@ -157,7 +190,9 @@
       </div>
     </div>
 
-    <div v-if="showDetailModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4" @click.self="closeDetailModal">
+    <div v-if="showDetailModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4"
+      @click.self="closeDetailModal">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto p-6">
         <div class="flex justify-between items-center border-b pb-3 mb-4">
           <h2 class="text-2xl font-semibold text-gray-800">Chi tiết mã giảm giá</h2>
@@ -167,23 +202,32 @@
         </div>
         <div v-if="viewingCoupon" class="space-y-3 text-gray-700">
           <p><strong>Mã:</strong> {{ viewingCoupon.code }}</p>
-          <p><strong>Loại giảm giá:</strong> {{ viewingCoupon.discount_type === 'percent' ? 'Phần trăm' : 'Cố định' }}</p>
-          <p><strong>Giá trị giảm:</strong> {{ viewingCoupon.discount_value }} {{ viewingCoupon.discount_type === 'percent' ? '%' : 'VNĐ' }}</p>
-          <p><strong>Ngày hết hạn:</strong> {{ viewingCoupon.expires_at ? new Date(viewingCoupon.expires_at).toLocaleString('vi-VN') : 'Không có' }}</p>
-          <p><strong>Giới hạn sử dụng (Tổng):</strong> {{ viewingCoupon.usage_limit !== null ? viewingCoupon.usage_limit : 'Không giới hạn' }}</p>
+          <p><strong>Loại giảm giá:</strong> {{ viewingCoupon.discount_type === 'percent' ? 'Phần trăm' : 'Cố định' }}
+          </p>
+          <p><strong>Giá trị giảm:</strong> {{ viewingCoupon.discount_value }} {{ viewingCoupon.discount_type ===
+            'percent' ? '%' : 'VNĐ' }}</p>
+          <p><strong>Ngày hết hạn:</strong> {{ viewingCoupon.expires_at ? new
+            Date(viewingCoupon.expires_at).toLocaleString('vi-VN') : 'Không có' }}</p>
+          <p><strong>Giới hạn sử dụng (Tổng):</strong> {{ viewingCoupon.usage_limit !== null ? viewingCoupon.usage_limit
+            : 'Không giới hạn' }}</p>
           <p><strong>Giới hạn mỗi người dùng:</strong> {{ viewingCoupon.per_user_limit }}</p>
           <p><strong>Đã dùng:</strong> {{ viewingCoupon.used_count }}</p>
-          <p><strong>Đơn hàng tối thiểu:</strong> {{ viewingCoupon.min_order_amount !== null ? formatCurrency(viewingCoupon.min_order_amount) : 'Không yêu cầu' }}</p>
-          <p><strong>Giảm tối đa:</strong> {{ viewingCoupon.max_discount !== null ? formatCurrency(viewingCoupon.max_discount) : 'Không giới hạn' }}</p>
+          <p><strong>Đơn hàng tối thiểu:</strong> {{ viewingCoupon.min_order_amount !== null ?
+            formatCurrency(viewingCoupon.min_order_amount) : 'Không yêu cầu' }}</p>
+          <p><strong>Giảm tối đa:</strong> {{ viewingCoupon.max_discount !== null ?
+            formatCurrency(viewingCoupon.max_discount) : 'Không giới hạn' }}</p>
           <p>
             <strong>Trạng thái:</strong>
-            <span :class="{'bg-green-100 text-green-800': viewingCoupon.is_active, 'bg-red-100 text-red-800': !viewingCoupon.is_active}" class="px-2 py-1 rounded-full text-sm font-semibold">
+            <span
+              :class="{ 'bg-green-100 text-green-800': viewingCoupon.is_active, 'bg-red-100 text-red-800': !viewingCoupon.is_active }"
+              class="px-2 py-1 rounded-full text-sm font-semibold">
               {{ viewingCoupon.is_active ? 'Hoạt động' : 'Không hoạt động' }}
             </span>
           </p>
         </div>
         <div class="mt-6 flex justify-end">
-          <button @click="closeDetailModal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          <button @click="closeDetailModal"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             Đóng
           </button>
         </div>
@@ -196,7 +240,7 @@
 import { onMounted, nextTick, ref, watch } from "vue";
 import axios from "axios";
 import slugify from "slugify";
-import Swal from "sweetalert2"; // Vẫn giữ Swal cho hộp thoại xác nhận phức tạp
+import Swal from "sweetalert2";
 import { useToast } from "vue-toastification"; // Import useToast
 
 const toast = useToast(); // Khởi tạo instance của toast
@@ -587,22 +631,26 @@ onMounted(async () => {
     especially if they contain different types of inputs (e.g., text, select, datetime-local)
     or varied small text. */
 .form-group-item {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Align content to the top within each item */
-    margin-bottom: 1rem; /* Ensure consistent spacing between form groups */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Align content to the top within each item */
+  margin-bottom: 1rem;
+  /* Ensure consistent spacing between form groups */
 }
 
 /* For the checkbox group, use flexbox to align the checkbox and text */
 .form-group-checkbox {
-    display: flex;
-    flex-direction: column; /* Keep label and the rest stacked */
-    justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
+  /* Keep label and the rest stacked */
+  justify-content: flex-start;
 }
 
-.form-group-checkbox > div {
-    display: flex;
-    align-items: center; /* Vertically align checkbox and span */
+.form-group-checkbox>div {
+  display: flex;
+  align-items: center;
+  /* Vertically align checkbox and span */
 }
 
 /* Make sure all input fields fill the available width */
@@ -610,56 +658,74 @@ onMounted(async () => {
 .form-group-item input[type="number"],
 .form-group-item input[type="datetime-local"],
 .form-group-item select {
-    width: 100%; /* Ensure they take full width of their container */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  width: 100%;
+  /* Ensure they take full width of their container */
+  box-sizing: border-box;
+  /* Include padding and border in the element's total width and height */
 }
 
 /* Specific styling for the checkbox itself if needed, though Tailwind's form-checkbox is usually good */
 .form-checkbox {
-    /* Tailwind's default h-5 w-5 usually makes it square */
-    -webkit-appearance: none; /* Remove default browser styling for consistency */
-    -moz-appearance: none;
-    appearance: none;
-    display: inline-block;
-    vertical-align: middle;
-    background-origin: border-box;
-    user-select: none;
-    flex-shrink: 0; /* Prevent it from shrinking */
-    height: 1.25rem; /* h-5 */
-    width: 1.25rem; /* w-5 */
-    border-width: 1px;
-    border-color: #d1d5db; /* gray-300 */
-    border-radius: 0.25rem; /* rounded */
-    cursor: pointer;
-    position: relative; /* Needed for custom checkmark positioning */
+  /* Tailwind's default h-5 w-5 usually makes it square */
+  -webkit-appearance: none;
+  /* Remove default browser styling for consistency */
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  vertical-align: middle;
+  background-origin: border-box;
+  user-select: none;
+  flex-shrink: 0;
+  /* Prevent it from shrinking */
+  height: 1.25rem;
+  /* h-5 */
+  width: 1.25rem;
+  /* w-5 */
+  border-width: 1px;
+  border-color: #d1d5db;
+  /* gray-300 */
+  border-radius: 0.25rem;
+  /* rounded */
+  cursor: pointer;
+  position: relative;
+  /* Needed for custom checkmark positioning */
 }
 
 .form-checkbox:checked {
-    background-color: #3b82f6; /* blue-600 */
-    border-color: #3b82f6; /* blue-600 */
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
+  background-color: #3b82f6;
+  /* blue-600 */
+  border-color: #3b82f6;
+  /* blue-600 */
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* DataTables specific adjustments */
 .dataTables_wrapper .dataTables_length {
-    margin-bottom: 0.5rem; /* Add some space below the length dropdown */
+  margin-bottom: 0.5rem;
+  /* Add some space below the length dropdown */
 }
 
 /* Prevent DataTables elements from overlapping */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-    display: inline-block; /* Ensure they are on the same line if space allows */
-    vertical-align: middle; /* Align them vertically */
+  display: inline-block;
+  /* Ensure they are on the same line if space allows */
+  vertical-align: middle;
+  /* Align them vertically */
 }
 
 /* Add margin to the select element within DataTables length control */
 .dataTables_wrapper .dataTables_length select {
-    margin-right: 0.5em; /* Add space between the select and the text "mục" */
-    display: inline-block; /* Ensure it respects margin */
-    width: auto; /* Allow width to be determined by content or browser default */
-    min-width: unset; /* Remove any restrictive min-width */
+  margin-right: 0.5em;
+  /* Add space between the select and the text "mục" */
+  display: inline-block;
+  /* Ensure it respects margin */
+  width: auto;
+  /* Allow width to be determined by content or browser default */
+  min-width: unset;
+  /* Remove any restrictive min-width */
 }
 </style>

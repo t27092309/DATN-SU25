@@ -1,29 +1,27 @@
 <template>
     <div class="container mx-auto px-4 py-8">
-        <div class="space-y-6">
+        <div class="page-inner">
             <div class="mb-6">
-                <h3 class="text-3xl font-bold text-gray-900 mb-3">{{ route.meta.title }}</h3>
-                <ul class="flex items-center space-x-2 text-sm text-gray-600">
+                <ul class="flex items-center space-x-2 text-gray-600 text-sm">
                     <li>
-                        <router-link :to="{ name: 'AdminDashboard' }" class="text-blue-600 hover:text-blue-800">
-                            <i class="fa fa-home"></i>
+                        <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-800">
+                            <i class="fas fa-home"></i>
                         </router-link>
                     </li>
-                    <li>
-                        <i class="fa fa-chevron-right text-xs"></i>
+                    <li class="separator">
+                        <i class="fas fa-chevron-right text-xs"></i>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'products' }" class="text-blue-600 hover:text-blue-800">Danh sách sản phẩm</router-link>
+                        <router-link :to="{ name: 'products' }" class="hover:text-blue-800">Danh sách sản phẩm</router-link>
                     </li>
                     <li>
-                        <i class="fa fa-chevron-right text-xs"></i>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'addProduct' }" class="text-gray-800">{{ route.meta.title }}</router-link>
+                        <span class="font-semibold">{{ route.meta.title }}</span>
                     </li>
                 </ul>
             </div>
-
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <div class="p-6 border-b border-gray-200 flex justify-between items-center">
                     <h4 class="text-lg font-semibold text-gray-800">{{ route.meta.title }}</h4>

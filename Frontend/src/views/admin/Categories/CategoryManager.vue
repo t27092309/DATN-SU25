@@ -1,16 +1,19 @@
 <template>
-  <div class="container mx-auto p-4 md:p-8">
+  <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-bold text-3xl mb-3">Danh mục</h3>
-        <ul class="flex items-center space-x-2 text-gray-600 mb-3">
+      <div class="mb-6">
+        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <a href="#" class="hover:text-blue-500"><i class="icon-home"></i></a>
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+              <i class="fas fa-home"></i>
+            </router-link>
           </li>
           <li class="separator">
-            <i class="icon-arrow-right"></i>
+            <i class="fas fa-chevron-right text-xs"></i>
           </li>
-          <li>Quản lý danh mục</li>
+          <li class="nav-item">
+            <span class="font-semibold">{{ $route.meta.title }}</span>
+          </li>
         </ul>
       </div>
       <div class="flex flex-wrap -mx-4">
@@ -26,18 +29,14 @@
                 </div>
                 <div class="mb-4">
                   <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Tên danh mục</label>
-                  <input
-                    type="text"
-                    v-model="category.name"
+                  <input type="text" v-model="category.name"
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    id="name"
-                    placeholder="Nhập tên danh mục"
-                    required
-                  />
+                    id="name" placeholder="Nhập tên danh mục" required />
                   <small class="text-gray-500 text-sm mt-1 block">Ví dụ: Nước hoa nam</small>
                 </div>
                 <div class="flex items-center justify-between">
-                  <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                  <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Thêm danh mục
                   </button>
                 </div>
@@ -54,7 +53,8 @@
                 <thead>
                   <tr>
                     <th class="py-3 px-4 border-b text-left text-gray-600 font-bold uppercase text-sm">Tên danh mục</th>
-                    <th style="width: 10%" class="py-3 px-4 border-b text-left text-gray-600 font-bold uppercase text-sm">Hành động</th>
+                    <th style="width: 10%"
+                      class="py-3 px-4 border-b text-left text-gray-600 font-bold uppercase text-sm">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -62,20 +62,14 @@
                     <td class="py-3 px-4">{{ category.name || '-' }}</td>
                     <td class="py-3 px-4">
                       <div class="flex space-x-2">
-                        <button
-                          type="button"
-                          title="Chỉnh sửa danh mục"
+                        <button type="button" title="Chỉnh sửa danh mục"
                           class="text-blue-500 hover:text-blue-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          @click="editCategory(category.id)"
-                        >
+                          @click="editCategory(category.id)">
                           <i class="fa fa-edit"></i>
                         </button>
-                        <button
-                          type="button"
-                          title="Xóa"
+                        <button type="button" title="Xóa"
                           class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          @click="openDeleteModal(category.id)"
-                        >
+                          @click="openDeleteModal(category.id)">
                           <i class="fa fa-times"></i>
                         </button>
                       </div>
@@ -90,7 +84,8 @@
       </div>
     </div>
 
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+    <div v-if="showDeleteModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
       <div class="relative p-6 bg-white w-96 max-w-sm mx-auto rounded-lg shadow-xl">
         <div class="flex justify-between items-start pb-3">
           <h5 class="text-xl font-bold">Xác nhận xóa</h5>
@@ -105,8 +100,10 @@
           <p>Bạn có chắc muốn xóa danh mục này?</p>
         </div>
         <div class="flex justify-end space-x-4">
-          <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded" @click="showDeleteModal = false">Hủy</button>
-          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" @click="confirmDelete">Xóa</button>
+          <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+            @click="showDeleteModal = false">Hủy</button>
+          <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            @click="confirmDelete">Xóa</button>
         </div>
       </div>
     </div>
