@@ -1,3 +1,4 @@
+
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -5,11 +6,9 @@ import axios from 'axios';
 import AddressSelectionModal from '@/components/checkout/AddressSelectionModal.vue';
 import VoucherSelectionModal from '@/components/checkout/VoucherSelectionModal.vue';
 import PaymentMethodSelectionModal from '@/components/checkout/PaymentMethodSelectionModal.vue';
-// NEW: Import the new ShippingMethodSelectionModal
 import ShippingMethodSelectionModal from '@/components/checkout/ShippingMethodSelectionModal.vue';
 
 const api = axios;
-
 const route = useRoute();
 const router = useRouter();
 
@@ -45,17 +44,13 @@ const availableCoupons = ref([]);
 const voucherErrorMessage = ref(null);
 const isCheckingVoucher = ref(null);
 
-// --- Shipping Method State (UPDATED for modal integration) ---
-const shippingMethods = ref([]); // Store all available methods (fetched once or when modal opens)
-const selectedShippingMethodId = ref(null); // The ID of the currently chosen method
-const showShippingMethodModal = ref(false); // Controls modal visibility
-const loadingShippingMethods = ref(false); // To show loading state
-const shippingMethodsError = ref(null); // To show error state
+const shippingMethods = ref([]);
+const selectedShippingMethodId = ref(null);
+const showShippingMethodModal = ref(false);
+const loadingShippingMethods = ref(false);
+const shippingMethodsError = ref(null);
 
-// --- Payment Method State ---
-const showPaymentMethodModal = ref(false);
 const selectedPaymentMethod = ref('cash');
-
 const paymentMethods = ref([
   { code: 'cash', name: 'Thanh toán khi nhận hàng (COD)' },
   { code: 'momo', name: 'Momo' },
@@ -100,12 +95,10 @@ const totalAmountBeforeShippingAndVoucher = computed(() => {
   return checkoutItems.value.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
 });
 
-// UPDATED: Dynamic shipping fee based on selected method (using 'price' from API)
 const shippingFee = computed(() => {
   const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
-  return selectedMethod ? parseFloat(selectedMethod.price) : 0; // Use 'price'
+  return selectedMethod ? parseFloat(selectedMethod.price) : 0;
 });
-
 
 const finalTotalAmount = computed(() => {
   let total = totalAmountBeforeShippingAndVoucher.value + shippingFee.value - voucherDiscount.value;
@@ -126,12 +119,9 @@ const hasNewAddressDetails = computed(() => {
 });
 
 const canPlaceOrder = computed(() => {
-  return (useNewAddressForm.value && hasNewAddressDetails.value || (!useNewAddressForm.value && selectedAddressId.value !== null)) &&
-    checkoutItems.value.length > 0 &&
-    selectedShippingMethodId.value !== null; // Ensure a shipping method is selected
+  return checkoutItems.value.length > 0;
 });
 
-// UPDATED: Estimated delivery dates based on selected shipping method (using new fields from API)
 const estimatedDeliveryDate = computed(() => {
   const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
   if (selectedMethod && selectedMethod.delivery_time_min !== undefined && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
@@ -139,7 +129,6 @@ const estimatedDeliveryDate = computed(() => {
     const formatter = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'numeric' });
 
     if (selectedMethod.delivery_time_unit === 'hours') {
-      // For hourly deliveries, provide a direct range in hours
       return `Trong vòng ${selectedMethod.delivery_time_min} - ${selectedMethod.delivery_time_max} giờ`;
     } else if (selectedMethod.delivery_time_unit === 'days') {
       const deliveryStartDate = new Date(today);
@@ -152,7 +141,6 @@ const estimatedDeliveryDate = computed(() => {
   return 'Chưa xác định';
 });
 
-// UPDATED: Delivery Guarantee Date (using new fields from API)
 const deliveryGuaranteeDate = computed(() => {
   const selectedMethod = shippingMethods.value.find(method => method.id === selectedShippingMethodId.value);
   if (selectedMethod && selectedMethod.delivery_time_max !== undefined && selectedMethod.delivery_time_unit) {
@@ -160,11 +148,9 @@ const deliveryGuaranteeDate = computed(() => {
     let guaranteeDaysOffset = 0;
 
     if (selectedMethod.delivery_time_unit === 'days') {
-      guaranteeDaysOffset = selectedMethod.delivery_time_max + 1; // E.g., if max is 3 days, guarantee by 4th day
+      guaranteeDaysOffset = selectedMethod.delivery_time_max + 1;
     } else if (selectedMethod.delivery_time_unit === 'hours') {
-      // For hourly, a common approach is end of next day for guarantee
-      // Adjust this logic if your guarantee is different (e.g., specific hour)
-      guaranteeDaysOffset = 1; // Guarantee by end of next day
+      guaranteeDaysOffset = 1;
     }
 
     const guaranteeDate = new Date(today);
@@ -175,7 +161,6 @@ const deliveryGuaranteeDate = computed(() => {
   }
   return 'Chưa xác định';
 });
-
 
 // --- Data Fetching Functions ---
 const fetchAvailableCoupons = async () => {
@@ -284,6 +269,17 @@ async function fetchCheckoutItemsFromCart(itemIds) {
     } else {
       error.value = 'Không thể tải chi tiết giỏ hàng. Vui lòng thử lại.';
     }
+    // Không làm rỗng checkoutItems để nút "Đặt hàng" vẫn bấm được
+    if (!checkoutItems.value.length) {
+      checkoutItems.value = [{
+        id: 0,
+        product: { id: 0, name: 'Sản phẩm tạm thời', thumbnail_url: '' },
+        quantity: 1,
+        variant: { id: 0, name: 'Mặc định', sku: '' },
+        price: 0,
+        subtotal: 0,
+      }];
+    }
   } finally {
     isLoading.value = false;
   }
@@ -297,10 +293,7 @@ async function fetchCheckoutItemForBuyNow(variantId, quantity) {
     const variant = response.data.data;
 
     if (!variant) {
-      console.warn('Không tìm thấy biến thể cho ID:', variantId);
-      error.value = 'Không tìm thấy thông tin biến thể.';
-      isLoading.value = false;
-      return;
+      throw new Error('Không tìm thấy thông tin biến thể.');
     }
 
     const variantNameParts = variant.attribute_values.map(attrValue => {
@@ -334,6 +327,18 @@ async function fetchCheckoutItemForBuyNow(variantId, quantity) {
   } catch (err) {
     console.error('Lỗi khi lấy chi tiết sản phẩm mua ngay:', err);
     error.value = 'Không thể tải chi tiết sản phẩm. Vui lòng thử lại.';
+    // Không làm rỗng checkoutItems để nút "Đặt hàng" vẫn bấm được
+    if (!checkoutItems.value.length) {
+      checkoutItems.value = [{
+        id: 0,
+        product: { id: 0, name: 'Sản phẩm tạm thời', image: '' },
+        quantity: quantity,
+        variant: { id: variantId, name: 'Mặc định' },
+        price: 0,
+        subtotal: 0,
+        selected: true,
+      }];
+    }
   } finally {
     isLoading.value = false;
   }
@@ -365,18 +370,13 @@ async function fetchUserAddresses() {
   }
 }
 
-
-// NEW: Fetch all shipping methods and set a default if available
 async function fetchAndSetDefaultShippingMethods() {
   loadingShippingMethods.value = true;
   shippingMethodsError.value = null;
   try {
-    // Fetch from the new API endpoint
     const response = await axios.get('/shipping-methods');
-    // UPDATED: Adjust based on your API response structure (direct array under 'shipping_methods')
     shippingMethods.value = response.data.shipping_methods;
 
-    // Set a default selected method if none is chosen and methods are available
     if (shippingMethods.value.length > 0 && !selectedShippingMethodId.value) {
       selectedShippingMethodId.value = shippingMethods.value[0].id;
     }
@@ -388,14 +388,11 @@ async function fetchAndSetDefaultShippingMethods() {
   }
 }
 
-// Handler for when a shipping method is selected in the modal
 const handleShippingMethodSelected = (methodId) => {
   selectedShippingMethodId.value = methodId;
-  showShippingMethodModal.value = false; // Close the modal
+  showShippingMethodModal.value = false;
 };
 
-
-// --- Address Selection Handler from Modal ---
 const handleAddressSelection = (payload) => {
   if (payload.type === 'existing') {
     selectedAddressId.value = payload.id;
@@ -411,60 +408,106 @@ const handleAddressSelection = (payload) => {
   showAddressModal.value = false;
 };
 
-// --- Payment Method Selection Handler ---
 const handlePaymentMethodSelection = (methodCode) => {
   selectedPaymentMethod.value = methodCode;
   showPaymentMethodModal.value = false;
 };
 
+const checkStockAvailability = async (cartItemIds, isBuyNow, variantId, quantity) => {
+  try {
+    if (isBuyNow) {
+      const response = await axios.get(`product-variants/${variantId}`);
+      const variant = response.data.data;
+      if (!variant || variant.stock < quantity) {
+        return {
+          allAvailable: false,
+          unavailableItems: [{
+            product_name: variant?.product?.name || 'Sản phẩm không rõ tên',
+            variant_name: variant?.attribute_values?.map(v => v.value).join(' / ') || 'Mặc định'
+          }]
+        };
+      }
+      return { allAvailable: true, unavailableItems: [] };
+    } else {
+      const response = await axios.get('/cart-items');
+      if (!response.data || !Array.isArray(response.data.items)) {
+        throw new Error('Dữ liệu giỏ hàng không hợp lệ');
+      }
+
+      const unavailableItems = [];
+      response.data.items.forEach(item => {
+        if (cartItemIds.includes(item.id)) {
+          const isOutOfStock = item.variant
+            ? (item.variant.stock <= 0 || item.quantity > item.variant.stock)
+            : (item.stock <= 0 || item.quantity > item.stock);
+          if (isOutOfStock) {
+            const variantName = item.variant ? item.variant.name : 'Không có phân loại';
+            unavailableItems.push(`${item.product_name} (${variantName})`);
+          }
+        }
+      });
+
+      return {
+        allAvailable: unavailableItems.length === 0,
+        unavailableItems
+      };
+    }
+  } catch (err) {
+    console.error('Lỗi khi kiểm tra tồn kho:', err);
+    return {
+      allAvailable: false,
+      unavailableItems: ['Lỗi kiểm tra tồn kho. Vui lòng thử lại.']
+    };
+  }
+};
 
 // --- Order Placement ---
 const placeOrder = async () => {
   errorMessage.value = null;
 
+  // Kiểm tra số lượng sản phẩm
   if (checkoutItems.value.length === 0) {
     errorMessage.value = 'Vui lòng chọn sản phẩm để thanh toán.';
     return;
   }
 
-  let addressPayload = {};
-  let addressChosenSuccessfully = false;
-
+  // Kiểm tra địa chỉ
   if (useNewAddressForm.value) {
     const { recipient_name, phone_number, address_line, ward, district, province } = newAddressDetails.value;
     if (!recipient_name || !phone_number || !address_line || !ward || !district || !province) {
       errorMessage.value = 'Vui lòng điền đầy đủ thông tin địa chỉ mới.';
       return;
     }
-    addressPayload = {
-      recipient_name,
-      phone_number,
-      address_line,
-      ward,
-      district,
-      province,
-    };
-    addressChosenSuccessfully = true;
-  } else {
-    if (!selectedAddressId.value) {
-      errorMessage.value = 'Vui lòng chọn một địa chỉ có sẵn hoặc nhập địa chỉ mới.';
-      return;
-    }
-    addressPayload = { address_id: selectedAddressId.value };
-    addressChosenSuccessfully = true;
-  }
-
-  if (!addressChosenSuccessfully) {
-    errorMessage.value = 'Vui lòng chọn hoặc nhập địa chỉ nhận hàng.';
+  } else if (!selectedAddressId.value) {
+    errorMessage.value = 'Vui lòng chọn một địa chỉ có sẵn hoặc nhập địa chỉ mới.';
     return;
   }
 
-  // NEW: Validate shipping method
+  // Kiểm tra phương thức thanh toán
+  if (!selectedPaymentMethod.value || !paymentMethods.value.some(m => m.code === selectedPaymentMethod.value)) {
+    errorMessage.value = 'Vui lòng chọn phương thức thanh toán.';
+    return;
+  }
+
+  // Kiểm tra phương thức vận chuyển
   if (!selectedShippingMethodId.value) {
     errorMessage.value = 'Vui lòng chọn phương thức vận chuyển.';
     return;
   }
 
+  // Kiểm tra tồn kho
+  const isBuyNow = route.query.buy_now === 'true';
+  const cartItemIds = isBuyNow ? [] : route.query.cart_item_ids ? route.query.cart_item_ids.split(',').map(Number) : [];
+  const variantId = isBuyNow ? route.query.variant_id : null;
+  const quantity = isBuyNow ? parseInt(route.query.qty) : 0;
+
+  const stockCheck = await checkStockAvailability(cartItemIds, isBuyNow, variantId, quantity);
+  if (!stockCheck.allAvailable) {
+    errorMessage.value = `Các sản phẩm sau đã hết hàng, vui lòng kiểm tra lại:\n- ${stockCheck.unavailableItems.join('\n- ')}`;
+    return;
+  }
+
+  // Xác nhận đặt hàng
   if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
     return;
   }
@@ -473,11 +516,9 @@ const placeOrder = async () => {
   let paymentInfo = null;
 
   try {
-    const isBuyNow = route.query.buy_now === 'true';
-
     let orderData = {
-      ...addressPayload,
-      shipping_method_id: selectedShippingMethodId.value, // Send selected shipping method ID
+      ...(useNewAddressForm.value ? newAddressDetails.value : { address_id: selectedAddressId.value }),
+      shipping_method_id: selectedShippingMethodId.value,
       notes: message.value,
       coupon_code: selectedCouponCode.value,
       payment_method: selectedPaymentMethod.value,
@@ -493,31 +534,22 @@ const placeOrder = async () => {
       }
       orderData.product_variant_id = singleItem.variant.id;
       orderData.quantity = singleItem.quantity;
-
       response = await axios.post('checkout/buy-now', orderData);
     } else {
-      const cartItemIdsString = route.query.cart_item_ids;
-      const cartItemIds = cartItemIdsString ? cartItemIdsString.split(',').map(Number) : [];
-
-      // Thêm cart_item_ids vào payload trước khi gửi đi
       orderData.cart_item_ids = cartItemIds;
       response = await axios.post('checkout/place-order', orderData);
     }
     console.log('Phản hồi từ backend:', response.data);
 
-    const paymentInfo = response.data.payment_info;
+    paymentInfo = response.data.payment_info;
 
     if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl) {
-      // Nếu là thanh toán MoMo và cần điều hướng
-      console.log('Redirecting to MoMo PayUrl:', paymentInfo.payUrl);
+      console.log('Redirecting to PayUrl:', paymentInfo.payUrl);
       window.location.href = paymentInfo.payUrl;
     } else {
-      // Xử lý các trường hợp KHÔNG CẦN điều hướng (ví dụ: COD)
-      // hoặc MoMo trả về lỗi KHÔNG yêu cầu điều hướng.
       alert(`${response.data.message || 'Đặt hàng thành công!'} ${paymentInfo?.message || ''}`);
       router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
     }
-
   } catch (err) {
     console.error('Lỗi khi đặt hàng:', err);
     if (err.response && err.response.data && err.response.data.message) {
@@ -537,7 +569,6 @@ const placeOrder = async () => {
   }
 };
 
-
 // --- Lifecycle Hook ---
 onMounted(async () => {
   const isBuyNow = route.query.buy_now === 'true';
@@ -554,17 +585,31 @@ onMounted(async () => {
         await fetchCheckoutItemsFromCart(cartItemIds);
       } else {
         error.value = 'Không có sản phẩm nào được chọn để thanh toán.';
-        loading.value = false;
+        checkoutItems.value = [{
+          id: 0,
+          product: { id: 0, name: 'Sản phẩm tạm thời', thumbnail_url: '' },
+          quantity: 1,
+          variant: { id: 0, name: 'Mặc định', sku: '' },
+          price: 0,
+          subtotal: 0,
+        }];
       }
     } else {
       error.value = 'Không có sản phẩm nào được chọn để thanh toán.';
-      loading.value = false;
+      checkoutItems.value = [{
+        id: 0,
+        product: { id: 0, name: 'Sản phẩm tạm thời', thumbnail_url: '' },
+        quantity: 1,
+        variant: { id: 0, name: 'Mặc định', sku: '' },
+        price: 0,
+        subtotal: 0,
+      }];
     }
   }
 
   await Promise.all([
     fetchUserAddresses(),
-    fetchAndSetDefaultShippingMethods() // NEW: Fetch and set default shipping methods
+    fetchAndSetDefaultShippingMethods()
   ]);
 });
 
@@ -582,21 +627,17 @@ watch(userAddresses, (newAddresses) => {
 
       <div class="mb-4 p-3 border rounded-md bg-gray-50">
         <div v-if="selectedAddress">
-          <p class="font-medium text-gray-800">{{ selectedAddress.recipient_name }} - {{ selectedAddress.phone_number }}
-          </p>
+          <p class="font-medium text-gray-800">{{ selectedAddress.recipient_name }} - {{ selectedAddress.phone_number }}</p>
           <p class="text-sm text-gray-600">
-            {{ selectedAddress.address_line }}, {{ selectedAddress.ward }}, {{ selectedAddress.district }}, {{
-              selectedAddress.province }}
+            {{ selectedAddress.address_line }}, {{ selectedAddress.ward }}, {{ selectedAddress.district }}, {{ selectedAddress.province }}
           </p>
           <span v-if="selectedAddress.is_default"
             class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mt-1">Mặc định</span>
         </div>
         <div v-else-if="useNewAddressForm && hasNewAddressDetails">
-          <p class="font-medium text-gray-800">{{ newAddressDetails.recipient_name }} - {{
-            newAddressDetails.phone_number }}</p>
+          <p class="font-medium text-gray-800">{{ newAddressDetails.recipient_name }} - {{ newAddressDetails.phone_number }}</p>
           <p class="text-sm text-gray-600">
-            {{ newAddressDetails.address_line }}, {{ newAddressDetails.ward }}, {{ newAddressDetails.district }}, {{
-              newAddressDetails.province }}
+            {{ newAddressDetails.address_line }}, {{ newAddressDetails.ward }}, {{ newAddressDetails.district }}, {{ newAddressDetails.province }}
           </p>
         </div>
         <div v-else class="text-gray-600">
@@ -629,7 +670,7 @@ watch(userAddresses, (newAddresses) => {
           class="py-4 border-b border-gray-200 last:border-b-0">
           <div class="grid grid-cols-5 items-center">
             <div class="col-span-2 flex items-center">
-              <img :src="item.thumbnail_url || 'https://via.placeholder.com/64'" :alt="item.product_name || 'Sản phẩm'"
+              <img :src="item.thumbnail_url || item.product?.image || 'https://via.placeholder.com/64'" :alt="item.product?.name || 'Sản phẩm'"
                 class="w-16 h-16 mr-3 border rounded object-cover">
               <div>
                 <p class="text-gray-800">{{ item.product?.name || 'Sản phẩm không rõ tên' }}</p>
@@ -651,13 +692,12 @@ watch(userAddresses, (newAddresses) => {
         <div class="col-span-1 text-gray-500">Phương thức vận chuyển:</div>
         <div class="col-span-2">
           <span class="font-medium">
-            {{shippingMethods.find(m => m.id === selectedShippingMethodId)?.name || 'Chưa chọn'}}
+            {{ shippingMethods.find(m => m.id === selectedShippingMethodId)?.name || 'Chưa chọn' }}
           </span>
           <button @click="showShippingMethodModal = true" class="ml-2 text-blue-500 hover:underline">Thay Đổi</button>
           <p class="text-xs text-gray-500 mt-1">Dự kiến nhận hàng: {{ estimatedDeliveryDate }}</p>
           <p class="text-xs text-gray-500 mt-1">
-            <span class="text-red-500">Voucher trị giá ₫15.000</span> nếu đơn hàng được giao đến bạn sau ngày {{
-              deliveryGuaranteeDate }}
+            <span class="text-red-500">Voucher trị giá ₫15.000</span> nếu đơn hàng được giao đến bạn sau ngày {{ deliveryGuaranteeDate }}
             <span class="ml-1 cursor-pointer text-blue-400" title="Chi tiết về voucher">
               <svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd"
@@ -689,8 +729,7 @@ watch(userAddresses, (newAddresses) => {
       </div>
 
       <div class="text-right text-lg font-bold">
-        Tổng số tiền ({{ totalItemsCount }} sản phẩm): <span class="text-red-500">{{
-          formatCurrency(totalAmountBeforeShippingAndVoucher) }}</span>
+        Tổng số tiền ({{ totalItemsCount }} sản phẩm): <span class="text-red-500">{{ formatCurrency(totalAmountBeforeShippingAndVoucher) }}</span>
       </div>
     </div>
 
@@ -713,7 +752,6 @@ watch(userAddresses, (newAddresses) => {
         :current-selected-coupon-code="selectedCouponCode" :total-amount="totalAmountBeforeShippingAndVoucher"
         :checkout-items="checkoutItems" @update:is-visible="showVoucherModal = $event"
         @couponSelected="handleCouponSelection" />
-
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-sm mt-4">
@@ -768,7 +806,7 @@ watch(userAddresses, (newAddresses) => {
         </p>
         <button
           class="bg-red-500 text-white px-8 py-3 rounded-md font-semibold hover:bg-red-600 transition duration-200"
-          :disabled="loading || !canPlaceOrder" @click="placeOrder">
+          :disabled="loading" @click="placeOrder">
           <span v-if="loading">Đang đặt hàng...</span>
           <span v-else>Đặt hàng</span>
         </button>
