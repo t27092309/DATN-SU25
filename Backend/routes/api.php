@@ -52,7 +52,6 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
 
 
-
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -81,6 +80,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
         });
 
+
+        //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
         // Route admin (yêu cầu quyền admin:full-access)
