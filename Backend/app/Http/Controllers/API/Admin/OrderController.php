@@ -62,6 +62,16 @@ class OrderController extends Controller
             'status' => 'required|in:' . implode(',', Order::ALL_STATUSES),
         ]);
 
+        if (
+            $request->status === Order::STATUS_CANCELLED &&
+            in_array($order->status, [Order::STATUS_SHIPPED, Order::STATUS_DELIVERED])
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể hủy đơn hàng khi đang giao hoặc đã giao hàng.',
+            ], 400);
+        }
+
         $order->status = $request->status;
         $order->save();
 
@@ -100,6 +110,4 @@ class OrderController extends Controller
         $order->load('payments');
         return PaymentResource::collection($order->payments);
     }
-
-  
 }
