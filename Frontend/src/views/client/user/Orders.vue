@@ -84,10 +84,6 @@
               class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 shadow-sm">
               Đã Nhận Hàng
             </button>
-            <button @click="contactSeller(order.id)"
-              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
-              Liên Hệ Người Bán
-            </button>
             <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
               Xem Chi Tiết
@@ -366,11 +362,6 @@ const cancelOrder = async (orderId) => { // Đổi tên biến từ idDonHang th
       }
     }
   });
-};
-
-const contactSeller = (idDonHang) => {
-  alert(`Đang liên hệ với người bán cho đơn hàng ${idDonHang}. (Logic chuyển hướng/chat sẽ được gọi ở đây)`);
-  // Logic để mở cửa sổ chat hoặc chuyển đến trang chat
 };
 
 // Bạn có thể thêm các hàm cho "Mua Lại", "Đặt Lại", "Xem Lý Do Hủy", "Thanh Toán Ngay" tương tự

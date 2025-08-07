@@ -2,7 +2,7 @@
     <header class="bg-white shadow-sm h-16 flex items-center px-6 justify-between border-b border-gray-200
                  fixed top-0 z-10" :style="{ left: '265px', width: 'calc(100% - 265px)' }">
         <div>
-            <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
+            <h2 class="text-xl font-semibold text-gray-800">{{ currentRouteTitle }}</h2>
         </div>
 
         <div class="flex items-center space-x-4">
@@ -88,6 +88,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 // --- State cho User Menu ---
 const showUserMenu = ref(false);
@@ -172,6 +173,8 @@ const logout = () => {
     alert('Đăng xuất...'); // Thay bằng logic đăng xuất thực tế của bạn
     showUserMenu.value = false; // Đóng menu sau khi đăng xuất
 };
+const route = useRoute();
+const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 </script>
 
 <style scoped>
