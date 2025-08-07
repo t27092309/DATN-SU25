@@ -29,7 +29,7 @@
               <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
               <h5 class="text-md font-semibold mt-2">{{ product.name }}</h5>
               <p class="text-gray-700">{{ product.brand }}</p>
-              <p class="text-lg font-bold text-red-600">{{ product.price }} VNĐ</p>
+              <p class="text-lg font-bold text-red-600">{{ Number(product.price).toLocaleString('vi-VN') }} VNĐ</p>
             </router-link>
           </div>
           <p v-else class="text-center py-4">Không có sản phẩm nào trong danh mục này.</p>
