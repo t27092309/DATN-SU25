@@ -1,146 +1,165 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <h2 class="text-center text-3xl font-bold text-gray-800 mb-8 border-b-2 pb-4">Danh sách Đơn hàng</h2>
+    <div class="container mx-auto px-4">
+        <div class="flex flex-wrap items-center gap-4 mb-6">
+            <div class="flex flex-row w-full items-center border-b border-gray-300 overflow-x-auto whitespace-nowrap">
+                <button v-for="tab in orderTabs" :key="tab.value" @click="selectTab(tab.value)"
+                    :class="['flex-grow px-4 py-3 text-center transition-all duration-300 ease-in-out',
+                        filters.status === tab.value ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600']">
 
-    <div class="flex flex-col md:flex-row md:justify-between items-center gap-4 mb-6">
-      <div class="flex flex-wrap gap-2">
-        <button v-for="tab in orderTabs" :key="tab.value"
-          :class="['px-4 py-2 rounded-md font-semibold transition-all duration-300 ease-in-out',
-            filters.status === tab.value ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300']" @click="selectTab(tab.value)">
-          {{ tab.label }}
-        </button>
-      </div>
+                    <span class="inline-block">{{ tab.label }}</span>
 
-      <div class="flex items-center gap-3 w-full md:w-auto">
-        <label for="orderSearch" class="text-gray-700 font-medium whitespace-nowrap">Tìm kiếm (ID/Tên/SĐT):</label>
-        <input id="orderSearch" type="text" v-model="filters.search" placeholder="Nhập ID, tên người dùng hoặc SĐT"
-          class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-      </div>
-    </div>
+                    <span v-if="tab.count > 0" class="ml-2 font-bold">({{ tab.count }})</span>
+                </button>
+            </div>
 
-    <div v-if="loading" class="text-center py-10 text-lg text-gray-600">Đang tải đơn hàng...</div>
-    <div v-else-if="!loading && orders && orders.length === 0"
-      class="text-center py-10 text-lg text-gray-500 italic border border-dashed rounded-md">
-      Không có đơn hàng nào.
-    </div>
-    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách
-              hàng</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng
-              tiền</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày
-              tạo</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng
-              thái</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành
-              động</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50 transition-colors duration-150">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ order.id }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.user ? order.user.name : 'N/A' }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.total_price_formatted }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.display_created_at }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-              <div class="flex items-center gap-2">
-                <span v-if="!order.isEditingStatus"
-                  :class="['px-2 py-1 rounded-full text-xs font-semibold cursor-pointer', getStatusClass(order.status)]"
-                  @click="startEditStatus(order)">
-                  {{ order.status_label || order.status }}
-                </span>
-                <select v-else v-model="order.status" @change="updateOrderStatus(order)" @blur="cancelEditStatus(order)"
-                  :disabled="order.isUpdatingStatus"
-                  class="block w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
-                  <option v-for="statusOpt in getStatusOptionsForOrder(order.originalStatus)" :key="statusOpt.value" :value="statusOpt.value">
-                    {{ statusOpt.label }}
-                  </option>
-                </select>
-                <span v-if="order.isUpdatingStatus" class="animate-spin text-blue-500 text-lg">🔄</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button @click="viewOrderDetails(order.id)"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                Xem chi tiết
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="flex justify-center items-center gap-4 py-4 px-6 bg-gray-50 border-t border-gray-200">
-        <button @click="fetchOrders(pagination.current_page - 1)" :disabled="pagination.current_page <= 1"
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-          Trước
-        </button>
-        <span class="text-gray-700 font-semibold">Trang {{ pagination.current_page }} / {{ pagination.last_page
-          }}</span>
-        <button @click="fetchOrders(pagination.current_page + 1)"
-          :disabled="pagination.current_page >= pagination.last_page"
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-          Sau
-        </button>
-      </div>
-    </div>
-
-    <div v-if="showDetailsModal" class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[1000]"
-      @click.self="closeDetailsModal">
-      <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl relative max-h-[90vh] overflow-y-auto">
-        <button class="absolute top-3 right-5 text-gray-500 hover:text-gray-800 text-3xl leading-none"
-          @click="closeDetailsModal">&times;</button>
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Chi tiết đơn hàng #{{ selectedOrder?.id }}
-        </h3>
-
-        <div v-if="loadingDetails" class="text-center py-5 text-gray-600">Đang tải chi tiết...</div>
-        <div v-else-if="selectedOrder">
-          <p class="mb-2"><strong>Khách hàng:</strong> {{ selectedOrder.user ? selectedOrder.user.name : 'N/A' }}</p>
-          <p class="mb-2"><strong>Email:</strong> {{ selectedOrder.user ? selectedOrder.user.email : 'N/A' }}</p>
-          <p class="mb-2"><strong>Trạng thái:</strong> <span
-              :class="['px-2 py-1 rounded-full text-xs font-semibold', getStatusClass(selectedOrder.status)]">{{
-                selectedOrder.status_label || selectedOrder.status }}</span></p>
-          <p class="mb-2"><strong>Tổng tiền:</strong> {{ selectedOrder.total_price_formatted }}</p>
-          <p class="mb-2"><strong>Phí vận chuyển:</strong> {{ formatCurrency(selectedOrder.shipping_fee) }}</p>
-          <p class="mb-2"><strong>Ngày tạo:</strong> {{ selectedOrder.display_created_at }}</p>
-          <p class="mb-4"><strong>Ghi chú:</strong> {{ selectedOrder.notes || 'Không có' }}</p>
-
-          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Địa chỉ giao hàng:</h4>
-          <p v-if="selectedOrder.address" class="ml-4 mb-4 text-gray-700">
-            <strong>Người nhận:</strong> {{ selectedOrder.address.recipient_name }}<br>
-            <strong>Điện thoại:</strong> {{ selectedOrder.address.phone_number }}<br>
-            <strong>Địa chỉ:</strong> {{ selectedOrder.address.address_line }}, {{ selectedOrder.address.ward }}, {{
-              selectedOrder.address.district }}, {{ selectedOrder.address.province }}
-          </p>
-          <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có địa chỉ giao hàng.</p>
-
-          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Sản phẩm:</h4>
-          <ul v-if="selectedOrder.items && selectedOrder.items.length" class="list-disc pl-8 mb-4">
-            <li v-for="item in selectedOrder.items" :key="item.id" class="mb-1 text-gray-700">
-              {{ item.variant_name || 'Sản phẩm không xác định' }} ({{ item.quantity }} x {{
-                formatCurrency(item.price_each) }})
-            </li>
-          </ul>
-          <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có sản phẩm trong đơn hàng.</p>
-
-          <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Thanh toán:</h4>
-          <ul v-if="selectedOrder.payments && selectedOrder.payments.length" class="list-disc pl-8">
-            <li v-for="payment in selectedOrder.payments" :key="payment.id" class="mb-1 text-gray-700">
-              {{ formatCurrency(payment.amount) }} - {{ payment.payment_method }} (Trạng thái: {{ payment.status }})
-              <span v-if="payment.paid_at" class="text-gray-600"> - Ngày thanh toán: {{
-                formatOrderCreatedAt(payment.paid_at) }}</span>
-            </li>
-          </ul>
-          <p v-else class="ml-4 text-gray-500 italic">Chưa có thanh toán nào.</p>
+            <div class="ml-auto flex items-center gap-3 w-full sm:w-auto">
+                <label for="orderSearch" class="text-gray-700 font-medium whitespace-nowrap">Tìm kiếm</label>
+                <input id="orderSearch" type="text" v-model="filters.search"
+                    placeholder="Nhập ID, tên người dùng hoặc SĐT"
+                    class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+            </div>
         </div>
-      </div>
+
+        <div v-if="loading" class="text-center py-10 text-lg text-gray-600">Đang tải đơn hàng...</div>
+        <div v-else-if="!loading && orders && orders.length === 0"
+            class="text-center py-10 text-lg text-gray-500 italic border border-dashed rounded-md">
+            Không có đơn hàng nào.
+        </div>
+        <div v-else class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách
+                            hàng</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng
+                            tiền</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày
+                            tạo</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng
+                            thái</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành
+                            động</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ order.id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.user ? order.user.name :
+                            'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.total_price_formatted }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ order.display_created_at }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div class="flex items-center gap-2">
+                                <span v-if="!order.isEditingStatus"
+                                    :class="['px-2 py-1 rounded-full text-xs font-semibold cursor-pointer', getStatusClass(order.status)]"
+                                    @click="startEditStatus(order)">
+                                    {{ order.status_label || order.status }}
+                                </span>
+                                <select v-else v-model="order.status" @change="updateOrderStatus(order)"
+                                    @blur="cancelEditStatus(order)" :disabled="order.isUpdatingStatus"
+                                    class="block w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                    <option v-for="statusOpt in getStatusOptionsForOrder(order.originalStatus)"
+                                        :key="statusOpt.value" :value="statusOpt.value">
+                                        {{ statusOpt.label }}
+                                    </option>
+                                </select>
+                                <span v-if="order.isUpdatingStatus" class="animate-spin text-blue-500 text-lg">🔄</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button @click="viewOrderDetails(order.id)"
+                                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Xem chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="flex justify-center items-center gap-4 py-4 px-6 bg-gray-50 border-t border-gray-200">
+                <button @click="fetchOrders(pagination.current_page - 1)" :disabled="pagination.current_page <= 1"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Trước
+                </button>
+                <span class="text-gray-700 font-semibold">Trang {{ pagination.current_page }} / {{ pagination.last_page
+                    }}</span>
+                <button @click="fetchOrders(pagination.current_page + 1)"
+                    :disabled="pagination.current_page >= pagination.last_page"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Sau
+                </button>
+            </div>
+        </div>
+
+        <div v-if="showDetailsModal"
+            class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-[1000]"
+            @click.self="closeDetailsModal">
+            <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                <button class="absolute top-3 right-5 text-gray-500 hover:text-gray-800 text-3xl leading-none"
+                    @click="closeDetailsModal">&times;</button>
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">Chi tiết đơn hàng #{{
+                    selectedOrder?.id }}
+                </h3>
+
+                <div v-if="loadingDetails" class="text-center py-5 text-gray-600">Đang tải chi tiết...</div>
+                <div v-else-if="selectedOrder">
+                    <p class="mb-2"><strong>Khách hàng:</strong> {{ selectedOrder.user ? selectedOrder.user.name : 'N/A'
+                        }}</p>
+                    <p class="mb-2"><strong>Email:</strong> {{ selectedOrder.user ? selectedOrder.user.email : 'N/A' }}
+                    </p>
+                    <p class="mb-2"><strong>Trạng thái:</strong> <span
+                            :class="['px-2 py-1 rounded-full text-xs font-semibold', getStatusClass(selectedOrder.status)]">{{
+                                selectedOrder.status_label || selectedOrder.status }}</span></p>
+                    <p class="mb-2"><strong>Tổng tiền:</strong> {{ selectedOrder.total_price_formatted }}</p>
+                    <p class="mb-2"><strong>Phí vận chuyển:</strong> {{ formatCurrency(selectedOrder.shipping_fee) }}
+                    </p>
+                    <p class="mb-2"><strong>Ngày tạo:</strong> {{ selectedOrder.display_created_at }}</p>
+                    <p class="mb-4"><strong>Ghi chú:</strong> {{ selectedOrder.notes || 'Không có' }}</p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Địa chỉ giao hàng:</h4>
+                    <p v-if="selectedOrder.address" class="ml-4 mb-4 text-gray-700">
+                        <strong>Người nhận:</strong> {{ selectedOrder.address.recipient_name }}<br>
+                        <strong>Điện thoại:</strong> {{ selectedOrder.address.phone_number }}<br>
+                        <strong>Địa chỉ:</strong> {{ selectedOrder.address.address_line }}, {{
+                            selectedOrder.address.ward }}, {{
+                            selectedOrder.address.district }}, {{ selectedOrder.address.province }}
+                    </p>
+                    <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có địa chỉ giao hàng.</p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Sản phẩm:</h4>
+                    <ul v-if="selectedOrder.items && selectedOrder.items.length" class="list-disc pl-8 mb-4">
+                        <li v-for="item in selectedOrder.items" :key="item.id" class="mb-1 text-gray-700">
+                            {{ item.variant_name || 'Sản phẩm không xác định' }} ({{ item.quantity }} x {{
+                                formatCurrency(item.price_each) }})
+                        </li>
+                    </ul>
+                    <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có sản phẩm trong đơn hàng.</p>
+
+                    <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Thanh toán:</h4>
+                    <ul v-if="selectedOrder.payments && selectedOrder.payments.length" class="list-disc pl-8">
+                        <li v-for="payment in selectedOrder.payments" :key="payment.id" class="mb-1 text-gray-700">
+                            {{ formatCurrency(payment.amount) }} - {{ payment.payment_method }} (Trạng thái: {{
+                                payment.status }})
+                            <span v-if="payment.paid_at" class="text-gray-600"> - Ngày thanh toán: {{
+                                formatOrderCreatedAt(payment.paid_at) }}</span>
+                        </li>
+                    </ul>
+                    <p v-else class="ml-4 text-gray-500 italic">Chưa có thanh toán nào.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -169,6 +188,7 @@ const orderTabs = ref([
     { label: 'Đang giao hàng', value: 'shipped', count: 0 },
     { label: 'Đã giao hàng', value: 'delivered', count: 0 },
     { label: 'Đã hủy', value: 'cancelled', count: 0 },
+    { label: 'Trả hàng/Hoàn tiền', value: 'refund', count: 0 },
 ]);
 
 // Định nghĩa luồng chuyển trạng thái hợp lệ, loại bỏ 'delivered' là một lựa chọn tiếp theo.
@@ -184,6 +204,7 @@ const availableStatusOptions = ref([
     { label: 'Đang giao hàng', value: 'shipped' },
     { label: 'Đã giao hàng', value: 'delivered' },
     { label: 'Đã hủy', value: 'cancelled' },
+    { label: 'Trả hàng/Hoàn tiền', value: 'refund', count: 0 },
 ]);
 
 const statusLabelMap = availableStatusOptions.value.reduce((map, status) => {
@@ -319,11 +340,6 @@ function selectTab(statusValue) {
     fetchOrders(1);
 }
 
-/**
- * Hàm mới để xác định các tùy chọn trạng thái hợp lệ cho một đơn hàng.
- * @param {string} currentStatus Trạng thái hiện tại của đơn hàng.
- * @returns {Array} Mảng các đối tượng trạng thái có thể chọn.
- */
 function getStatusOptionsForOrder(currentStatus) {
     const nextStatus = statusFlow[currentStatus];
 
@@ -336,12 +352,12 @@ function getStatusOptionsForOrder(currentStatus) {
     if (nextStatus) {
         options.push(availableStatusOptions.value.find(opt => opt.value === nextStatus));
     }
-    
+
     options.unshift(availableStatusOptions.value.find(opt => opt.value === currentStatus));
-    
+
     // Thêm trạng thái "Đã hủy" vào danh sách tùy chọn, trừ khi đơn hàng đã giao hoặc đã hủy
     if (currentStatus !== 'delivered' && currentStatus !== 'cancelled') {
-      options.push(availableStatusOptions.value.find(opt => opt.value === 'cancelled'));
+        options.push(availableStatusOptions.value.find(opt => opt.value === 'cancelled'));
     }
 
     return options.filter(Boolean);
@@ -370,7 +386,7 @@ async function updateOrderStatus(order) {
         order.isEditingStatus = false;
         return;
     }
-    
+
     const nextValidStatus = statusFlow[oldStatus];
     // Thay đổi ở đây: không cho phép chuyển trạng thái thành 'delivered' hoặc một trạng thái không hợp lệ khác
     if (newStatus !== nextValidStatus && newStatus !== 'cancelled') {
@@ -383,17 +399,17 @@ async function updateOrderStatus(order) {
         order.isEditingStatus = false;
         return;
     }
-    
+
     // Thêm xác thực để chặn chuyển sang 'delivered'
     if (newStatus === 'delivered') {
-      Swal.fire({
+        Swal.fire({
             icon: 'error',
             title: 'Thất bại!',
             text: `Bạn không có quyền chuyển trạng thái đơn hàng #${order.id} sang "Đã giao hàng".`,
-      });
-      order.status = oldStatus;
-      order.isEditingStatus = false;
-      return;
+        });
+        order.status = oldStatus;
+        order.isEditingStatus = false;
+        return;
     }
 
     const result = await Swal.fire({
@@ -586,18 +602,14 @@ onMounted(() => {
 
 <style scoped>
 select {
-  -webkit-appearance: none;
-  /* Chrome, Safari, Edge */
-  -moz-appearance: none;
-  /* Firefox */
-  appearance: none;
-  /* Standard */
-  /* background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); */
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1rem;
+    -webkit-appearance: none;
+    /* Chrome, Safari, Edge */
+    -moz-appearance: none;
+    /* Firefox */
+    appearance: none;
+    /* Standard */
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
 }
-
-/* No longer needed as status classes are directly applied via Tailwind utility classes */
-/* .status-pending, .status-processing, etc. are now handled by getStatusClass function returning Tailwind classes */
 </style>

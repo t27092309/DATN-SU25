@@ -1,28 +1,21 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="page-inner">
-      <div class="mb-6 flex justify-between items-center">
-        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
-        <ul class="flex items-center space-x-2 text-gray-600 text-sm">
-          <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
-              <i class="fas fa-home"></i>
-            </router-link>
-          </li>
-          <li class="separator">
-            <i class="fas fa-chevron-right text-xs"></i>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="hover:text-blue-600">Thương hiệu</a>
-          </li>
-          <li class="separator">
-            <i class="fas fa-chevron-right text-xs"></i>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
-          </li>
-        </ul>
-      </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="page-inner">
+            <div class="mb-6">
+                <ul class="flex items-center space-x-2 text-gray-600 text-sm">
+                    <li class="nav-home">
+                        <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+                            <i class="fas fa-home"></i>
+                        </router-link>
+                    </li>
+                    <li class="separator">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </li>
+                    <li class="nav-item">
+                        <span class="font-semibold">{{ route.meta.title }}</span>
+                    </li>
+                </ul>
+            </div>
 
       <div class="bg-white shadow-md rounded-lg p-6">
         <div class="mb-6 flex justify-between items-center">

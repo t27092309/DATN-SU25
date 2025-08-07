@@ -70,7 +70,6 @@ const menuItems = ref([
     children: [
       { name: 'Tất cả sản phẩm', route: '/admin/products' },
       { name: 'Thêm sản phẩm mới', route: '/admin/add-product' },
-      { name: 'Kho hàng', route: '/products/inventory' },
     ],
   },
   {
@@ -112,13 +111,8 @@ const menuItems = ref([
   },
   {
     name: 'Đơn hàng',
-    route: '/orders',
+    route: '/admin/orders',
     isOpen: false,
-    children: [
-      { name: 'Tất cả đơn hàng', route: '/admin/orders' },
-      { name: 'Đơn hàng chờ xử lý', route: '/orders/pending' },
-      { name: 'Đơn hàng đã hoàn thành', route: '/orders/completed' },
-    ],
   },
   {
     name: 'Phương thức vận chuyển',

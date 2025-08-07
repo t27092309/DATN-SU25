@@ -5,7 +5,7 @@ import App from './App.vue';
 import './assets/tailwind.css';
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
-import router from './router'; // Đảm bảo bạn đã import Vue Router
+import router from './router';
 import tinymce from 'tinymce/tinymce';
 import axios from 'axios'; // Import Axios
 import { useAuthStore } from './stores/auth'; // Import auth store
