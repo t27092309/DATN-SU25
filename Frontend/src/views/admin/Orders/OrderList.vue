@@ -356,7 +356,8 @@ function getStatusOptionsForOrder(currentStatus) {
     options.unshift(availableStatusOptions.value.find(opt => opt.value === currentStatus));
 
     // Thêm trạng thái "Đã hủy" vào danh sách tùy chọn, trừ khi đơn hàng đã giao hoặc đã hủy
-    if (currentStatus !== 'delivered' && currentStatus !== 'cancelled') {
+    if (currentStatus !== 'delivered' && currentStatus !== 'cancelled' && currentStatus !== 'shipped') {
+
         options.push(availableStatusOptions.value.find(opt => opt.value === 'cancelled'));
     }
 
@@ -365,14 +366,14 @@ function getStatusOptionsForOrder(currentStatus) {
 
 function startEditStatus(order) {
     // Ngăn chặn chỉnh sửa nếu trạng thái đã là 'delivered' hoặc 'cancelled'
-    if (order.status === 'delivered' || order.status === 'cancelled') {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Không thể thay đổi!',
-            text: 'Đơn hàng đã không thể thay đổi trạng thái.',
-            confirmButtonText: 'Đã hiểu'
-        });
-        return;
+    if (order.status === 'delivered' || order.status === 'cancelled' || order.status === 'shipped') {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Không thể thay đổi!',
+        text: 'Đơn hàng đã không thể thay đổi trạng thái.',
+        confirmButtonText: 'Đã hiểu'
+    });
+    return;
     }
     order.originalStatus = order.status;
     order.isEditingStatus = true;
@@ -386,6 +387,18 @@ async function updateOrderStatus(order) {
         order.isEditingStatus = false;
         return;
     }
+
+    if (oldStatus === 'shipped' && newStatus === 'cancelled') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Không thể hủy đơn!',
+            text: `Đơn hàng #${order.id} đang trong quá trình giao hàng và không thể hủy.`,
+        });
+        order.status = oldStatus;
+        order.isEditingStatus = false;
+        return;
+    }
+    
 
     const nextValidStatus = statusFlow[oldStatus];
     // Thay đổi ở đây: không cho phép chuyển trạng thái thành 'delivered' hoặc một trạng thái không hợp lệ khác
