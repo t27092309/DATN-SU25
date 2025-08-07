@@ -2,7 +2,6 @@
   <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
       <div class="mb-6 flex justify-between items-center">
-        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
         <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
             <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
@@ -13,7 +12,7 @@
             <i class="fas fa-chevron-right text-xs"></i>
           </li>
           <li class="nav-item">
-            <a href="#" class="text-blue-600">Nhóm Hương</a>
+            <a href="#" class="">Quản lí nhóm hương</a>
           </li>
         </ul>
       </div>
