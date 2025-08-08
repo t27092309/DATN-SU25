@@ -56,7 +56,7 @@ class OrderController extends Controller
             'orderAddress',
             'payments'
         ])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate(10); // Phân trang cho các đơn hàng
 
         // Format dữ liệu nếu cần thiết (ví dụ: định dạng tiền tệ)
@@ -95,7 +95,8 @@ class OrderController extends Controller
                 'orderItems.productVariant.product',
                 'orderItems.productVariant.attributeValues.attribute', // Tải chi tiết thuộc tính
                 'orderAddress',
-                'primaryPayment'
+                'primaryPayment',
+                'payments'
             ])
             ->first();
 
@@ -129,23 +130,10 @@ class OrderController extends Controller
             }
             $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
 
-            // --- MODIFIED IMAGE URL LOGIC ---
             $productImage = 'https://via.placeholder.com/64'; // Default placeholder
-
             if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
-                // Assuming $item->productVariant->product->image stores the path like 'products/main_images/image.jpg'
-                // Use Laravel's asset() helper to get the full URL, which handles 'storage' symlink if configured.
-                // If you are using 'php artisan storage:link', this is the correct way.
                 $productImage = asset('storage/' . $item->productVariant->product->image);
-
-                // If the asset() helper still produces 'http://localhost' instead of 'http://127.0.0.1:8000'
-                // and you specifically need 127.0.0.1:8000, you can manually construct it:
-                // $appUrl = config('app.url'); // This usually comes from .env APP_URL
-                // $productImage = str_replace($appUrl, 'http://127.0.0.1:8000', asset('storage/' . $item->productVariant->product->image));
-                // Or a more direct construction:
-                // $productImage = 'http://127.0.0.1:8000/storage/' . ltrim($item->productVariant->product->image, '/');
             }
-            // --- END MODIFIED IMAGE URL LOGIC ---
 
             return [
                 'id' => $item->id,
@@ -153,10 +141,20 @@ class OrderController extends Controller
                 'product_image' => $productImage, // Tên biến thể đã được định dạng
                 'variant_name' => $displayVariantName,
                 'quantity' => $item->quantity,
-                'price_each' => $item->price_each,
-                'subtotal' => $item->price_each * $item->quantity,
+                'price_each' => (float) $item->price_each,
+                'subtotal' => (float) $item->price_each * $item->quantity,
             ];
         });
+
+        $primaryPaymentInfo = null;
+        if ($order->primaryPayment) {
+            $primaryPaymentInfo = [
+                'payment_method' => $order->primaryPayment->payment_method,
+                'amount' => (float) $order->primaryPayment->amount,
+                'payment_status' => $order->primaryPayment->payment_status, // Dùng 'status' thay vì 'payment_status'
+                'paid_at' => $order->primaryPayment->paid_at ? $order->primaryPayment->paid_at->toDateTimeString() : null,
+            ];
+        }
 
         return [
             'id' => $order->id,
@@ -165,7 +163,6 @@ class OrderController extends Controller
             'status' => $order->status,
             'notes' => $order->notes,
             'coupon_id' => $order->coupon_id,
-            'payment_method' => $order->payment_method,
             'shipping_fee' => $order->shipping_fee,
             'created_at' => $order->created_at->toDateTimeString(),
             'updated_at' => $order->updated_at->toDateTimeString(),
@@ -183,15 +180,11 @@ class OrderController extends Controller
                     $order->orderAddress->province
                 ]))
             ] : null,
-            'payment_info' => $order->payment ? [
-                'payment_method' => $order->payment->payment_method,
-                'amount' => $order->payment->amount,
-                'payment_status' => $order->payment->payment_status,
-                'paid_at' => $order->payment->paid_at ? $order->payment->paid_at->toDateTimeString() : null,
-            ] : null,
+            'payment_info' => $primaryPaymentInfo,
             'items' => $items,
         ];
     }
+
     public function getOrderCounts(Request $request)
     {
         $user = Auth::user();
@@ -217,17 +210,15 @@ class OrderController extends Controller
     public function markAsDelivered(Order $order)
     {
         $user = Auth::user();
+        $order->load('primaryPayment');
 
-        // LOG 1: Bắt đầu xử lý yêu cầu và kiểm tra thông tin user, order
         Log::info('Bắt đầu xử lý yêu cầu xác nhận đã nhận hàng.', [
             'order_id_from_route' => $order->id,
             'user_id' => $user->id,
             'current_order_status' => $order->status
         ]);
 
-        // Kiểm tra xem đơn hàng có thuộc về người dùng hiện tại không
         if ($order->user_id !== $user->id) {
-            // LOG 2: Lỗi phân quyền
             Log::warning('Lỗi phân quyền: User không sở hữu đơn hàng.', [
                 'order_id' => $order->id,
                 'user_id' => $user->id,
@@ -236,9 +227,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Bạn không có quyền truy cập đơn hàng này.'], Response::HTTP_FORBIDDEN);
         }
 
-        // Kiểm tra trạng thái hiện tại của đơn hàng
         if ($order->status !== 'shipped') {
-            // LOG 3: Lỗi trạng thái không hợp lệ
             Log::warning('Lỗi trạng thái đơn hàng không hợp lệ.', [
                 'order_id' => $order->id,
                 'user_id' => $user->id,
@@ -249,20 +238,30 @@ class OrderController extends Controller
         }
 
         try {
-            $order->status = 'delivered';
-            $order->delivered_at = now();
-            $order->save();
+            DB::transaction(function () use ($order) {
+                // Cập nhật trạng thái đơn hàng
+                $order->status = 'delivered';
+                $order->delivered_at = now();
+                $order->save();
 
-            // LOG 4: Thành công
-            Log::info('Cập nhật trạng thái đơn hàng thành công.', [
+                // Tìm và cập nhật bản ghi thanh toán chính
+                $payment = $order->primaryPayment;
+                if ($payment) {
+                    // Sửa lại dòng này để sử dụng tên cột cũ: payment_status
+                    $payment->payment_status = 'paid';
+                    $payment->paid_at = now();
+                    $payment->save();
+                }
+            });
+
+            Log::info('Cập nhật trạng thái đơn hàng và thanh toán thành công.', [
                 'order_id' => $order->id,
-                'new_status' => $order->status,
-                'delivered_at' => $order->delivered_at
+                'new_order_status' => $order->status,
+                'new_payment_status' => $order->primaryPayment->payment_status ?? 'N/A',
             ]);
-            return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng.'], Response::HTTP_OK);
+            return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng và thanh toán đã được xác nhận.'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            // LOG 5: Lỗi khi cập nhật vào database
-            Log::error('Lỗi khi cập nhật trạng thái đơn hàng.', [
+            Log::error('Lỗi khi cập nhật trạng thái đơn hàng hoặc thanh toán.', [
                 'order_id' => $order->id,
                 'user_id' => $user->id,
                 'error_message' => $e->getMessage(),

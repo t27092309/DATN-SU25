@@ -1,25 +1,24 @@
 <template>
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="py-6">
+    <div class="container mx-auto px-4 py-8">
+        <div class="page-inner">
             <div class="mb-6">
-                <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
                 <ul class="flex items-center space-x-2 text-gray-600 text-sm">
                     <li>
-                        <router-link :to="{ name: 'AdminDashboard' }" class="text-blue-600 hover:text-blue-800">
+                        <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-800">
                             <i class="fas fa-home"></i>
                         </router-link>
                     </li>
+                    <li class="separator">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'products' }" class="hover:text-blue-800">Danh sách sản phẩm</router-link>
+                    </li>
                     <li>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'products' }" class="text-blue-600 hover:text-blue-800">Danh sách sản phẩm</router-link>
-                    </li>
-                    <li>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </li>
-                    <li>
-                        <span class="text-blue-600 font-semibold">{{ route.meta.title }}</span>
+                        <span class="font-semibold">{{ route.meta.title }}</span>
                     </li>
                 </ul>
             </div>

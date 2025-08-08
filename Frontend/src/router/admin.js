@@ -172,7 +172,7 @@ export default [
       },
       {
         path: "orders",
-        name: "DanhSachDonHang",
+        name: "OrderList",
         component: OrderList,
         meta: { requiresAdmin: true, title: "Danh sách đơn hàng" }, // Thêm meta và tiêu đề
       },

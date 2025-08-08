@@ -2,24 +2,23 @@
   <div class="container mx-auto px-4 py-8">
     <div class="page-inner">
       <div class="mb-6">
-        <h3 class="text-3xl font-bold mb-3">{{ route.meta.title }}</h3>
         <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-800">
               <i class="fas fa-home"></i>
             </router-link>
           </li>
           <li class="separator">
             <i class="fas fa-chevron-right text-xs"></i>
           </li>
-          <li class="nav-item">
-            <router-link :to="{ name: 'Coupons' }" class="hover:text-blue-600">Mã Giảm Giá</router-link>
+          <li>
+            <router-link :to="{ name: 'Coupons' }" class="hover:text-blue-800">Quản lí mã giảm giá</router-link>
           </li>
-          <li class="separator">
-            <i class="fas fa-chevron-right text-xs"></i>
+          <li>
+            <i class="fas fa-chevron-right text-gray-400"></i>
           </li>
-          <li class="nav-item">
-            <a href="#" class="text-blue-600">{{ route.meta.title }}</a>
+          <li>
+            <span class="font-semibold">{{ $route.meta.title }}</span>
           </li>
         </ul>
       </div>
@@ -38,13 +37,23 @@
             <table id="trashed-coupons-table" class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại giảm giá</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày hết hạn</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày xóa</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" style="width: 15%">Hành động</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại giảm giá
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá trị</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày hết hạn
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày xóa</th>
+                  <th scope="col"
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    style="width: 15%">Hành động</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200"></tbody>
@@ -289,7 +298,8 @@ onMounted(async () => {
 /* Base container and page layout */
 .container {
   max-width: 1200px;
-  margin: 0 auto; /* Center the container */
+  margin: 0 auto;
+  /* Center the container */
 }
 
 /* Remove default padding from page-inner to let Tailwind's px-4 handle it */
@@ -300,48 +310,66 @@ onMounted(async () => {
 /* Specific styling for the DataTables generated elements if needed */
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-  margin-bottom: 1rem; /* Tailwind's mb-4 equivalent */
-  display: flex; /* Use flex to align items horizontally */
-  align-items: center; /* Center items vertically */
-  gap: 0.5rem; /* Space between filter/length elements */
+  margin-bottom: 1rem;
+  /* Tailwind's mb-4 equivalent */
+  display: flex;
+  /* Use flex to align items horizontally */
+  align-items: center;
+  /* Center items vertically */
+  gap: 0.5rem;
+  /* Space between filter/length elements */
 }
 
 /* Adjust select input inside DataTables length control */
 .dataTables_wrapper .dataTables_length select {
-  padding: 0.25rem 0.5rem; /* Tailwind's px-2 py-1 */
-  border: 1px solid #d1d5db; /* Tailwind's border-gray-300 */
-  border-radius: 0.25rem; /* Tailwind's rounded-md */
-  background-color: #fff; /* White background */
-  appearance: none; /* Remove default arrow */
+  padding: 0.25rem 0.5rem;
+  /* Tailwind's px-2 py-1 */
+  border: 1px solid #d1d5db;
+  /* Tailwind's border-gray-300 */
+  border-radius: 0.25rem;
+  /* Tailwind's rounded-md */
+  background-color: #fff;
+  /* White background */
+  appearance: none;
+  /* Remove default arrow */
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236B7280'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1.5em 1.5em;
-  min-width: unset; /* Override any conflicting min-width */
-  width: auto; /* Allow width to adjust to content */
+  min-width: unset;
+  /* Override any conflicting min-width */
+  width: auto;
+  /* Allow width to adjust to content */
 }
 
 /* Adjust search input inside DataTables filter control */
 .dataTables_wrapper .dataTables_filter input {
-  padding: 0.25rem 0.75rem; /* Tailwind's px-3 py-2 */
-  border: 1px solid #d1d5db; /* Tailwind's border-gray-300 */
-  border-radius: 0.25rem; /* Tailwind's rounded-md */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Tailwind's shadow-sm */
+  padding: 0.25rem 0.75rem;
+  /* Tailwind's px-3 py-2 */
+  border: 1px solid #d1d5db;
+  /* Tailwind's border-gray-300 */
+  border-radius: 0.25rem;
+  /* Tailwind's rounded-md */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  /* Tailwind's shadow-sm */
 }
 
 /* Pagination and info */
 .dataTables_wrapper .dataTables_paginate,
 .dataTables_wrapper .dataTables_info {
-  margin-top: 1rem; /* Tailwind's mt-4 equivalent */
+  margin-top: 1rem;
+  /* Tailwind's mt-4 equivalent */
 }
 
 /* Specific styling for the DataTables table itself */
 .dataTables_wrapper table.dataTable {
-  border-collapse: collapse !important; /* Ensure no double borders */
+  border-collapse: collapse !important;
+  /* Ensure no double borders */
 }
 
 .dataTables_wrapper table.dataTable th,
 .dataTables_wrapper table.dataTable td {
-  padding: 0.75rem 1.5rem; /* Equivalent to px-6 py-3 for th, but more flexible for td */
+  padding: 0.75rem 1.5rem;
+  /* Equivalent to px-6 py-3 for th, but more flexible for td */
 }
 </style>

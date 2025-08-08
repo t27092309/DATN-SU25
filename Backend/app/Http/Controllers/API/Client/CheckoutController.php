@@ -567,6 +567,17 @@ class CheckoutController extends Controller
             $variant->decrement('stock', $validated['quantity']);
             $variant->increment('sold', $validated['quantity']);
 
+            //lưu vào inventory_logs
+            // InventoryLog::create([
+            //     'product_variant_id' => $variant->id,
+            //     'user_id' => $user->id,
+            //     'warehouse_id' => null, // nếu chưa dùng đa kho
+            //     'type' => 'export', // xuất kho vì người dùng mua hàng
+            //     'quantity_change' => -$validated['quantity'],
+            //     'note' => 'Mua ngay - Đơn hàng ID #' . $order->id,
+            // ]);
+
+
             if ($coupon) {
                 $coupon->increment('used_count');
             }
