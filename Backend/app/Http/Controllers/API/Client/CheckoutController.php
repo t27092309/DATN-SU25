@@ -290,20 +290,33 @@ class CheckoutController extends Controller
 
         try {
             $totalItemsPrice = 0;
-            foreach ($cartItems as $item) { // Vòng lặp bây giờ chỉ xử lý các item được chọn
-                $variant = $item->variant;
+            foreach ($cartItems as $item) {
+                $variantId = $item->variant_id ?? ($item->variant->id ?? null);
+
+                if (!$variantId) {
+                    DB::rollBack();
+                    Log::error('Không tìm thấy variant_id trong cart item.', [
+                        'user_id' => $user->id,
+                        'cart_item' => $item,
+                    ]);
+                    return response()->json(['message' => 'Không thể xác định sản phẩm.'], 400);
+                }
+
+                $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->first();
+
                 if (!$variant || $variant->stock < $item->quantity || $variant->status === 'unavailable') {
                     DB::rollBack();
                     Log::warning('Sản phẩm không đủ tồn kho/không sẵn: ', [
                         'user_id' => $user->id,
                         'cart_item_id' => $item->id,
-                        'variant_id' => $variant->id ?? 'N/A',
+                        'variant_id' => $variant?->id ?? 'N/A',
                         'requested_quantity' => $item->quantity,
-                        'available_stock' => $variant->stock ?? 'N/A',
-                        'status' => $variant->status ?? 'N/A'
+                        'available_stock' => $variant?->stock ?? 'N/A',
+                        'status' => $variant?->status ?? 'N/A'
                     ]);
-                    return response()->json(['message' => 'Sản phẩm "' . ($variant->product->name ?? 'không xác định') . '" biến thể "' . ($variant->sku ?? 'không xác định') . '" không đủ tồn kho hoặc không có sẵn.'], Response::HTTP_BAD_REQUEST);
+                    return response()->json(['message' => 'Sản phẩm "' . ($variant->product->name ?? 'không xác định') . '" không đủ tồn kho hoặc không có sẵn.'], 400);
                 }
+
                 $totalItemsPrice += $variant->price * $item->quantity;
             }
 
@@ -388,7 +401,6 @@ class CheckoutController extends Controller
 
                 $variant->decrement('stock', $item->quantity);
                 $variant->increment('sold', $item->quantity);
-
 
                 //lưu vào inventory_logs
                 //                 InventoryLog::create([
@@ -491,9 +503,13 @@ class CheckoutController extends Controller
             return $addressData; // Return error response from resolveAddressData
         }
 
-        $variant = ProductVariant::with('product', 'attributeValues.attribute')->findOrFail($validated['product_variant_id']);
+        $variant = ProductVariant::with(['product', 'attributeValues.attribute'])
+            ->where('id', $validated['product_variant_id'])
+            ->lockForUpdate() // 💥 Quan trọng để chống oversell
+            ->first();
 
-        if ($variant->stock < $validated['quantity'] || $variant->status === 'unavailable') {
+        if (!$variant || $variant->stock < $validated['quantity'] || $variant->status === 'unavailable') {
+            DB::rollBack(); // 🛑 Huỷ transaction nếu hết hàng
             return response()->json(['message' => 'Sản phẩm không đủ tồn kho hoặc không có sẵn.'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -504,6 +520,7 @@ class CheckoutController extends Controller
             ->where('is_active', true)
             ->first();
 
+            DB::beginTransaction();
         if (!$shippingMethod) {
             return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);
         }
@@ -526,7 +543,7 @@ class CheckoutController extends Controller
 
         $finalTotal += $shippingFee; // Add shipping fee to the total
 
-        DB::beginTransaction();
+        
         try {
             $order = Order::create([
                 'user_id' => $user->id,
@@ -570,14 +587,15 @@ class CheckoutController extends Controller
             $variant->increment('sold', $validated['quantity']);
 
             //lưu vào inventory_logs
-            InventoryLog::create([
-                'product_variant_id' => $variant->id,
-                'user_id' => $user->id,
-                'warehouse_id' => null, // nếu chưa dùng đa kho
-                'type' => 'export', // xuất kho vì người dùng mua hàng
-                'quantity_change' => -$validated['quantity'],
-                'note' => 'Mua ngay - Đơn hàng ID #' . $order->id,
-            ]);
+            // InventoryLog::create([
+            //     'product_variant_id' => $variant->id,
+            //     'user_id' => $user->id,
+            //     'warehouse_id' => null, // nếu chưa dùng đa kho
+            //     'type' => 'export', // xuất kho vì người dùng mua hàng
+            //     'quantity_change' => -$validated['quantity'],
+            //     'note' => 'Mua ngay - Đơn hàng ID #' . $order->id,
+            // ]);
+
 
             if ($coupon) {
                 $coupon->increment('used_count');

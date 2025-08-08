@@ -1,8 +1,8 @@
 <template>
   <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 max-w-7xl">
-    <h1 class="text-center mb-12 text-4xl font-extrabold text-gray-800 sm:text-5xl tracking-tight">
+    <!-- <h1 class="text-center mb-12 text-4xl font-extrabold text-gray-800 sm:text-5xl tracking-tight">
       Quản lý <span class="text-purple-600">Thuộc tính</span> & <span class="text-emerald-600">Giá trị</span>
-    </h1>
+    </h1> -->
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div class="h-full flex flex-col">

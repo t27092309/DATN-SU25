@@ -58,7 +58,7 @@ class OrderController extends Controller
             'orderAddress',
             'payments'
         ])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate(10); // Phân trang cho các đơn hàng
 
         // Format dữ liệu nếu cần thiết (ví dụ: định dạng tiền tệ)
