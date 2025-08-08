@@ -11,6 +11,8 @@ use App\Models\OrderAddress;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderDeliveredMail;
 
 class OrderController extends Controller
 {
@@ -254,12 +256,24 @@ class OrderController extends Controller
                 }
             });
 
+            // Gửi mail thông báo đã giao hàng thành công
+            try {
+                Mail::to($user->email)->send(new OrderDeliveredMail($order));
+                Log::info('Email giao hàng thành công đã được gửi.', ['order_id' => $order->id, 'user_email' => $user->email]);
+            } catch (\Exception $e) {
+                Log::error('Lỗi khi gửi mail giao hàng thành công.', [
+                    'order_id' => $order->id,
+                    'user_email' => $user->email,
+                    'error_message' => $e->getMessage(),
+                ]);
+               
+            }
             Log::info('Cập nhật trạng thái đơn hàng và thanh toán thành công.', [
                 'order_id' => $order->id,
                 'new_order_status' => $order->status,
                 'new_payment_status' => $order->primaryPayment->payment_status ?? 'N/A',
             ]);
-            return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng và thanh toán đã được xác nhận.'], Response::HTTP_OK);
+            return response()->json(['message' => 'Đơn hàng đã được đánh dấu là Đã giao hàng, mail xác nhận đã được gửi.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             Log::error('Lỗi khi cập nhật trạng thái đơn hàng hoặc thanh toán.', [
                 'order_id' => $order->id,

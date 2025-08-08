@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderPlacedMail;
 
 // Import các service hoặc class xử lý payment gateways
 use App\Services\MomoPaymentService;
@@ -400,6 +402,15 @@ class CheckoutController extends Controller
                 $variant->decrement('stock', $item->quantity);
                 $variant->increment('sold', $item->quantity);
 
+                //lưu vào inventory_logs
+                //                 InventoryLog::create([
+                //                     'product_variant_id' => $variant->id,
+                //                     'user_id' => $user->id,
+                //                     'type' => 'import',
+                //                     'quantity_change' => $item->quantity,
+                //                     'note' => 'Hoàn tồn khi hủy đơn - Order #' . $order->id,
+                //                 ]);
+
                 // LOG 13: Cập nhật tồn kho cho mỗi item
 
                 Log::info('Đã xử lý item đơn hàng và cập nhật tồn kho:', [
@@ -438,6 +449,14 @@ class CheckoutController extends Controller
             }
 
             DB::commit();
+
+            try {
+                Mail::to($user->email)->send(new OrderPlacedMail($order));
+                Log::info('Đã gửi email xác nhận đơn hàng đến: ' . $user->email);
+            } catch (\Exception $e) {
+                Log::error('Không thể gửi email xác nhận đơn hàng: ' . $e->getMessage());
+            }
+
             Log::info('Transaction đặt hàng thành công cho user: ' . $user->id . ' order: ' . $order->id);
 
             return response()->json([
