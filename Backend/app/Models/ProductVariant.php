@@ -22,6 +22,11 @@ class ProductVariant extends Model
         'description'
     ];
 
+    protected $appends = ['slug'];
+    public function getSlugAttribute(): ?string
+    {
+        return $this->product->slug ?? null;
+    }
     public function product()
     {
         return $this->belongsTo(Product::class);
@@ -30,9 +35,9 @@ class ProductVariant extends Model
     {
         return $this->belongsToMany(
             AttributeValue::class,
-            'product_variant_attribute_value', // Tên bảng pivot
-            'product_variant_id',              // Khóa ngoại của ProductVariant trên bảng pivot
-            'attribute_value_id'               // Khóa ngoại của AttributeValue trên bảng pivot
+            'product_variant_attribute_value',
+            'product_variant_id',             
+            'attribute_value_id'              
         );
     }
     public function inventoryLogs()

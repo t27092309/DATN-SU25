@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderAddress;
+use App\Models\Cart;
+use App\Models\CartItem;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -136,11 +138,16 @@ class OrderController extends Controller
             if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
                 $productImage = asset('storage/' . $item->productVariant->product->image);
             }
-
+            $slug = null;
+            if ($item->productVariant && $item->productVariant->product) {
+                $product = $item->productVariant->product;
+                $slug = $product->slug;
+            };
             return [
                 'id' => $item->id,
                 'product_name' => $item->productVariant->product->name ?? 'N/A',
                 'product_image' => $productImage, // Tên biến thể đã được định dạng
+                'slug' => $slug,
                 'variant_name' => $displayVariantName,
                 'quantity' => $item->quantity,
                 'price_each' => (float) $item->price_each,
@@ -258,6 +265,13 @@ class OrderController extends Controller
 
             // Gửi mail thông báo đã giao hàng thành công
             try {
+                 $order = Order::with([
+                    'user',
+                    'orderAddress.province',
+                    'orderAddress.district',
+                    'orderAddress.ward',
+                    'payment'
+                ])->find($order->id);
                 Mail::to($user->email)->send(new OrderDeliveredMail($order));
                 Log::info('Email giao hàng thành công đã được gửi.', ['order_id' => $order->id, 'user_email' => $user->email]);
             } catch (\Exception $e) {
@@ -266,7 +280,6 @@ class OrderController extends Controller
                     'user_email' => $user->email,
                     'error_message' => $e->getMessage(),
                 ]);
-               
             }
             Log::info('Cập nhật trạng thái đơn hàng và thanh toán thành công.', [
                 'order_id' => $order->id,
@@ -333,6 +346,82 @@ class OrderController extends Controller
             DB::rollBack(); // Hoàn tác Transaction nếu có lỗi
             \Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
             return response()->json(['message' => 'Không thể hủy đơn hàng. Vui lòng thử lại.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Mua lại một đơn hàng đã hoàn tất bằng cách thêm các sản phẩm vào giỏ hàng.
+     *
+     * @param Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reorder(Order $order)
+    {
+        $user = Auth::user();
+
+        // 1. Kiểm tra xem đơn hàng có thuộc về người dùng hiện tại không
+        if ($order->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Bạn không có quyền truy cập đơn hàng này.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // 2. Tìm giỏ hàng hiện tại của người dùng. Nếu chưa có, tạo mới.
+        $cart = Cart::firstOrCreate(['user_id' => $user->id, 'status' => 'active']);
+
+        // 3. Tải các sản phẩm của đơn hàng cũ
+        $order->load('orderItems.productVariant');
+
+        try {
+            DB::beginTransaction();
+
+            // 4. Lặp qua các sản phẩm trong đơn hàng cũ và thêm vào bảng cart_items
+            foreach ($order->orderItems as $item) {
+                $productVariant = $item->productVariant;
+
+                // Kiểm tra xem biến thể sản phẩm có tồn tại và còn hàng không
+                if (!$productVariant || $productVariant->stock < $item->quantity) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Sản phẩm "' . $item->product_name . '" hiện không đủ số lượng trong kho.'
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+
+                // Thêm hoặc cập nhật sản phẩm trong bảng cart_items
+                $cartItem = CartItem::where('cart_id', $cart->id)
+                    ->where('product_variant_id', $productVariant->id)
+                    ->first();
+
+                if ($cartItem) {
+                    // Nếu sản phẩm đã có trong giỏ, cập nhật số lượng
+                    $cartItem->quantity += $item->quantity;
+                    $cartItem->save();
+                } else {
+                    // Nếu chưa có, tạo mới một bản ghi trong cart_items
+                    CartItem::create([
+                        'cart_id' => $cart->id,
+                        'product_id' => $productVariant->product_id, // Lấy product_id từ productVariant
+                        'product_variant_id' => $productVariant->id,
+                        'price' => $productVariant->price, // Giả sử bạn có giá trong product_variants
+                        'quantity' => $item->quantity,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Đã thêm các sản phẩm từ đơn hàng cũ vào giỏ hàng của bạn.'
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi mua lại đơn hàng: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'user_id' => $user->id
+            ]);
+            return response()->json([
+                'message' => 'Không thể mua lại đơn hàng. Vui lòng thử lại.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

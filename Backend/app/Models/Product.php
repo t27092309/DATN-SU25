@@ -20,6 +20,7 @@ class Product extends Model
         'gender',
         'price',
         'category_id',
+        'has_variants',
         'brand_id',
         'views'
     ];

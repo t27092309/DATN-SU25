@@ -17,7 +17,7 @@
         <ul>
             <li><strong>Mã đơn hàng:</strong> #{{ $order->id }}</li>
             <li><strong>Ngày đặt:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</li>
-            <li><strong>Hình thức thanh toán:</strong> {{ strtoupper($order->payment_method) }}</li>
+            <li><strong>Hình thức thanh toán:</strong> {{ $order->payment->payment_method ?? 'Không xác định' }}</li>
             <li><strong>Trạng thái:</strong> {{ ucfirst($order->status) }}</li>
         </ul>
 

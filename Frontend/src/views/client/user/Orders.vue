@@ -90,7 +90,7 @@
             </router-link>
           </template>
           <template v-else-if="order.status === 'delivered'">
-            <button
+            <button @click="reorder(order.id)"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Mua Lại
             </button>
@@ -100,7 +100,7 @@
             </router-link>
           </template>
           <template v-else-if="order.status === 'cancelled'">
-            <button
+            <button @click="reorder(order.id)"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Đặt Lại
             </button>
@@ -364,7 +364,30 @@ const cancelOrder = async (orderId) => { // Đổi tên biến từ idDonHang th
   });
 };
 
-// Bạn có thể thêm các hàm cho "Mua Lại", "Đặt Lại", "Xem Lý Do Hủy", "Thanh Toán Ngay" tương tự
+// Hàm mới để mua lại đơn hàng
+const reorder = async (orderId) => {
+  Swal.fire({
+    title: 'Mua lại đơn hàng?',
+    text: 'Các sản phẩm trong đơn hàng này sẽ được thêm vào giỏ hàng của bạn.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Đồng ý',
+    cancelButtonText: 'Hủy'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await api.post(`orders/${orderId}/reorder`);
+        showSuccess(response.data.message);
+        router.push({ name: 'GioHang' }); // Chuyển hướng đến trang giỏ hàng
+      } catch (err) {
+        console.error('Lỗi khi mua lại đơn hàng:', err);
+        showError(err.response?.data?.message || 'Không thể mua lại đơn hàng. Vui lòng thử lại.');
+      }
+    }
+  });
+};
 </script>
 
 <style scoped></style>
