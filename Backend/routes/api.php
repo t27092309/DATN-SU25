@@ -78,6 +78,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('{order}', [ClientOrderController::class, 'show']);
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
+            Route::post('/{order}/reorder', [ClientOrderController::class, 'reorder']);
         });
 
 
