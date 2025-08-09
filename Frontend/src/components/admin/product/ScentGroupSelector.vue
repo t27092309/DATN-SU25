@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <p v-else class="text-gray-500 italic mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
+        <p v-else class="text-gray-500 italic mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-md">
             <i class="fas fa-info-circle mr-2"></i> Chưa có nhóm hương nào được chọn.
         </p>
     </div>

@@ -25,6 +25,7 @@ class ProductDetailResource extends JsonResource
             'price' => $this->price,
             'view' => $this->views,
             'description' => $this->description,
+            'has_variants' => $this->has_variants,
 
             // Include brand_name when the 'brand' relationship is loaded
             'brand_id' => $this->brand_id, // Still good to include the ID
