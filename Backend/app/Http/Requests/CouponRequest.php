@@ -42,6 +42,7 @@ class CouponRequest extends FormRequest
             'discount_value.required' => 'Vui lòng nhập giá trị giảm.',
             'discount_value.numeric' => 'Giá trị giảm phải là số.',
             'discount_value.min' => 'Giá trị giảm phải lớn hơn hoặc bằng 0.',
+            'discount_value.max' => 'Giá trị giảm phải nhỏ hơn hoặc bằng 100% khi loại giảm giá là phần trăm.',
 
             'expires_at.date' => 'Ngày hết hạn không hợp lệ.',
             'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
@@ -60,8 +61,20 @@ class CouponRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $type = $this->input('discount_type');
+            $value = $this->input('discount_value');
 
+            if ($type === 'percent') {
+                if ($value > 100) {
+                    $validator->errors()->add(
+                        'discount_value',
+                        'Giá trị giảm phải nhỏ hơn hoặc bằng 100% khi loại giảm giá là phần trăm.'
+                    );
+                }
+            }
+
+            // 2. Validation cho `max_discount` (áp dụng cho cả 2 loại)
             if ($type === 'percent' && !$this->filled('max_discount')) {
+                // Bắt buộc nhập giá trị giảm tối đa khi là phần trăm
                 $validator->errors()->add(
                     'max_discount',
                     'Khi chọn loại giảm giá theo %, bạn phải nhập giảm tối đa.'
@@ -69,11 +82,14 @@ class CouponRequest extends FormRequest
             }
 
             if ($type === 'fixed' && $this->filled('max_discount')) {
+                // Không được nhập giá trị giảm tối đa khi là cố định
                 $validator->errors()->add(
                     'max_discount',
                     'Không được nhập giảm tối đa khi chọn loại giảm giá cố định.'
                 );
             }
+
+            // --- Kết thúc validation tùy chỉnh ---
         });
     }
 }
