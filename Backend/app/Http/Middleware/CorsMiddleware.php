@@ -19,18 +19,14 @@ class CorsMiddleware
 
         // Thiết lập các header CORS cần thiết
         $response->headers->set('Access-Control-Allow-Origin', $allowedOrigin);
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        // >>> THAY ĐỔI TẠI ĐÂY: THÊM 'PATCH' VÀO DANH SÁCH <<<
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
         $response->headers->set('Access-Control-Allow-Credentials', 'true');
+        $response->headers->set('Access-Control-Max-Age', '86400'); // Nên thêm Max-Age để cache preflight
 
         // Xử lý các request OPTIONS (preflight)
-        // Các trình duyệt gửi request OPTIONS trước các request "phức tạp"
-        // để kiểm tra xem server có cho phép cross-origin hay không.
-        // Server cần trả về status 204 No Content và các header CORS.
         if ($request->isMethod('OPTIONS')) {
-            // Trả về một response 204 mới với các header CORS đã được set
-            // Điều này đảm bảo rằng các header CORS được gửi đi ngay lập tức
-            // mà không cần phải xử lý thêm bất kỳ logic route nào.
             return response('', 204)
                         ->withHeaders($response->headers->all());
         }

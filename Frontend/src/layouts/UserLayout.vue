@@ -1,22 +1,22 @@
 <template>
   <div class="flex flex-col md:flex-row max-w-7xl mx-auto min-h-screen bg-gray-100">
-    <main class="flex-1 p-4 md:p-8 order-2 md:order-1">
+    <main class="flex-1 p-4 md:p-8 order-2 md:order-2">
       <div class="bg-white shadow-md rounded-lg p-6 h-full">
         <router-view></router-view>
       </div>
     </main>
 
-    <aside class="w-full md:w-64 p-4 order-1 md:order-2 flex-shrink-0">
+    <aside class="w-full md:w-64 p-4 order-1 md:order-1 flex-shrink-0">
       <div class="flex items-center mb-6">
-        <div>
+        <!-- <div>
           <p class="font-semibold text-gray-800">{{ userName }}</p>
-        </div>
+        </div> -->
 
       </div>
 
       <nav>
         <ul>
-          <li class="mb-2">
+          <!-- <li class="mb-2">
             <a href="#" @click.prevent="selectMenuItem('notifications')"
               :class="['flex items-center p-2 rounded',
                 activeMenuItem === 'notifications' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
@@ -24,7 +24,7 @@
                 :class="activeMenuItem === 'notifications' ? 'text-red-500' : 'text-gray-500'"></i>
               Thông Báo
             </a>
-          </li>
+          </li> -->
 
           <li class="mb-2">
             <a href="#" @click.prevent="toggleAccountSubMenu" :class="['flex items-center p-2 rounded',
@@ -50,7 +50,7 @@
               Đơn mua
             </router-link>
           </li>
-          <li class="mb-2">
+          <!-- <li class="mb-2">
             <a href="#" @click.prevent="selectMenuItem('vouchers')"
               :class="['flex items-center p-2 rounded',
                 activeMenuItem === 'vouchers' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
@@ -67,7 +67,7 @@
                 :class="activeMenuItem === 'shopee-coins' ? 'text-red-600' : 'text-orange-500'"></i>
               Xu của tôi
             </a>
-          </li>
+          </li> -->
         </ul>
       </nav>
     </aside>
@@ -119,8 +119,3 @@ const selectMenuItem = (menuItem) => {
   }
 };
 </script>
-
-<style scoped>
-@import '@/assets/tailwind.css';
-/* @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css'); */
-</style>

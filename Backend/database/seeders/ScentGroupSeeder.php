@@ -13,6 +13,6 @@ class ScentGroupSeeder extends Seeder
      */
     public function run(): void
     {
-        ScentGroup::factory()->count(10)->create();
+        ScentGroup::factory()->count(100)->create();
     }
 }

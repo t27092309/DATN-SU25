@@ -198,9 +198,17 @@ const handleLogin = async () => {
 
         authStore.setAuth(response.data.token, response.data.user);
 
+        // --- ĐÂY LÀ PHẦN THAY ĐỔI LOGIC ĐIỀU HƯỚNG ---
+        const userRole = response.data.user.role; // Lấy role từ phản hồi của Laravel
 
-        // Chuyển hướng người dùng đến trang chính hoặc dashboard sau khi đăng nhập thành công
-        router.push('/'); // Thay đổi '/dashboard' bằng route bạn muốn
+        if (userRole === 'admin') {
+            router.push('/admin'); // Điều hướng đến trang admin
+        } else if (userRole === 'staff') {
+            router.push('/staff-dashboard'); // Điều hướng đến trang staff (ví dụ)
+        } else {
+            router.push('/'); // Điều hướng đến trang chính hoặc trang người dùng thông thường
+        }
+        // --- KẾT THÚC PHẦN THAY ĐỔI LOGIC ĐIỀU HƯỚNG ---
 
     } catch (error) {
         console.error('Lỗi đăng nhập:', error);
@@ -234,4 +242,15 @@ const togglePasswordVisibility = () => {
 <style scoped>
 @import '@/assets/tailwind.css';
 /* Any custom styles if needed, but Tailwind should handle most of it */
+
+.error-message {
+    color: red;
+    font-size: 0.875em; /* 14px */
+    margin-top: 0.25rem; /* 4px */
+}
+
+.general-error {
+    text-align: center;
+    margin-top: 1rem;
+}
 </style>

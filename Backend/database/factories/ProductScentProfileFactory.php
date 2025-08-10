@@ -18,7 +18,7 @@ class ProductScentProfileFactory extends Factory
         return [
             'product_id' => Product::inRandomOrder()->value('id') ?? Product::factory(),
             'scent_group_id' => ScentGroup::inRandomOrder()->value('id') ?? ScentGroup::factory(),
-            'strength' => $this->faker->numberBetween(1, 10),
+            'strength' => $this->faker->numberBetween(0, 100),
         ];
     }
 }

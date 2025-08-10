@@ -5,6 +5,18 @@
   <meta charset="UTF-8">
   <link rel="icon" href="/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="./src/assets/js/plugin/webfont/webfont.min.js"></script>
+  <script>
+    WebFont.load({
+      google: { "families": ["Public Sans:300,400,500,600,700"] },
+      custom: { "families": ["Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands", "simple-line-icons"], urls: ['../assets/css/fonts.min.css'] },
+      active: function () {
+        sessionStorage.fonts = true;
+      }
+    });
+  </script>
+
   <title>Vite App</title>
 </head>
 
@@ -13,7 +25,7 @@
   <script type="module" src="./src/main.js"></script>
 
   <!--Start of Tawk.to Script-->
-  <script type="text/javascript">
+  <!-- <script type="text/javascript">
     var Tawk_API = Tawk_API || {}, Tawk_LoadStart = new Date();
     (function () {
       var s1 = document.createElement("script"), s0 = document.getElementsByTagName("script")[0];
@@ -23,7 +35,7 @@
       s1.setAttribute('crossorigin', '*');
       s0.parentNode.insertBefore(s1, s0);
     })();
-  </script>
+  </script> -->
   <!--End of Tawk.to Script-->
 </body>
 

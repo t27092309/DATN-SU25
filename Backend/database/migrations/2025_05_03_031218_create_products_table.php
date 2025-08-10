@@ -19,11 +19,12 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->enum('gender', ['male', 'female', 'unisex']);
             $table->decimal('price', 10, 2)->nullable();
+            $table->integer('stock')->nullable();
+            $table->boolean('has_variants')->default(false); // Cột mới
             $table->foreignId('category_id')->constrained();
             $table->foreignId('brand_id')->constrained();
             $table->timestamps();
         });
-        
     }
 
     /**

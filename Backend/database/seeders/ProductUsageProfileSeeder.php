@@ -13,6 +13,6 @@ class ProductUsageProfileSeeder extends Seeder
      */
     public function run(): void
     {
-        ProductUsageProfile::factory()->count(10)->create();
+        ProductUsageProfile::factory()->count(1000)->create();
     }
 }

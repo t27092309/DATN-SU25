@@ -6,17 +6,17 @@
           :class="['block p-2 rounded',
             activeMenuItem === 'profile' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">Hồ Sơ</router-link>
       </li>
-      <li class="mb-2">
+      <!-- <li class="mb-2">
         <router-link to="ngan-hang" @click.prevent="emitSelectMenuItem('bank')"
           :class="['block p-2 rounded',
             activeMenuItem === 'bank' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">Ngân hàng</router-link>
-      </li>
+      </li> -->
       <li class="mb-2">
         <router-link to="dia-chi" @click.prevent="emitSelectMenuItem('address')"
           :class="['block p-2 rounded',
             activeMenuItem === 'address' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">Địa chỉ</router-link>
       </li>
-      <li class="mb-2">
+      <!-- <li class="mb-2">
         <a href="#" @click.prevent="emitSelectMenuItem('password')"
           :class="['block p-2 rounded',
             activeMenuItem === 'password' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
@@ -36,7 +36,7 @@
             activeMenuItem === 'personalSetting' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
           Thiết lập riêng tư
         </a>
-      </li>
+      </li> -->
     </ul>
   </transition>
 </template>

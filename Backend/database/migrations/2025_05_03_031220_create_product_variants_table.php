@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('status', ['available', 'out_of_stock', 'discontinued'])->default('available');
             $table->string('barcode')->nullable();
             $table->text('description')->nullable();
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');

@@ -2,27 +2,32 @@
 
 namespace Database\Factories;
 
+use App\Models\Category; // Make sure these are imported
 use App\Models\Brand;
-use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 class ProductFactory extends Factory
 {
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
-        $name = fake()->words(3, true); // tạo tên sản phẩm dài hơn
-        return [
-            'name' => ucfirst($name),
-            'slug' => Str::slug($name),
-            'image' => fake()->imageUrl(600, 600, 'products'),
-            'price' => fake()->randomFloat(2, 100, 1000),
-            'description' => fake()->paragraph(3),
-            'gender' => fake()->randomElement(['male', 'female', 'unisex']),
-            'category_id' => Category::inRandomOrder()->value('id'),
-            'brand_id' => Brand::inRandomOrder()->value('id'),
-            'views' => $this->faker->numberBetween(0, 100000), // Random views between 0 and 100000
+        $name = $this->faker->unique()->words(3, true); // Get a unique name to start with
 
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'image' => $this->faker->imageUrl(600, 600, 'products', true, 'provident'),
+            'price' => $this->faker->randomFloat(2, 10, 1000),
+            'description' => $this->faker->paragraph(),
+            'gender' => $this->faker->randomElement(['male', 'female', 'unisex']),
+            'category_id' => Category::inRandomOrder()->first()->id,
+            'brand_id' => Brand::inRandomOrder()->first()->id,
+            'views' => $this->faker->numberBetween(100, 100000),
         ];
     }
 }

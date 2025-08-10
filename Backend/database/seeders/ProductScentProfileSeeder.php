@@ -13,6 +13,6 @@ class ProductScentProfileSeeder extends Seeder
      */
     public function run(): void
     {
-        ProductScentProfile::factory()->count(10)->create();
+        ProductScentProfile::factory()->count(500)->create();
     }
 }

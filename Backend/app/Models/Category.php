@@ -4,31 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    // Đặt tên bảng nếu không tuân theo quy ước Laravel
     protected $table = 'categories';
 
-    // Các cột mà bạn có thể mass assign
+    // Cho phép gán hàng loạt
     protected $fillable = [
         'name',
         'slug',
     ];
 
-    // Các cột không thể mass assign
-    protected $guarded = [];
+    // Nếu cần xử lý các trường thời gian (bao gồm deleted_at)
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 
-    // Nếu cần xử lý các trường thời gian
-    protected $dates = ['created_at', 'updated_at'];
-
-    // Nếu bạn muốn sử dụng route model binding với slug
+    // Sử dụng slug làm khóa chính trong route model binding
     public function getRouteKeyName()
     {
-        return 'slug'; // Dùng slug thay vì id làm khóa route
+        return 'slug';
     }
+
+    // Quan hệ 1-n với sản phẩm
     public function products()
     {
         return $this->hasMany(Product::class);
