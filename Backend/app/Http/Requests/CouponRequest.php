@@ -14,10 +14,12 @@ class CouponRequest extends FormRequest
 
     public function rules(): array
     {
+        // Sử dụng một quy tắc 'nullable' cho 'discount_value'
+        // và thêm quy tắc 'max' trong 'withValidator' để tùy chỉnh hơn.
         return [
             'code' => 'required|string|max:50|unique:coupons,code,' . ($this->coupon ?? 'NULL') . ',id',
             'discount_type' => 'required|in:percent,fixed',
-            'discount_value' => 'required|numeric|min:0',
+            'discount_value' => 'required|numeric|min:0', // 'max' sẽ được xử lý trong after hook
             'expires_at' => 'nullable|date',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -42,6 +44,7 @@ class CouponRequest extends FormRequest
             'discount_value.required' => 'Vui lòng nhập giá trị giảm.',
             'discount_value.numeric' => 'Giá trị giảm phải là số.',
             'discount_value.min' => 'Giá trị giảm phải lớn hơn hoặc bằng 0.',
+            'discount_value.max' => 'Giá trị giảm phải nhỏ hơn hoặc bằng 100% khi loại giảm giá là phần trăm.',
 
             'expires_at.date' => 'Ngày hết hạn không hợp lệ.',
             'start_date.date' => 'Ngày bắt đầu không hợp lệ.',
@@ -60,12 +63,23 @@ class CouponRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $type = $this->input('discount_type');
+            $value = $this->input('discount_value');
 
-            if ($type === 'percent' && !$this->filled('max_discount')) {
-                $validator->errors()->add(
-                    'max_discount',
-                    'Khi chọn loại giảm giá theo %, bạn phải nhập giảm tối đa.'
-                );
+            // Quy tắc tùy chỉnh cho max_discount
+            if ($type === 'percent') {
+                if (!$this->filled('max_discount')) {
+                    $validator->errors()->add(
+                        'max_discount',
+                        'Khi chọn loại giảm giá theo %, bạn phải nhập giảm tối đa.'
+                    );
+                }
+                // Thêm validation cho discount_value khi là phần trăm
+                if ($value > 100) {
+                    $validator->errors()->add(
+                        'discount_value',
+                        'Giá trị giảm phải nhỏ hơn hoặc bằng 100% khi loại giảm giá là phần trăm.'
+                    );
+                }
             }
 
             if ($type === 'fixed' && $this->filled('max_discount')) {
