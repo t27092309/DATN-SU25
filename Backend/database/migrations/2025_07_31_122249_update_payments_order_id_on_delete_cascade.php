@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            // Since the foreign key constraint doesn't exist yet, we don't need to drop it.
-            // We just add it directly with onDelete('cascade').
-            // The column 'order_id' already exists (from your initial payments migration),
-            // so we use foreign() instead of foreignId().
+            // First, drop the existing foreign key constraint.
+            // The default naming convention is `table_column_foreign`.
+            $table->dropForeign(['order_id']);
+
+            // Now, add the new foreign key constraint with the onDelete('cascade') behavior.
             $table->foreign('order_id')
-                  ->references('id')->on('orders')
-                  ->onDelete('cascade'); // Add the cascade behavior
+                ->references('id')
+                ->on('orders')
+                ->onDelete('cascade');
         });
     }
 
