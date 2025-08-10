@@ -265,6 +265,13 @@ class OrderController extends Controller
 
             // Gửi mail thông báo đã giao hàng thành công
             try {
+                 $order = Order::with([
+                    'user',
+                    'orderAddress.province',
+                    'orderAddress.district',
+                    'orderAddress.ward',
+                    'payment'
+                ])->find($order->id);
                 Mail::to($user->email)->send(new OrderDeliveredMail($order));
                 Log::info('Email giao hàng thành công đã được gửi.', ['order_id' => $order->id, 'user_email' => $user->email]);
             } catch (\Exception $e) {

@@ -83,6 +83,11 @@ class Order extends Model
         return $this->hasMany(Payment::class); // Đề xuất thay đổi thành hasMany
     }
 
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'order_id');
+    }
+
     // Nếu bạn muốn giữ hasOne và chỉ có 1 bản ghi payment chính, bạn có thể giữ tên `payment()`
     public function primaryPayment()
     {
@@ -114,7 +119,4 @@ class Order extends Model
     {
         return $this->status === self::STATUS_PAYMENT_FAILED;
     }
-
-
-    
 }

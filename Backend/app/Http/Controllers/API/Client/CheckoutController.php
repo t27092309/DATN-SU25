@@ -451,11 +451,22 @@ class CheckoutController extends Controller
             DB::commit();
 
             try {
-                Mail::to($user->email)->send(new OrderPlacedMail($order));
-                Log::info('Đã gửi email xác nhận đơn hàng đến: ' . $user->email);
+                // Reload order kèm các quan hệ cần cho email
+                $order = Order::with([
+                    'user',
+                    'orderAddress.province',
+                    'orderAddress.district',
+                    'orderAddress.ward',
+                    'payment'
+                ])->find($order->id);
+
+                // Gửi email xác nhận
+                Mail::to($order->user->email)->send(new OrderPlacedMail($order));
+                Log::info('Đã gửi email xác nhận đơn hàng đến: ' . $order->user->email);
             } catch (\Exception $e) {
                 Log::error('Không thể gửi email xác nhận đơn hàng: ' . $e->getMessage());
             }
+
 
             Log::info('Transaction đặt hàng thành công cho user: ' . $user->id . ' order: ' . $order->id);
 
@@ -520,7 +531,7 @@ class CheckoutController extends Controller
             ->where('is_active', true)
             ->first();
 
-            DB::beginTransaction();
+        DB::beginTransaction();
         if (!$shippingMethod) {
             return response()->json(['message' => 'Phương thức vận chuyển đã chọn không hợp lệ hoặc không hoạt động.'], Response::HTTP_BAD_REQUEST);
         }
@@ -543,7 +554,7 @@ class CheckoutController extends Controller
 
         $finalTotal += $shippingFee; // Add shipping fee to the total
 
-        
+
         try {
             $order = Order::create([
                 'user_id' => $user->id,
@@ -618,6 +629,31 @@ class CheckoutController extends Controller
             }
 
             DB::commit();
+
+            // try {
+            //     Mail::to($user->email)->send(new OrderPlacedMail($order));
+            //     Log::info('Đã gửi email xác nhận đơn hàng đến: ' . $user->email);
+            // } catch (\Exception $e) {
+            //     Log::error('Không thể gửi email xác nhận đơn hàng: ' . $e->getMessage());
+            // }
+
+            try {
+                // Reload order kèm các quan hệ cần cho email
+                $order = Order::with([
+                    'user',
+                    'orderAddress.province',
+                    'orderAddress.district',
+                    'orderAddress.ward',
+                    'payment'
+                ])->find($order->id);
+
+                // Gửi email xác nhận
+                Mail::to($order->user->email)->send(new OrderPlacedMail($order));
+                Log::info('Đã gửi email xác nhận đơn hàng đến: ' . $order->user->email);
+            } catch (\Exception $e) {
+                Log::error('Không thể gửi email xác nhận đơn hàng: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'message' => 'Đặt hàng thành công!',
                 'order_id' => $order->id,
