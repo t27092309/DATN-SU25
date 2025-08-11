@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\OrderReturn;
 class Order extends Model
 {
     use HasFactory;
@@ -18,6 +18,7 @@ class Order extends Model
     public const STATUS_DELIVERED = 'delivered';   // Đã giao thành công
     public const STATUS_CANCELLED = 'cancelled';   // Đã hủy
     public const STATUS_REFUNDED = 'refunded';     // Đã hoàn tiền
+    public const STATUS_RETURN_REQUESTED = 'return_requested';
 
     // Có thể gom tất cả các trạng thái vào một mảng để dùng trong validation/enum
     public const ALL_STATUSES = [
@@ -29,6 +30,7 @@ class Order extends Model
         self::STATUS_DELIVERED,
         self::STATUS_CANCELLED,
         self::STATUS_REFUNDED,
+        self::STATUS_RETURN_REQUESTED,
     ];
 
     protected $fillable = [
@@ -118,5 +120,10 @@ class Order extends Model
     public function isPaymentFailed(): bool
     {
         return $this->status === self::STATUS_PAYMENT_FAILED;
+    }
+
+        public function returnRequest()
+    {
+        return $this->hasOne(OrderReturn::class);
     }
 }

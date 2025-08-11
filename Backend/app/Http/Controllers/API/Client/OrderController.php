@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Models\OrderItem;
 use App\Models\OrderAddress;
 use App\Models\Cart;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderDeliveredMail;
+use Carbon\Carbon;
 
 class OrderController extends Controller
 {
@@ -265,7 +267,7 @@ class OrderController extends Controller
 
             // Gửi mail thông báo đã giao hàng thành công
             try {
-                 $order = Order::with([
+                $order = Order::with([
                     'user',
                     'orderAddress.province',
                     'orderAddress.district',
@@ -421,6 +423,64 @@ class OrderController extends Controller
             ]);
             return response()->json([
                 'message' => 'Không thể mua lại đơn hàng. Vui lòng thử lại.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function requestReturn(Request $request, Order $order)
+    {
+        $user = Auth::user();
+
+        // 1. Xác thực người dùng và quyền sở hữu đơn hàng
+        if ($order->user_id !== $user->id) {
+            return response()->json([
+                'message' => 'Bạn không có quyền gửi yêu cầu hoàn trả cho đơn hàng này.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // 2. Kiểm tra trạng thái đơn hàng và thời gian
+        $maxReturnDays = 7;
+
+        // **THAY ĐỔI 1: Cập nhật điều kiện kiểm tra trạng thái**
+        // Đơn hàng phải ở trạng thái 'delivered' VÀ không có yêu cầu hoàn trả nào đang chờ xử lý
+        if ($order->status !== 'delivered' || !$order->delivered_at || Carbon::parse($order->delivered_at)->diffInDays(now()) > $maxReturnDays) {
+            return response()->json([
+                'message' => 'Đơn hàng phải ở trạng thái "Đã giao" và thời gian yêu cầu không quá ' . $maxReturnDays . ' ngày kể từ ngày nhận hàng.'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // **THAY ĐỔI 2: Xóa bỏ kiểm tra trùng lặp tại đây**
+        // Chúng ta sẽ không cần kiểm tra này nữa vì trạng thái của đơn hàng đã được cập nhật
+        // ngay sau khi gửi yêu cầu. Điều kiện ở bước 2 đã đủ để ngăn chặn gửi trùng lặp.
+
+        // 3. Validate dữ liệu đầu vào từ request
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            // 4. Tạo một bản ghi mới trong bảng 'order_returns'
+            $orderReturn = new OrderReturn();
+            $orderReturn->order_id = $order->id;
+            $orderReturn->reason = $request->reason;
+            $orderReturn->notes = $request->notes;
+            $orderReturn->status = 'requested'; // Giả định có trường status trong bảng order_returns
+            $orderReturn->save();
+
+            // **THAY ĐỔI 3: Cập nhật trạng thái đơn hàng trong bảng 'orders'**
+            // Quan trọng: Thay đổi status của đơn hàng chính
+            $order->status = 'return_requested';
+            $order->save();
+
+            // 5. Trả về phản hồi thành công
+            return response()->json([
+                'message' => 'Yêu cầu hoàn trả của bạn đã được gửi thành công và đang chờ xét duyệt.'
+            ], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi tạo yêu cầu hoàn trả: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi tạo yêu cầu hoàn trả. Vui lòng thử lại.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

@@ -19,6 +19,7 @@
     "axios": "^1.10.0",
     "barcode": "^0.1.0",
     "jsbarcode": "^3.12.1",
+    "moment": "^2.30.1",
     "pinia": "^3.0.3",
     "slugify": "^1.6.6",
     "sweetalert2": "^11.22.2",
