@@ -60,8 +60,9 @@ const menuItems = ref([
   // Giữ nguyên dữ liệu menuItems như trước
   {
     name: 'Dashboard',
-    route: '/dashboard',
+    route: '/admin/dashboard',
     isOpen: false,
+    icon: 'fas fa-chart-line',
   },
   {
     name: 'Sản phẩm',
