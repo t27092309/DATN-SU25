@@ -13,7 +13,7 @@ use App\Http\Requests\LookupOrderRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
-
+use Illuminate\Support\Facades\Auth;
 class OrderController extends Controller
 {
 
@@ -23,7 +23,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // Tạo query builder để lấy danh sách đơn hàng
-        $query = Order::with(['user', 'orderItems.productVariant', 'orderAddress', 'payments'])
+        $query = Order::with(['user', 'orderItems.productVariant', 'orderAddress', 'payments', 'returnRequest.processor'])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->search, function ($q) use ($request) {
                 $q->where('id', $request->search)
@@ -247,7 +247,7 @@ class OrderController extends Controller
             $returnRequest->processed_at = now();
             $returnRequest->save();
 
-            $order->status = 'delivered';
+            // $order->status = 'rejected';
             $order->save();
 
             DB::commit();
@@ -284,9 +284,15 @@ class OrderController extends Controller
     {
         $returnRequest = $order->returnRequest;
 
-        if ($order->status !== 'return_requested' || !$returnRequest || $returnRequest->status !== 'approved') {
+        // if ($order->status !== 'return_requested' || !$returnRequest || $returnRequest->status !== 'approved') {
+        //     return response()->json([
+        //         'message' => 'Đơn hàng không ở trạng thái "Đã duyệt yêu cầu hoàn trả" để có thể nhận hàng.'
+        //     ], Response::HTTP_BAD_REQUEST);
+        // }
+
+        if (!$returnRequest || $returnRequest->status !== 'approved') {
             return response()->json([
-                'message' => 'Đơn hàng không ở trạng thái "Đã duyệt yêu cầu hoàn trả" để có thể nhận hàng.'
+                'message' => 'Yêu cầu hoàn trả chưa được duyệt để có thể nhận hàng.'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -298,6 +304,10 @@ class OrderController extends Controller
             $returnRequest->processed_by = Auth::id();
             $returnRequest->processed_at = now();
             $returnRequest->save();
+
+            // Cập nhật trạng thái đơn hàng chính
+            $order->status = 'return_requested'; // hoặc ''
+            $order->save();
 
             // Cập nhật tồn kho sản phẩm
             foreach ($order->orderItems as $item) {
@@ -335,11 +345,18 @@ class OrderController extends Controller
     {
         $returnRequest = $order->returnRequest;
 
-        if ($order->status !== 'return_requested' || !$returnRequest || $returnRequest->status !== 'returned') {
+        // if ($order->status !== 'return_requested' || !$returnRequest || $returnRequest->status !== 'returned') {
+        //     return response()->json([
+        //         'message' => 'Đơn hàng không ở trạng thái "Đã nhận hàng hoàn trả" để có thể hoàn tiền.'
+        //     ], Response::HTTP_BAD_REQUEST);
+        // }
+
+        if (!$returnRequest || $returnRequest->status !== 'returned') {
             return response()->json([
-                'message' => 'Đơn hàng không ở trạng thái "Đã nhận hàng hoàn trả" để có thể hoàn tiền.'
+                'message' => 'Chưa nhận hàng hoàn trả để hoàn tiền.'
             ], Response::HTTP_BAD_REQUEST);
         }
+
 
         // TODO: Thêm logic gọi API cổng thanh toán để thực hiện hoàn tiền ở đây.
 

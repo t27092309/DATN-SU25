@@ -80,7 +80,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex gap-2 justify-end items-center">
-                                <template v-if="order.status === 'return_requested'">
+                                <!-- <template v-if="order.status === 'return_requested'">
                                     <template v-if="order.return_request?.status === 'requested'">
                                         <button @click="approveReturn(order)"
                                             class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200">
@@ -99,6 +99,33 @@
 
                                     <button v-if="order.return_request?.status === 'returned'"
                                         @click="refundOrder(order)"
+                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
+                                        Hoàn tiền
+                                    </button>
+                                </template> -->
+
+                                <template v-if="['return_requested', 'return_approved', 'return_received', 'rejected'].includes(order.status)">
+                                    <template v-if="order.return_request?.status === 'requested'">
+                                        <button @click="approveReturn(order)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200">
+                                            Duyệt trả hàng
+                                        </button>
+                                        <button @click="rejectReturn(order)" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200">
+                                            Từ chối
+                                        </button>
+                                    </template>
+
+                                     <template v-else-if="order.return_request?.status === 'rejected'">
+                                        <span class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md inline-block font-semibold">
+                                        Yêu cầu trả hàng đã bị từ chối
+                                        </span>
+                                    </template>
+
+                                    <button v-if="order.return_request?.status === 'approved'" @click="markAsReturned(order)"
+                                        class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors duration-200">
+                                        Đã nhận hàng hoàn
+                                    </button>
+
+                                    <button v-if="order.return_request?.status === 'returned'" @click="refundOrder(order)"
                                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
                                         Hoàn tiền
                                     </button>
@@ -632,9 +659,45 @@ async function rejectReturn(order) {
 
     if (notes !== undefined) {
         try {
-            const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
+        //     const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
+        //     Swal.fire('Thành công!', response.data.message, 'success');
+        //     Object.assign(order, response.data.data.order);
+
+        //      const updatedOrder = response.data.data.order;
+        //     updatedOrder.return_request = updatedOrder.returnRequest;
+
+        //     // Cập nhật reactive order
+        //     // Object.assign(order, updatedOrder);
+
+        //     delete updatedOrder.returnRequest;
+
+        // // Cập nhật reactive order đúng cách
+        // for (const key in updatedOrder) {
+        //     // Gán từng thuộc tính, đảm bảo Vue detect được thay đổi
+        //     order[key] = updatedOrder[key];
+        // }
+            
+        //     order.status_label = statusLabelMap[order.status] || order.status;
+        //     order.originalStatus = order.status;
+        const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
+
             Swal.fire('Thành công!', response.data.message, 'success');
-            Object.assign(order, response.data.data.order);
+
+            // Lấy dữ liệu đơn hàng đã cập nhật từ phản hồi
+            const updatedOrderData = response.data.data.order;
+
+            // Đảm bảo thuộc tính 'return_request' tồn tại và có giá trị
+            // Sử dụng updatedOrderData.returnRequest từ API để gán cho return_request
+            updatedOrderData.return_request = updatedOrderData.returnRequest;
+            
+            // Xóa thuộc tính 'returnRequest' cũ nếu có để tránh trùng lặp
+            delete updatedOrderData.returnRequest;
+
+            // Cập nhật tất cả các thuộc tính của đối tượng `order` bằng dữ liệu mới.
+            // Vue sẽ nhận biết được sự thay đổi này và tự động cập nhật giao diện.
+            Object.assign(order, updatedOrderData);
+            
+            // Cập nhật lại các thuộc tính bổ sung nếu cần
             order.status_label = statusLabelMap[order.status] || order.status;
             order.originalStatus = order.status;
         } catch (error) {

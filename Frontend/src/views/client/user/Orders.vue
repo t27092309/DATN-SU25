@@ -254,6 +254,7 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
   }
 };
 
+
 const formatDate = (datetimeString) => {
   if (!datetimeString) return 'N/A';
   const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
@@ -281,6 +282,7 @@ const fetchOrderCounts = async () => {
     console.error('Lỗi khi tải số lượng đơn hàng:', err);
   }
 };
+
 
 watch(activeTab, (newTab) => {
   fetchOrders(newTab, 1, searchQuery.value);
@@ -311,11 +313,14 @@ const getStatusText = (status) => {
     case 'shipped': return 'Đang giao hàng';
     case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
-    case 'return_requested': return 'Đang xử lý hoàn trả'; // Cập nhật text cho trạng thái cũ
+    case 'return_requested': return 'Đang xử lý hoàn trả';
     case 'refunded': return 'Đã hoàn tiền'; // Giữ nguyên text cho trạng thái đã hoàn tiền
     default: return 'Không rõ';
   }
 };
+
+
+
 
 const getStatusClass = (status) => {
   switch (status) {
