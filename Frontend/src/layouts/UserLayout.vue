@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col md:flex-row max-w-7xl mx-auto min-h-screen bg-gray-100">
+  <div class="flex flex-col md:flex-row max-w-8xl mx-auto min-h-screen bg-gray-100">
     <main class="flex-1 p-4 md:p-8 order-2 md:order-2">
       <div class="bg-white shadow-md rounded-lg p-6 h-full">
         <router-view></router-view>
