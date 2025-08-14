@@ -117,7 +117,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('/reports/weekly-revenue', [ChartController::class, 'getWeeklyRevenue']);
             Route::get('/reports/monthly-revenue', [ChartController::class, 'getMonthlyRevenue']);
             Route::get('/reports/yearly-revenue', [ChartController::class, 'getYearlyRevenue']);
-
+            Route::get('/reports/customer-growth', [ChartController::class, 'getCustomerGrowth']);
+            Route::get('/reports/top-coupons', [ChartController::class, 'getTopCoupons']);
 
 
             Route::apiResource('shipping-methods', AdminShippingMethodController::class);

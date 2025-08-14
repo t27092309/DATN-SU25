@@ -1,12 +1,10 @@
 <template>
   <div class="p-6 bg-gray-100 min-h-screen">
-    <!-- Header -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard Báo Cáo Doanh Thu</h1>
       <p class="text-gray-600">Tổng quan doanh thu và phân tích chi tiết theo sản phẩm, khách hàng</p>
     </div>
 
-    <!-- Date Range Selector -->
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
       <div class="flex flex-col md:flex-row gap-4 items-center">
         <div class="flex gap-4">
@@ -25,7 +23,6 @@
       </div>
     </div>
 
-    <!-- Key Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6" v-if="keyMetrics">
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex items-center justify-between">
@@ -86,9 +83,44 @@
           </div>
         </div>
       </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md" v-if="conversionData">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Tỷ Lệ Chuyển Đổi</p>
+            <p class="text-2xl font-bold text-teal-600">{{ conversionData.conversion_rate }}%</p>
+          </div>
+          <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+            🔄
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-lg shadow-md" v-if="customerGrowthData">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Khách Hàng Mới</p>
+            <p class="text-2xl font-bold text-pink-600">{{ customerGrowthData.new_customers_count }}</p>
+          </div>
+          <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+            🆕
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-lg shadow-md" v-if="customerGrowthData">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Khách Hàng Cũ</p>
+            <p class="text-2xl font-bold text-indigo-600">{{ customerGrowthData.loyal_customers_count }}</p>
+          </div>
+          <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            🤝
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Revenue Chart -->
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
       <div class="flex flex-col md:flex-row items-center justify-between mb-4">
         <h2 class="text-xl font-semibold mb-4 md:mb-0">Biểu Đồ Doanh Thu Tổng Quan</h2>
@@ -125,9 +157,7 @@
       </div>
     </div>
 
-    <!-- Bottom Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Products Revenue Chart -->
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex flex-col md:flex-row items-center justify-between mb-4">
           <h2 class="text-lg font-semibold mb-4 md:mb-0">Doanh Thu Theo Sản Phẩm</h2>
@@ -146,7 +176,6 @@
         </div>
       </div>
 
-      <!-- Customers Revenue Chart -->
       <div class="bg-white p-6 rounded-lg shadow-md">
         <div class="flex flex-col md:flex-row items-center justify-between mb-4">
           <h2 class="text-lg font-semibold mb-4 md:mb-0">Doanh Thu Theo Khách Hàng</h2>
@@ -165,8 +194,40 @@
         </div>
       </div>
     </div>
+    
+    <div class="grid grid-cols-1 gap-6 mt-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Mã Giảm Giá Được Sử Dụng Nhiều Nhất</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã Giảm Giá</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số Lượt Sử Dụng</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng Doanh Thu</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng Tiền Giảm</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" v-if="topCouponsData && topCouponsData.length">
+                        <tr v-for="coupon in topCouponsData" :key="coupon.coupon_code">
+                            <td class="px-6 py-4 whitespace-nowrap">{{ coupon.coupon_code }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ coupon.usage_count }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(coupon.total_revenue) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ formatCurrency(coupon.total_discount) }}</td>
+                        </tr>
+                    </tbody>
+                    <tbody v-else>
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                Không có dữ liệu về mã giảm giá trong khoảng thời gian này.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <!-- Loading overlay -->
     <div v-if="loading" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-lg">
         <div class="flex items-center space-x-3">
@@ -201,14 +262,19 @@ const yearlyRevenueData = ref([]);
 const productsData = ref([]);
 const customersData = ref([]);
 
+// Thêm các biến mới
+const conversionData = ref(null);
+const customerGrowthData = ref(null);
+const topCouponsData = ref([]);
+
 // Chart instances
 const chartInstances = ref({});
 
 // Utility functions
 const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', { 
-    style: 'currency', 
-    currency: 'VND' 
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
   }).format(value);
 };
 
@@ -229,7 +295,7 @@ const fetchSummaryData = async () => {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
-    
+
     keyMetrics.value = response.data.key_metrics;
     dailyRevenueData.value = response.data.charts_data.daily_revenue;
   } catch (error) {
@@ -297,6 +363,43 @@ const fetchCustomersData = async () => {
   }
 };
 
+// Thêm các API calls mới
+const fetchConversionRate = async () => {
+  try {
+    const response = await axios.get('admin/reports/conversion-rate', {
+      headers: getAuthHeaders(),
+      params: getDateParams()
+    });
+    conversionData.value = response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu tỷ lệ chuyển đổi:", error);
+  }
+};
+
+const fetchCustomerGrowth = async () => {
+  try {
+    const response = await axios.get('admin/reports/customer-growth', {
+      headers: getAuthHeaders(),
+      params: getDateParams()
+    });
+    customerGrowthData.value = response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu tăng trưởng khách hàng:", error);
+  }
+};
+
+const fetchTopCouponsData = async () => {
+  try {
+    const response = await axios.get('admin/reports/top-coupons', {
+      headers: getAuthHeaders(),
+      params: getDateParams()
+    });
+    topCouponsData.value = response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu mã giảm giá:", error);
+  }
+};
+
 // Main fetch function
 const fetchAllData = async () => {
   loading.value = true;
@@ -307,9 +410,12 @@ const fetchAllData = async () => {
       fetchMonthlyData(),
       fetchYearlyData(),
       fetchProductsData(),
-      fetchCustomersData()
+      fetchCustomersData(),
+      fetchConversionRate(),
+      fetchCustomerGrowth(),
+      fetchTopCouponsData()
     ]);
-    
+
     await nextTick();
     renderAllCharts();
   } catch (error) {
@@ -322,19 +428,18 @@ const fetchAllData = async () => {
 // Chart rendering functions
 const renderRevenueChart = (chartType) => {
   const chartId = chartType + 'RevenueChart';
-  
-  // Destroy existing chart
+
   if (chartInstances.value[chartId]) {
     chartInstances.value[chartId].stop();
     chartInstances.value[chartId].destroy();
     chartInstances.value[chartId] = null;
   }
-  
+
   const canvasElement = document.getElementById(chartId);
   if (!canvasElement) return;
 
   let chartConfig;
-  
+
   switch (chartType) {
     case 'daily':
       chartConfig = {
@@ -362,7 +467,7 @@ const renderRevenueChart = (chartType) => {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function(value) {
+                callback: function (value) {
                   return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
                 }
               }
@@ -371,7 +476,7 @@ const renderRevenueChart = (chartType) => {
         }
       };
       break;
-      
+
     case 'weekly':
       chartConfig = {
         type: 'bar',
@@ -390,7 +495,7 @@ const renderRevenueChart = (chartType) => {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function(value) {
+                callback: function (value) {
                   return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
                 }
               }
@@ -399,7 +504,7 @@ const renderRevenueChart = (chartType) => {
         }
       };
       break;
-      
+
     case 'monthly':
       chartConfig = {
         type: 'bar',
@@ -418,7 +523,7 @@ const renderRevenueChart = (chartType) => {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function(value) {
+                callback: function (value) {
                   return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
                 }
               }
@@ -427,7 +532,7 @@ const renderRevenueChart = (chartType) => {
         }
       };
       break;
-      
+
     case 'yearly':
       chartConfig = {
         type: 'bar',
@@ -446,7 +551,7 @@ const renderRevenueChart = (chartType) => {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function(value) {
+                callback: function (value) {
                   return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
                 }
               }
@@ -456,16 +561,15 @@ const renderRevenueChart = (chartType) => {
       };
       break;
   }
-  
+
   if (chartConfig) {
     chartInstances.value[chartId] = new Chart(canvasElement, chartConfig);
   }
 };
 
-const renderProductsChart = (forceDestroy = false) => {
+const renderProductsChart = () => {
   const chartId = 'productsChart';
 
-  // Hủy chart cũ trước khi tạo mới
   if (chartInstances.value[chartId]) {
     chartInstances.value[chartId].stop();
     chartInstances.value[chartId].destroy();
@@ -476,11 +580,11 @@ const renderProductsChart = (forceDestroy = false) => {
     const canvasElement = document.getElementById(chartId);
     if (!canvasElement) return;
 
-    const dataToShow = selectedProductView.value === 'top5' 
-      ? productsData.value.slice(0, 5) 
+    const dataToShow = selectedProductView.value === 'top5'
+      ? productsData.value.slice(0, 5)
       : productsData.value;
 
-    if (!dataToShow.length) return; // Không vẽ nếu không có dữ liệu
+    if (!dataToShow.length) return;
 
     const chartConfig = {
       type: 'bar',
@@ -500,7 +604,7 @@ const renderProductsChart = (forceDestroy = false) => {
           x: {
             beginAtZero: true,
             ticks: {
-              callback: function(value) {
+              callback: function (value) {
                 return new Intl.NumberFormat('vi-VN').format(value) + ' đ';
               }
             }
@@ -516,18 +620,18 @@ const renderProductsChart = (forceDestroy = false) => {
 
 const renderCustomersChart = () => {
   const chartId = 'customersChart';
-  
+
   if (chartInstances.value[chartId]) {
     chartInstances.value[chartId].stop();
     chartInstances.value[chartId].destroy();
     chartInstances.value[chartId] = null;
   }
-  
+
   const canvasElement = document.getElementById(chartId);
   if (!canvasElement) return;
 
-  const dataToShow = selectedCustomerView.value === 'top5' 
-    ? customersData.value.slice(0, 5) 
+  const dataToShow = selectedCustomerView.value === 'top5'
+    ? customersData.value.slice(0, 5)
     : customersData.value.slice(0, 10);
 
   const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
@@ -551,7 +655,7 @@ const renderCustomersChart = () => {
       }
     }
   };
-  
+
   chartInstances.value[chartId] = new Chart(canvasElement, chartConfig);
 };
 
@@ -570,7 +674,7 @@ watch(selectedChartType, (newType) => {
 
 watch(selectedProductView, () => {
   nextTick(() => {
-    renderProductsChart(true);
+    renderProductsChart();
   });
 });
 
@@ -585,6 +689,12 @@ onMounted(() => {
   fetchAllData();
 });
 </script>
+
+<style scoped>
+.transition-colors {
+  transition: background-color 0.2s, color 0.2s;
+}
+</style>
 
 <style scoped>
 /* Custom styles if needed */
