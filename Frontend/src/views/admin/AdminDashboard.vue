@@ -225,7 +225,7 @@ const getDateParams = () => ({
 // API calls
 const fetchSummaryData = async () => {
   try {
-    const response = await axios.get('/reports/summary', {
+    const response = await axios.get('admin/reports/summary', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
@@ -239,7 +239,7 @@ const fetchSummaryData = async () => {
 
 const fetchWeeklyData = async () => {
   try {
-    const response = await axios.get('/reports/weekly-revenue', {
+    const response = await axios.get('admin/reports/weekly-revenue', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
@@ -251,7 +251,7 @@ const fetchWeeklyData = async () => {
 
 const fetchMonthlyData = async () => {
   try {
-    const response = await axios.get('/reports/monthly-revenue', {
+    const response = await axios.get('admin/reports/monthly-revenue', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
@@ -263,7 +263,7 @@ const fetchMonthlyData = async () => {
 
 const fetchYearlyData = async () => {
   try {
-    const response = await axios.get('/reports/yearly-revenue', {
+    const response = await axios.get('admin/reports/yearly-revenue', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
@@ -275,7 +275,7 @@ const fetchYearlyData = async () => {
 
 const fetchProductsData = async () => {
   try {
-    const response = await axios.get('/reports/products', {
+    const response = await axios.get('admin/reports/products', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
@@ -287,7 +287,7 @@ const fetchProductsData = async () => {
 
 const fetchCustomersData = async () => {
   try {
-    const response = await axios.get('/reports/customers', {
+    const response = await axios.get('admin/reports/customers', {
       headers: getAuthHeaders(),
       params: getDateParams()
     });
