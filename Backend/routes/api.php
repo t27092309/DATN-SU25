@@ -15,6 +15,7 @@ use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryControll
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
+use App\Http\Controllers\Api\Client\ClientBrandController;
 use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\API\Client\PaymentMethodController as ClientPaymentMethodController;
 use App\Http\Controllers\API\Client\ProductVariantController;
@@ -168,6 +169,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         });
     });
 
+
+
+    Route::get('client/brands', [ClientBrandController::class, 'index']);
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
