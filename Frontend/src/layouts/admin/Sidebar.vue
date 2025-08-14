@@ -148,9 +148,9 @@ import logo from '../../assets/img/florea/Logo-bgremove.png';
 const menuItems = ref([
   {
     name: 'Dashboard',
-    route: '/dashboard',
-    icon: 'fas fa-chart-line',
+    route: '/admin/dashboard',
     isOpen: false,
+    icon: 'fas fa-chart-line',
   },
   {
     name: 'Sản phẩm',
