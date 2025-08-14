@@ -1,84 +1,163 @@
 <template>
-    <header class="bg-white shadow-sm h-16 flex items-center px-6 justify-between border-b border-gray-200
-                 fixed top-0 z-10" :style="{ left: '265px', width: 'calc(100% - 265px)' }">
-        <div>
-            <h2 class="text-xl font-semibold text-gray-800">{{ currentRouteTitle }}</h2>
-        </div>
+    <header class="bg-white shadow-lg h-16 flex items-center px-6 justify-between 
+                   border-b border-gray-200 fixed top-0 z-10" :style="{ left: '280px', width: 'calc(100% - 280px)' }">
 
         <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-700 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white text-sm"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">
+                    {{ currentRouteTitle }}
+                </h2>
+            </div>
+        </div>
 
-            <button
-                class="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                title="Tìm kiếm">
-                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg">
+        <div class="flex items-center space-x-3">
+
+            <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
+                       border border-gray-200 hover:border-gray-300 transition-all duration-300 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Tìm kiếm">
+                <svg class="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
             </button>
-            <button
-                class="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                title="Cài đặt">
-                <font-awesome-icon icon="fa-solid fa-gear" />
+
+            <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
+                   border border-gray-200 hover:border-gray-300 transition-all duration-300 
+                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Cài đặt">
+                <div class="transition-all duration-300 group-hover:rotate-90">
+                    <i class="fas fa-cog w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors"></i>
+                </div>
             </button>
 
             <div class="relative">
-                <button
-                    class="relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
+                           border border-gray-200 hover:border-gray-300 transition-all duration-300 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md"
                     @click="toggleNotifications" title="Thông báo">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
+                    <svg class="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
                         </path>
                     </svg>
-                    <span v-if="unreadNotificationsCount > 0"
-                        class="absolute top-1 right-1 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
+                    <span v-if="unreadNotificationsCount > 0" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full 
+                                 bg-red-500 text-xs font-bold text-white 
+                                 animate-pulse shadow-lg">
+                        {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+                    </span>
                 </button>
 
                 <Transition name="fade-slide">
-                    <div v-if="showNotifications"
-                        class="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
-                        <div class="px-4 py-2 font-semibold text-gray-800 border-b border-gray-200">Thông báo của bạn
+                    <div v-if="showNotifications" class="absolute right-0 mt-3 w-80 bg-white 
+                                border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden">
+                        <div class="px-4 py-3 font-semibold text-gray-800 border-b border-gray-200 
+                                     bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <span>Thông báo của bạn</span>
+                                <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                                    {{ unreadNotificationsCount }} mới
+                                </span>
+                            </div>
                         </div>
-                        <ul v-if="notifications.length > 0">
-                            <li v-for="notification in latestNotifications" :key="notification.id"
-                                class="px-4 py-2 hover:bg-gray-100 text-sm text-gray-700 cursor-pointer border-b border-gray-100 last:border-b-0">
-                                <p class="font-medium">{{ notification.title }}</p>
-                                <p class="text-xs text-gray-500">{{ notification.timeAgo }}</p>
+                        <ul v-if="notifications.length > 0" class="max-h-80 overflow-y-auto custom-scrollbar">
+                            <li v-for="notification in latestNotifications" :key="notification.id" class="px-4 py-3 hover:bg-gray-100 text-sm cursor-pointer border-b border-gray-200 
+                                       last:border-b-0 transition-colors duration-200 group">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                                        :class="notification.read ? 'bg-gray-400' : 'bg-blue-500 animate-pulse'"></div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800 group-hover:text-black transition-colors">
+                                            {{ notification.title }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ notification.timeAgo }}</p>
+                                    </div>
+                                </div>
                             </li>
                         </ul>
-                        <div v-else class="px-4 py-2 text-sm text-gray-500">Không có thông báo mới.</div>
-                        <div class="px-4 py-2 border-t border-gray-200 text-center">
-                            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Xem tất cả thông báo</a>
+                        <div v-else class="px-4 py-6 text-center text-gray-500">
+                            <i class="fas fa-bell-slash text-2xl mb-2 opacity-50"></i>
+                            <p>Không có thông báo mới</p>
+                        </div>
+                        <div class="px-4 py-3 border-t border-gray-200 text-center bg-gray-50">
+                            <a href="#" class="text-sm text-blue-600 hover:text-blue-500 transition-colors font-medium">
+                                Xem tất cả thông báo
+                            </a>
                         </div>
                     </div>
                 </Transition>
             </div>
 
             <div class="relative">
-                <div class="flex items-center space-x-2 cursor-pointer group" @click="toggleUserMenu">
-                    <img class="h-8 w-8 rounded-full object-cover"
-                        src="https://via.placeholder.com/150/4A5568/FFFFFF?text=JD" alt="User Avatar" />
-                    <span class="text-gray-700 font-medium hidden sm:block">John Doe</span>
-                    <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors"
-                        :class="{ 'rotate-180': showUserMenu }" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
+                <div class="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl 
+                            hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all duration-300"
+                    @click="toggleUserMenu">
+                    <div class="relative">
+                        <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
+                            src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                        <div
+                            class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white">
+                        </div>
+                    </div>
+                    <div class="hidden sm:block">
+                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">John Doe</span>
+                        <p class="text-xs text-gray-500">Administrator</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-all duration-300"
+                        :class="{ 'rotate-180 text-blue-600': showUserMenu }" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
 
                 <Transition name="fade-slide">
-                    <div v-if="showUserMenu"
-                        class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Thông tin cá
-                            nhân</a>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cài đặt tài
-                            khoản</a>
-                        <div class="border-t border-gray-200 my-1"></div>
-                        <a href="#" @click.prevent="logout"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-100 hover:text-red-700">Đăng
-                            xuất</a>
+                    <div v-if="showUserMenu" class="absolute right-0 mt-3 w-56 bg-white 
+                                border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden">
+
+                        <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                            <div class="flex items-center space-x-3">
+                                <img class="h-10 w-10 rounded-full object-cover border border-gray-200"
+                                    src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                                <div>
+                                    <p class="font-medium text-gray-800">John Doe</p>
+                                    <p class="text-xs text-gray-500">john@florea.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="py-2">
+                            <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:text-black 
+                                             hover:bg-gray-100 transition-colors duration-200">
+                                <i
+                                    class="fas fa-user w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600 transition-colors"></i>
+                                Thông tin cá nhân
+                            </a>
+                            <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:text-black 
+                                             hover:bg-gray-100 transition-colors duration-200">
+                                <i
+                                    class="fas fa-cog w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600 transition-colors"></i>
+                                Cài đặt tài khoản
+                            </a>
+                            <a href="#" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:text-black 
+                                             hover:bg-gray-100 transition-colors duration-200">
+                                <i
+                                    class="fas fa-moon w-4 h-4 mr-3 text-gray-400 group-hover:text-blue-600 transition-colors"></i>
+                                Chế độ tối
+                            </a>
+                        </div>
+
+                        <div class="border-t border-gray-200">
+                            <a href="#" @click.prevent="logout" class="group flex items-center px-4 py-3 text-sm text-gray-700 hover:text-red-600 
+                                      hover:bg-red-50 transition-all duration-200">
+                                <i
+                                    class="fas fa-sign-out-alt w-4 h-4 mr-3 text-gray-400 group-hover:text-red-600 transition-colors"></i>
+                                Đăng xuất
+                            </a>
+                        </div>
                     </div>
                 </Transition>
             </div>
@@ -95,43 +174,40 @@ const showUserMenu = ref(false);
 
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value;
-    // Đảm bảo đóng thông báo nếu đang mở
     showNotifications.value = false;
 };
 
 // --- State cho Notifications ---
 const showNotifications = ref(false);
 const notifications = ref([
-    { id: 1, title: 'Đơn hàng #12345 đã được tạo.', time: new Date(Date.now() - 5 * 60 * 1000), read: false }, // 5 phút trước
-    { id: 2, title: 'Sản phẩm "Nước hoa ABC" sắp hết hàng.', time: new Date(Date.now() - 30 * 60 * 1000), read: false }, // 30 phút trước
-    { id: 3, title: 'Báo cáo doanh thu tháng 6 đã sẵn sàng.', time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), read: true }, // 2 ngày trước
-    { id: 4, title: 'Khách hàng mới đã đăng ký.', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), read: false }, // 1 ngày trước
-    { id: 5, title: 'Có cập nhật mới cho hệ thống.', time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), read: true }, // 7 ngày trước
+    { id: 1, title: 'Đơn hàng #12345 đã được tạo.', time: new Date(Date.now() - 5 * 60 * 1000), read: false },
+    { id: 2, title: 'Sản phẩm "Nước hoa ABC" sắp hết hàng.', time: new Date(Date.now() - 30 * 60 * 1000), read: false },
+    { id: 3, title: 'Báo cáo doanh thu tháng 6 đã sẵn sàng.', time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), read: true },
+    { id: 4, title: 'Khách hàng mới đã đăng ký.', time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), read: false },
+    { id: 5, title: 'Có cập nhật mới cho hệ thống.', time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), read: true },
 ]);
 
 const toggleNotifications = () => {
     showNotifications.value = !showNotifications.value;
-    // Đảm bảo đóng user menu nếu đang mở
     showUserMenu.value = false;
 };
 
-// Computed property để lấy số lượng thông báo chưa đọc
+// Computed properties
 const unreadNotificationsCount = computed(() => {
     return notifications.value.filter(n => !n.read).length;
 });
 
-// Computed property để hiển thị 5 thông báo gần nhất (có thể tùy chỉnh)
 const latestNotifications = computed(() => {
     return notifications.value
-        .sort((a, b) => b.time.getTime() - a.time.getTime()) // Sắp xếp mới nhất lên đầu
-        .slice(0, 5) // Lấy 5 thông báo gần nhất
+        .sort((a, b) => b.time.getTime() - a.time.getTime())
+        .slice(0, 5)
         .map(n => ({
             ...n,
-            timeAgo: formatTimeAgo(n.time) // Thêm định dạng thời gian "X phút trước"
+            timeAgo: formatTimeAgo(n.time)
         }));
 });
 
-// Hàm định dạng thời gian "X phút/giờ/ngày trước"
+// Utility functions
 function formatTimeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
 
@@ -148,14 +224,17 @@ function formatTimeAgo(date) {
     return Math.floor(seconds) + " giây trước";
 }
 
-// --- Xử lý click ra ngoài để đóng menu/thông báo ---
+// Click outside handler
 const handleClickOutside = (event) => {
-    // Đóng user menu nếu click ra ngoài
-    if (showUserMenu.value && !event.target.closest('.group') && !event.target.closest('.absolute.right-0.mt-2.w-48')) {
+    const userMenuButton = document.querySelector('.relative > .group');
+    const userMenuDropdown = document.querySelector('.relative > .absolute.w-56');
+    const notificationButton = document.querySelector('.relative:nth-child(3) > .group');
+    const notificationDropdown = document.querySelector('.relative:nth-child(3) > .absolute.w-80');
+
+    if (showUserMenu.value && userMenuDropdown && !userMenuDropdown.contains(event.target) && userMenuButton && !userMenuButton.contains(event.target)) {
         showUserMenu.value = false;
     }
-    // Đóng notifications nếu click ra ngoài
-    if (showNotifications.value && !event.target.closest('.relative') && !event.target.closest('.absolute.right-0.mt-2.w-80')) {
+    if (showNotifications.value && notificationDropdown && !notificationDropdown.contains(event.target) && notificationButton && !notificationButton.contains(event.target)) {
         showNotifications.value = false;
     }
 };
@@ -168,26 +247,46 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-// --- Hàm Logout (ví dụ) ---
 const logout = () => {
-    alert('Đăng xuất...'); // Thay bằng logic đăng xuất thực tế của bạn
-    showUserMenu.value = false; // Đóng menu sau khi đăng xuất
+    alert('Đăng xuất...');
+    showUserMenu.value = false;
 };
+
 const route = useRoute();
 const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 </script>
 
 <style scoped>
-/* Transition cho dropdown menu (Fade and Slide) */
+/* Transition animations */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-slide-enter-from,
 .fade-slide-leave-to {
     opacity: 0;
-    transform: translateY(-5px);
-    /* Trượt nhẹ lên trên khi biến mất */
+    transform: translateY(-8px) scale(0.95);
 }
+
+/* Custom scrollbar for notifications */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #2563eb, #7c3aed);
+}
+
+
 </style>
