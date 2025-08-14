@@ -27,6 +27,8 @@ use App\Http\Controllers\API\Client\UserAddressController;
 use App\Http\Controllers\API\Client\LocationController;
 use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
+use App\Http\Controllers\API\Client\ReviewController as ClientReviewController;
+use App\Http\Controllers\API\Client\ProductReviewController;
 
 // Payment API (public, no auth required)
 Route::post('/payment/create', [PaymentController::class, 'createPayment']);
@@ -81,6 +83,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
             Route::post('/{order}/reorder', [ClientOrderController::class, 'reorder']);
+        });
+
+        Route::prefix('reviews')->controller(ClientReviewController::class)->group(function () {
+            Route::post('/', 'store'); // Lưu ý, route này đã được đặt tên là `store` trong controller của bạn
+            Route::post('/check-status', 'checkStatus');
         });
 
 
@@ -192,6 +199,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
     //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
     Route::get('/products/search', [ClientProductController::class, 'search']);
+    Route::get('products/{slug}/reviews', [ProductReviewController::class, 'index']);
 });
 
 // use Illuminate\Support\Facades\Route;
