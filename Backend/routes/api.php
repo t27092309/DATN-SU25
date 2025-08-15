@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\Api\Admin\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\api\admin\ChartController;
 use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
@@ -106,6 +107,15 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('inventory/overview', [AdminInventoryController::class, 'overview']);
             Route::post('inventory/adjust-stock', [AdminInventoryController::class, 'adjustStock']);
             Route::get('/inventory', [AdminInventoryController::class, 'index']);
+
+            //Bieu do`
+            Route::get('/reports/summary', [ChartController::class, 'getSummaryReport']);
+            Route::get('/reports/products', [ChartController::class, 'getProductsReport']);
+            Route::get('/reports/customers', [ChartController::class, 'getCustomersReport']);
+            Route::get('/reports/weekly-revenue', [ChartController::class, 'getWeeklyRevenue']);
+            Route::get('/reports/monthly-revenue', [ChartController::class, 'getMonthlyRevenue']);
+            Route::get('/reports/yearly-revenue', [ChartController::class, 'getYearlyRevenue']);
+
 
 
             Route::apiResource('shipping-methods', AdminShippingMethodController::class);

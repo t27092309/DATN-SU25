@@ -53,7 +53,7 @@ const options = {
 };
 
 // --- Cấu hình Axios toàn cục ---
-axios.defaults.baseURL = 'http://localhost:8000/api';
+axios.defaults.baseURL = 'http://localhost:8000/api/admin';
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 const token = localStorage.getItem('authToken');

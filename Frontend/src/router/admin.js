@@ -36,7 +36,7 @@ export default [
     component: AdminLayout, // Layout cho Admin
     children: [
       {
-        path: "",
+        path: "dashboard",
         name: "AdminDashboard",
         component: AdminDashboard,
         meta: { requiresAdmin: true, title: "Trang quản trị" }, // Thêm meta
