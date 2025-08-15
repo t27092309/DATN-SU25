@@ -5,21 +5,21 @@
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 sm:p-8">
                 <div class="flex justify-between items-center mb-6 relative">
                     <h2 class="text-2xl font-bold text-gray-800">Đăng nhập</h2>
-                    <button
+                    <!-- <button
                         class="flex items-center bg-yellow-300 text-red-600 px-3 py-1 rounded-full text-sm font-semibold relative">
                         Đăng nhập với mã QR
                         <div
                             class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-0 h-0 border-t-[10px] border-t-transparent border-l-[10px] border-l-yellow-300 border-b-[10px] border-b-transparent">
                         </div>
-                    </button>
-                    <div class="absolute right-0 top-0 -mr-6 -mt-6">
+                    </button> -->
+                    <!-- <div class="absolute right-0 top-0 -mr-6 -mt-6">
                         <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd"
                                 d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm6 4H7v2h2V9zm4 0h-2v2h2V9zm-4 4H7v2h2v-2zm4 0h-2v2h2v-2z"
                                 clip-rule="evenodd"></path>
                         </svg>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div v-if="successMessage" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4
@@ -88,16 +88,16 @@
 
                 <div class="flex justify-between text-sm mt-4 mb-6">
                     <a href="#" class="text-blue-500 hover:underline">Quên mật khẩu</a>
-                    <a href="#" class="text-blue-500 hover:underline">Đăng nhập với SMS</a>
+                    <!-- <a href="#" class="text-blue-500 hover:underline">Đăng nhập với SMS</a> -->
                 </div>
 
-                <div class="flex items-center mb-6">
+                <!-- <div class="flex items-center mb-6">
                     <hr class="flex-grow border-gray-300" />
                     <span class="mx-4 text-gray-500 text-sm">HOẶC</span>
                     <hr class="flex-grow border-gray-300" />
-                </div>
+                </div> -->
 
-                <div class="flex space-x-4 mb-8">
+                <!-- <div class="flex space-x-4 mb-8">
                     <button
                         class="flex-1 flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/512px-2021_Facebook_icon.svg.png"
@@ -110,7 +110,7 @@
                             alt="Google" class="h-5 w-5 mr-2" />
                         Google
                     </button>
-                </div>
+                </div> -->
 
                 <div class="text-center text-sm text-gray-600">
                     Bạn mới biết đến Florea?
