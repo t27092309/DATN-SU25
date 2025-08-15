@@ -7,7 +7,8 @@
         :class="['flex-shrink-0 px-3 sm:px-6 py-3 text-base font-medium border-b-2 transition-colors duration-200 flex items-center justify-center',
           activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
         <span>{{ tab.label }}</span>
-        <span v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled', 'refunded', 'return_and_refund'].includes(tab.value)"
+        <span
+          v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled', 'refunded', 'return_and_refund'].includes(tab.value)"
           class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count }}</span>
       </button>
     </div>
@@ -103,9 +104,18 @@
               Xem Chi Tiết
             </router-link>
           </template>
-          <template v-else-if="order.status === 'return_requested' || order.status === 'refunded'">
+          <template v-else-if="order.status === 'return_requested'">
             <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
               Vui lòng chờ shop xử lý yêu cầu.
+            </p>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
+          </template>
+          <template v-else-if="order.status === 'refunded'">
+            <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+              Đơn hàng đã được hoàn tiền
             </p>
             <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">

@@ -84,41 +84,39 @@
 
       <div>
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Sản phẩm trong đơn hàng</h2>
-<div class="overflow-x-auto">
-  <table class="min-w-full bg-white border border-gray-200 rounded-lg table-fixed">
-    <thead>
-      <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
-        <th class="py-3 px-6 text-left w-1/2">Sản phẩm</th>
-        <th class="py-3 px-6 text-center w-1/6">Số lượng</th>
-        <th class="py-3 px-6 text-right w-1/6">Giá / SP</th>
-        <th class="py-3 px-6 text-right w-1/6">Tổng</th>
-      </tr>
-    </thead>
-    <tbody class="text-gray-700 text-sm font-light">
-      <tr v-for="item in order.items" :key="item.id" class="border-b border-gray-200 hover:bg-gray-50">
-        <td colspan="4" class="py-3 px-6">
-          <router-link
-            :to="{ name: 'ProductDetail', params: { slug: item.slug } }"
-            class="flex items-center"
-          >
-            <div class="flex items-center w-1/2">
-              <img :src="item.product_image" alt="Product Image"
-                class="w-10 h-10 object-cover rounded-md mr-3 flex-shrink-0">
-              <div class="flex flex-col">
-                <span class="font-medium truncate">{{ item.product_name }}</span>
-                <span class="text-xs text-gray-500 mt-1">Phân loại: {{ item.variant_name }}</span>
-              </div>
-            </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-200 rounded-lg table-fixed">
+            <thead>
+              <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left w-1/2">Sản phẩm</th>
+                <th class="py-3 px-6 text-center w-1/6">Số lượng</th>
+                <th class="py-3 px-6 text-right w-1/6">Giá / SP</th>
+                <th class="py-3 px-6 text-right w-1/6">Tổng</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm font-light">
+              <tr v-for="item in order.items" :key="item.id" class="border-b border-gray-200 hover:bg-gray-50">
+                <td colspan="4" class="py-3 px-6">
+                  <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }" class="flex items-center">
+                    <div class="flex items-center w-1/2">
+                      <img :src="item.product_image" alt="Product Image"
+                        class="w-10 h-10 object-cover rounded-md mr-3 flex-shrink-0">
+                      <div class="flex flex-col">
+                        <span class="font-medium truncate">{{ item.product_name }}</span>
+                        <span class="text-xs text-gray-500 mt-1">Phân loại: {{ item.variant_name }}</span>
+                      </div>
+                    </div>
 
-            <div class="flex justify-center items-center w-1/6">{{ item.quantity }}</div>
-            <div class="flex justify-end items-center w-1/6">{{ formatCurrency(item.price_each) }}</div>
-            <div class="flex justify-end items-center w-1/6 font-medium">{{ formatCurrency(item.subtotal) }}</div>
-          </router-link>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+                    <div class="flex justify-center items-center w-1/6">{{ item.quantity }}</div>
+                    <div class="flex justify-end items-center w-1/6">{{ formatCurrency(item.price_each) }}</div>
+                    <div class="flex justify-end items-center w-1/6 font-medium">{{ formatCurrency(item.subtotal) }}
+                    </div>
+                  </router-link>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="mt-8 text-center">
@@ -207,6 +205,8 @@ const getStatusClass = (status) => {
     case 'shipped': return 'bg-purple-200 text-purple-800';
     case 'delivered': return 'bg-green-200 text-green-800';
     case 'cancelled': return 'bg-red-200 text-red-800';
+    case 'return_requested': return 'bg-orange-200 text-orange-800';
+    case 'refunded': return 'bg-pink-200 text-pink-800';
     default: return 'bg-gray-200 text-gray-800';
   }
 };
@@ -218,6 +218,8 @@ const getStatusText = (status) => {
     case 'shipped': return 'Đang giao hàng';
     case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
+    case 'return_requested': return 'Đang xử lý hoàn trả';
+    case 'refunded': return 'Đã hoàn tiền';
     default: return 'Không rõ';
   }
 };
