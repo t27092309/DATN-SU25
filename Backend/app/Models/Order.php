@@ -112,6 +112,17 @@ class Order extends Model
         return $this->status === self::STATUS_DELIVERED;
     }
 
+    public function reviews()
+    {
+        return $this->hasManyThrough(Review::class, OrderItem::class);
+    }
+
+    public function canBeReviewed(): bool
+    {
+        // Điều kiện: Đơn hàng đã được giao thành công
+        return $this->isDelivered();
+    }
+    
     public function isCancelled(): bool
     {
         return $this->status === self::STATUS_CANCELLED;

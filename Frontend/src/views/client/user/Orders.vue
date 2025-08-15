@@ -31,7 +31,8 @@
       <span class="block sm:inline"> {{ error }}</span>
     </div>
 
-    <div v-else-if="orders.length === 0" class="text-center py-10 text-gray-500 text-lg bg-white rounded-lg shadow-sm">
+    <div v-else-if="!orders || orders.length === 0"
+      class="text-center py-10 text-gray-500 text-lg bg-white rounded-lg shadow-sm">
       Không có đơn hàng nào trong mục này.
     </div>
 
@@ -65,6 +66,16 @@
             <span class="text-red-600 font-bold text-lg">
               {{ formatCurrency(item.price_each) }}
             </span>
+          </div>
+          <div class="flex flex-col ml-4">
+            <button v-if="order.status === 'delivered' && !item.has_review" @click="reviewProduct(item)"
+              class="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-sm mb-2">
+              Đánh Giá
+            </button>
+            <button v-else-if="order.status === 'delivered' && item.has_review" @click="viewReview(item)"
+              class="px-4 py-2 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 shadow-sm">
+              Xem Đánh Giá
+            </button>
           </div>
         </div>
 
@@ -182,6 +193,9 @@
         </button>
       </div>
     </div>
+
+    <ReviewPopup :visible="showReviewPopup" :order-item-id="currentOrderItemId" :product-name="currentProductName"
+      :product-image="currentProductImage" @close="showReviewPopup = false" @submitted="handleReviewSubmitted" />
   </div>
 </template>
 
@@ -190,9 +204,15 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
+import ReviewPopup from '@/components/ReviewPopup.vue';
 
 const api = axios;
 const router = useRouter();
+
+const showReviewPopup = ref(false);
+const currentOrderItemId = ref(null);
+const currentProductName = ref('');
+const currentProductImage = ref('');
 
 const orders = ref([]);
 const isLoading = ref(true);
@@ -201,13 +221,15 @@ const activeTab = ref('all');
 const pagination = ref({});
 const searchQuery = ref('');
 
-// CẬP NHẬT: Định nghĩa lại các tab để chỉ có một tab "Hoàn trả"
+
 const orderTabs = ref([
   { label: 'Tất cả', value: 'all', count: 0 },
   { label: 'Chờ xác nhận', value: 'pending', count: 0 },
   { label: 'Đang xử lý', value: 'processing', count: 0 },
   { label: 'Đang giao hàng', value: 'shipped', count: 0 },
   { label: 'Đã giao hàng', value: 'delivered', count: 0 },
+  { label: 'Trả hàng', value: 'return_requested', count: 0 },
+  { label: 'Hoàn tiền', value: 'refunded', count: 0 },
   { label: 'Đã hủy', value: 'cancelled', count: 0 },
   { label: 'Hoàn trả', value: 'return_and_refund', count: 0 }, // TAB MỚI: Gộp hai trạng thái
 ]);
@@ -231,7 +253,55 @@ const showError = (message) => {
   });
 };
 
-// CẬP NHẬT: Xử lý logic cho tab "Hoàn trả"
+
+const reviewProduct = (item) => {
+  currentOrderItemId.value = item.id;
+  currentProductName.value = item.product_name;
+  currentProductImage.value = item.product_image;
+  showReviewPopup.value = true;
+};
+
+const handleReviewSubmitted = () => {
+  showReviewPopup.value = false;
+
+  // 1. Tìm và cập nhật OrderItem trong danh sách orders
+  const order = orders.value.find(o => o.items.some(item => item.id === currentOrderItemId.value));
+  if (order) {
+    const item = order.items.find(i => i.id === currentOrderItemId.value);
+    if (item) {
+      // Cập nhật trạng thái has_review của sản phẩm đó
+      item.has_review = true;
+    }
+  }
+
+  // 2. (Tùy chọn) Gọi lại API nếu cần thiết để đảm bảo dữ liệu luôn mới nhất
+  // Bỏ dòng này nếu bạn muốn tối ưu hiệu suất và chỉ cập nhật frontend
+  // fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
+
+  showSuccess('Đánh giá của bạn đã được gửi thành công!');
+};
+const viewReview = async (item) => {
+  // Lấy ID của đánh giá từ order item
+  // Giả định bạn có một route để xem đánh giá theo order_item_id
+  router.push({ name: 'ProductDetail', params: { slug: item.slug } });
+
+  // Hoặc bạn có thể dùng popup để hiển thị đánh giá
+  // try {
+  //   const response = await api.get(`/reviews/order-item/${item.id}`);
+  //   const review = response.data;
+  //   Swal.fire({
+  //     title: 'Đánh giá của bạn',
+  //     html: `
+  //       <p>Rating: ${review.rating} sao</p>
+  //       <p>Bình luận: ${review.comment}</p>
+  //     `,
+  //     icon: 'info'
+  //   });
+  // } catch (error) {
+  //   showError('Không thể tải đánh giá. Vui lòng thử lại.');
+  // }
+};
+
 const fetchOrders = async (status = 'all', page = 1, search = '') => {
   isLoading.value = true;
   error.value = null;
@@ -242,7 +312,9 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
       url += `&statuses[]=return_requested&statuses[]=refunded`; // Gửi cả hai trạng thái lên API
     } else if (status !== 'all') {
       url += `&status=${status}`;
+
     }
+
     if (search) {
       url += `&search=${search}`;
     }
@@ -277,7 +349,9 @@ const fetchOrderCounts = async () => {
     const response = await api.get('orders/counts');
     const counts = response.data.counts;
     orderTabs.value.forEach(tab => {
-      if (counts[tab.value] !== undefined) {
+      if (tab.value === 'returns') {
+        tab.count = (counts['return_requested'] || 0) + (counts['refunded'] || 0);
+      } else if (counts[tab.value] !== undefined) {
         tab.count = counts[tab.value];
       }
     });
@@ -292,7 +366,6 @@ const fetchOrderCounts = async () => {
     console.error('Lỗi khi tải số lượng đơn hàng:', err);
   }
 };
-
 
 watch(activeTab, (newTab) => {
   fetchOrders(newTab, 1, searchQuery.value);
@@ -341,9 +414,12 @@ const getStatusClass = (status) => {
     case 'cancelled': return 'text-gray-500';
     case 'return_requested': return 'text-orange-600';
     case 'refunded': return 'text-pink-600';
+
     default: return 'text-gray-800';
   }
 };
+
+// Action Handlers
 
 const markAsDelivered = async (orderId) => {
   Swal.fire({

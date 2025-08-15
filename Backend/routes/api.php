@@ -15,6 +15,7 @@ use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryControll
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
+use App\Http\Controllers\Api\Client\ClientBrandController;
 use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\API\Client\PaymentMethodController as ClientPaymentMethodController;
 use App\Http\Controllers\API\Client\ProductVariantController;
@@ -26,6 +27,8 @@ use App\Http\Controllers\API\Client\UserAddressController;
 use App\Http\Controllers\API\Client\LocationController;
 use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
+use App\Http\Controllers\API\Client\ReviewController as ClientReviewController;
+use App\Http\Controllers\API\Client\ProductReviewController;
 
 // Payment API (public, no auth required)
 Route::post('/payment/create', [PaymentController::class, 'createPayment']);
@@ -83,6 +86,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/request-return', [ClientOrderController::class, 'requestReturn']);
         });
 
+        Route::prefix('reviews')->controller(ClientReviewController::class)->group(function () {
+            Route::post('/', 'store'); // Lưu ý, route này đã được đặt tên là `store` trong controller của bạn
+            Route::post('/check-status', 'checkStatus');
+        });
+
 
         //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
@@ -115,7 +123,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::get('/reports/weekly-revenue', [ChartController::class, 'getWeeklyRevenue']);
             Route::get('/reports/monthly-revenue', [ChartController::class, 'getMonthlyRevenue']);
             Route::get('/reports/yearly-revenue', [ChartController::class, 'getYearlyRevenue']);
-
+            Route::get('/reports/customer-growth', [ChartController::class, 'getCustomerGrowth']);
+            Route::get('/reports/top-coupons', [ChartController::class, 'getTopCoupons']);
 
 
             Route::apiResource('shipping-methods', AdminShippingMethodController::class);
@@ -175,6 +184,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     });
 
 
+
+    Route::get('client/brands', [ClientBrandController::class, 'index']);
+
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -194,6 +206,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
     //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
     Route::get('/products/search', [ClientProductController::class, 'search']);
+    Route::get('products/{slug}/reviews', [ProductReviewController::class, 'index']);
 });
 
 // use Illuminate\Support\Facades\Route;

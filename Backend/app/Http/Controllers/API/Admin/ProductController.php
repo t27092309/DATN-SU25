@@ -45,9 +45,9 @@ class ProductController extends Controller
             'gender' => 'required|in:male,female,unisex',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Main product image
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048', // Main product image
             'gallery_images' => 'nullable|array', // Allows an array of files
-            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:4096', // Each file in the array
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:4096', // Each file in the array
             'has_variants' => 'required|boolean',
             'scent_groups' => 'nullable|json', // Changed to json, as frontend sends stringified JSON
             // 'scent_groups.*.id' => 'required|exists:scent_groups,id', // These rules are for array, need to validate after json_decode
@@ -92,11 +92,11 @@ class ProductController extends Controller
                 'brand_id.required' => 'Thương hiệu là bắt buộc.',
                 'brand_id.exists' => 'Thương hiệu không hợp lệ.',
                 'image.image' => 'Tệp ảnh chính phải là hình ảnh.',
-                'image.mimes' => 'Định dạng ảnh chính không hợp lệ. Chỉ chấp nhận: jpeg, png, jpg, gif, svg.',
+                'image.mimes' => 'Định dạng ảnh chính không hợp lệ. Chỉ chấp nhận: jpeg, png, jpg, gif, svg, webp.',
                 'image.max' => 'Kích thước ảnh chính không được vượt quá 2MB.',
                 'gallery_images.array' => 'Thư viện ảnh phải là một mảng.',
                 'gallery_images.*.image' => 'Mỗi tệp trong thư viện ảnh phải là một hình ảnh.',
-                'gallery_images.*.mimes' => 'Mỗi tệp trong thư viện ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
+                'gallery_images.*.mimes' => 'Mỗi tệp trong thư viện ảnh phải có định dạng: jpeg, png, jpg, gif, svg, webp.',
                 'gallery_images.*.max' => 'Mỗi tệp trong thư viện ảnh không được lớn hơn 4MB.',
                 'has_variants.required' => 'Loại sản phẩm là bắt buộc.',
                 'has_variants.boolean' => 'Loại sản phẩm không hợp lệ.',
@@ -335,10 +335,10 @@ class ProductController extends Controller
             'stock' => 'nullable|integer|min:0',
             'category_id' => 'sometimes|exists:categories,id',
             'brand_id' => 'sometimes|exists:brands,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'remove_main_image' => 'nullable|boolean',
             'new_additional_images' => 'nullable|array',
-            'new_additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'new_additional_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'gallery_images_order' => 'nullable|array',
             'gallery_images_order.*.id' => 'required|integer|exists:product_images,id',
             'gallery_images_order.*.order' => 'required|integer|min:0',
@@ -738,11 +738,11 @@ class ProductController extends Controller
     public function uploadImage(Request $request, Product $product)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ], [
             'image.required' => 'Vui lòng chọn ảnh chính.',
             'image.image' => 'Tệp tải lên phải là hình ảnh.',
-            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, svg, webp.',
             'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
         ]);
 
@@ -777,12 +777,12 @@ class ProductController extends Controller
     {
         $request->validate([
             'images' => 'required|array|min:1',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ], [
             'images.required' => 'Vui lòng chọn ít nhất một ảnh phụ.',
             'images.min' => 'Vui lòng chọn ít nhất một ảnh phụ.',
             'images.*.image' => 'Tệp ảnh phụ phải là hình ảnh.',
-            'images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg.',
+            'images.*.mimes' => 'Ảnh phụ phải có định dạng: jpeg, png, jpg, gif, svg, webp.',
             'images.*.max' => 'Kích thước ảnh phụ không được vượt quá 2MB.',
         ]);
 

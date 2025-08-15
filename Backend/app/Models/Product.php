@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -58,12 +58,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
-        public function setNameAttribute($value)
+    public function setNameAttribute($value)
     {
         $this->attributes['name'] = $value;
         $this->attributes['slug'] = Str::slug($value);
     }
-        public function getImageUrlAttribute($value)
+    public function getImageUrlAttribute($value)
     {
         // Check if the stored value is already a full URL (e.g., from seeder or external source)
         if (filter_var($value, FILTER_VALIDATE_URL)) {
@@ -72,5 +72,9 @@ class Product extends Model
         // If it's a storage path, return the full URL using Storage facade
         // This assumes you've run 'php artisan storage:link'
         return $value ? Storage::url($value) : null;
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }
