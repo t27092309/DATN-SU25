@@ -131,15 +131,6 @@ export default {
       apiUrl: 'http://localhost:8000/api/admin/categories',
     };
   },
-  watch: {
-    'category.name'(newName) {
-      this.category.name = slugify(newName, {
-        lower: true,
-        strict: true,
-        locale: 'vi',
-      });
-    },
-  },
   mounted() {
     this.fetchCategories();
   },
@@ -167,14 +158,24 @@ export default {
       }
     },
     async addCategory() {
-      if (!this.category.name) {
+      if (!this.category.name.trim()) {
         this.addMessage = 'Vui lòng nhập tên danh mục!';
         this.addMessageClass = 'text-danger';
         return;
       }
+
+      const slug = slugify(this.category.name, {
+        lower: true,
+        strict: true,
+        locale: 'vi',
+        remove: /[*+~.()'"!:@]/g
+      });
+
       const payload = {
-        name: this.category.name,
+        name: this.category.name.trim(),
+        slug: slug,                     
       };
+
       try {
         const response = await axios.post(this.apiUrl, payload);
         this.addMessage = response.data.message || 'Thêm danh mục thành công!';

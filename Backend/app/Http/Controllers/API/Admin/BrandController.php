@@ -61,8 +61,8 @@ class BrandController extends Controller
         $brand->description = $request->input('description');
 
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('public/brands/logos');
-            $brand->logo = asset(str_replace('public/', 'storage/', $logoPath)); // Lưu đường dẫn public
+            $logoPath = $request->file('logo')->store('brands/logos', 'public');
+            $brand->logo = $logoPath;
         }
 
         $brand->save();
