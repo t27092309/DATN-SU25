@@ -8,7 +8,7 @@
           activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
         <span>{{ tab.label }}</span>
         <span
-          v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled', 'returns'].includes(tab.value)"
+          v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled', 'refunded', 'return_and_refund'].includes(tab.value)"
           class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count }}</span>
       </button>
     </div>
@@ -102,10 +102,32 @@
             </router-link>
           </template>
           <template v-else-if="order.status === 'delivered'">
+            <button @click="requestReturn(order.id)"
+              class="px-6 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors duration-200 shadow-sm">
+              Yêu Cầu Trả Hàng
+            </button>
             <button @click="reorder(order.id)"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Mua Lại
             </button>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
+          </template>
+          <template v-else-if="order.status === 'return_requested'">
+            <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+              Vui lòng chờ shop xử lý yêu cầu.
+            </p>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
+          </template>
+          <template v-else-if="order.status === 'refunded'">
+            <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+              Đơn hàng đã được hoàn tiền
+            </p>
             <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
               Xem Chi Tiết
@@ -199,6 +221,7 @@ const activeTab = ref('all');
 const pagination = ref({});
 const searchQuery = ref('');
 
+
 const orderTabs = ref([
   { label: 'Tất cả', value: 'all', count: 0 },
   { label: 'Chờ xác nhận', value: 'pending', count: 0 },
@@ -208,6 +231,7 @@ const orderTabs = ref([
   { label: 'Trả hàng', value: 'return_requested', count: 0 },
   { label: 'Hoàn tiền', value: 'refunded', count: 0 },
   { label: 'Đã hủy', value: 'cancelled', count: 0 },
+  { label: 'Hoàn trả', value: 'return_and_refund', count: 0 }, // TAB MỚI: Gộp hai trạng thái
 ]);
 
 const showSuccess = (message) => {
@@ -228,6 +252,7 @@ const showError = (message) => {
     confirmButtonText: 'Đóng'
   });
 };
+
 
 const reviewProduct = (item) => {
   currentOrderItemId.value = item.id;
@@ -281,17 +306,13 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
   isLoading.value = true;
   error.value = null;
   orders.value = [];
-  pagination.value = {};
-
   try {
     let url = `orders?page=${page}`;
+    if (status === 'return_and_refund') {
+      url += `&statuses[]=return_requested&statuses[]=refunded`; // Gửi cả hai trạng thái lên API
+    } else if (status !== 'all') {
+      url += `&status=${status}`;
 
-    if (status !== 'all') {
-      if (status === 'returns') {
-        url += `&status=return_requested,refunded`;
-      } else {
-        url += `&status=${status}`;
-      }
     }
 
     if (search) {
@@ -300,16 +321,8 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
 
     const response = await api.get(url);
 
-    // Lô gic sửa lỗi: kiểm tra dữ liệu trước khi gán
-    if (response.data) {
-      // Giả sử API trả về định dạng { orders: [...], pagination: {...} }
-      orders.value = Array.isArray(response.data.orders) ? response.data.orders : [];
-      pagination.value = response.data.pagination || {};
-    } else {
-      orders.value = [];
-      pagination.value = {};
-    }
-
+    orders.value = response.data.orders;
+    pagination.value = response.data.pagination;
   } catch (err) {
     console.error('Lỗi khi tải đơn hàng:', err);
     if (err.response && err.response.status === 401) {
@@ -323,6 +336,14 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
   }
 };
 
+
+const formatDate = (datetimeString) => {
+  if (!datetimeString) return 'N/A';
+  const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+  return new Date(datetimeString).toLocaleDateString('vi-VN', options);
+};
+
+// CẬP NHẬT: Lấy số lượng đơn hàng cho tab "Hoàn trả"
 const fetchOrderCounts = async () => {
   try {
     const response = await api.get('orders/counts');
@@ -334,6 +355,13 @@ const fetchOrderCounts = async () => {
         tab.count = counts[tab.value];
       }
     });
+
+    // Tính tổng số lượng cho tab "Hoàn trả"
+    const totalReturnAndRefund = (counts['return_requested'] || 0) + (counts['refunded'] || 0);
+    const returnAndRefundTab = orderTabs.value.find(tab => tab.value === 'return_and_refund');
+    if (returnAndRefundTab) {
+      returnAndRefundTab.count = totalReturnAndRefund;
+    }
   } catch (err) {
     console.error('Lỗi khi tải số lượng đơn hàng:', err);
   }
@@ -356,16 +384,9 @@ onMounted(() => {
   fetchOrderCounts();
 });
 
-// Helper Functions
 const formatCurrency = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '0₫';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-};
-
-const formatDate = (datetimeString) => {
-  if (!datetimeString) return 'N/A';
-  const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
-  return new Date(datetimeString).toLocaleDateString('vi-VN', options);
 };
 
 const getStatusText = (status) => {
@@ -375,11 +396,14 @@ const getStatusText = (status) => {
     case 'shipped': return 'Đang giao hàng';
     case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
-    case 'return_requested': return 'Yêu cầu trả hàng';
-    case 'refunded': return 'Đã hoàn tiền';
+    case 'return_requested': return 'Đang xử lý hoàn trả';
+    case 'refunded': return 'Đã hoàn tiền'; // Giữ nguyên text cho trạng thái đã hoàn tiền
     default: return 'Không rõ';
   }
 };
+
+
+
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -388,13 +412,15 @@ const getStatusClass = (status) => {
     case 'shipped': return 'text-purple-600';
     case 'delivered': return 'text-green-600';
     case 'cancelled': return 'text-gray-500';
-    case 'return_requested': return 'text-orange-500';
-    case 'refunded': return 'text-red-500';
+    case 'return_requested': return 'text-orange-600';
+    case 'refunded': return 'text-pink-600';
+
     default: return 'text-gray-800';
   }
 };
 
 // Action Handlers
+
 const markAsDelivered = async (orderId) => {
   Swal.fire({
     title: 'Xác nhận đã nhận hàng?',
@@ -464,6 +490,43 @@ const reorder = async (orderId) => {
       } catch (err) {
         console.error('Lỗi khi mua lại đơn hàng:', err);
         showError(err.response?.data?.message || 'Không thể mua lại đơn hàng. Vui lòng thử lại.');
+      }
+    }
+  });
+};
+
+const requestReturn = async (orderId) => {
+  Swal.fire({
+    title: 'Yêu cầu trả hàng?',
+    html: `
+      <p class="text-sm text-gray-600 mb-4">Bạn có chắc chắn muốn yêu cầu trả hàng cho đơn này không? Yêu cầu sẽ được gửi đến người bán để xử lý.</p>
+      <textarea id="return-reason" class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" placeholder="Lý do trả hàng..." rows="4"></textarea>
+    `,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#00B060',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Gửi yêu cầu',
+    cancelButtonText: 'Hủy',
+    preConfirm: () => {
+      const reason = Swal.getPopup().querySelector('#return-reason').value;
+      if (!reason) {
+        Swal.showValidationMessage('Vui lòng nhập lý do trả hàng.');
+      }
+      return { reason: reason };
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await api.post(`orders/${orderId}/request-return`, {
+          reason: result.value.reason
+        });
+        showSuccess(response.data.message);
+        fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
+        fetchOrderCounts();
+      } catch (err) {
+        console.error('Lỗi khi gửi yêu cầu trả hàng:', err);
+        showError(err.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
       }
     }
   });

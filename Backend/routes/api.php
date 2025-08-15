@@ -83,6 +83,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
             Route::post('/{order}/reorder', [ClientOrderController::class, 'reorder']);
+            Route::post('/{order}/request-return', [ClientOrderController::class, 'requestReturn']);
         });
 
         Route::prefix('reviews')->controller(ClientReviewController::class)->group(function () {
@@ -103,6 +104,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
                 Route::patch('{order}/status', 'updateStatus');
                 Route::put('{order}/note', 'updateNote');
                 Route::get('{order}/payments', 'getPayments');
+                Route::get('/returns/requested', 'getReturnRequests');
+                Route::post('/{order}/returns/approve', 'approveReturn');
+                Route::post('/{order}/returns/reject', 'rejectReturn');
+                Route::post('/{order}/returns/received', 'markAsReturned');
+                Route::post('/{order}/returns/refund', 'refundOrder');
             });
 
             //Route quản lý kho hàng bên admin
