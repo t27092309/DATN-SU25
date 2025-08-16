@@ -45,7 +45,7 @@
           <div class="container mx-auto flex items-center justify-center px-4 py-2">
             <div class="flex items-center space-x-6">
               <router-link to="/">
-                <img :src="logormbg" alt="Florea" class="h-16 mr-0 pb-1.5" />
+                <img :src="logormbg" alt="Florea" class="h-12 mr-0" />
               </router-link>
 
               <div class="group h-full flex items-center flex-shrink-0">
