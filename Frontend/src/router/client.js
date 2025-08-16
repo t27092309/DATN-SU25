@@ -22,6 +22,11 @@ import OrderDetail from "@/views/client/order/OrderDetail.vue";
 import OrderHistory from "@/views/client/OrderHistory.vue";
 import OrderDetails from "@/views/client/OrderDetails.vue";
 
+const ChangePassword = () =>
+  import("@/views/client/user/ChangePassword.vue");
+const PersonalInfo = () =>
+  import("@/views/client/user/PersonalInfo.vue");
+
 const routes = [
   {
     path: "/",
@@ -110,6 +115,11 @@ const routes = [
             component: Profile,
           },
           {
+            path: 'ho-so/chinh-sua',
+            name: 'PersonalInfo',
+            component: PersonalInfo
+          },
+          {
             path: "dia-chi",
             name: "Address",
             component: Address,
@@ -129,6 +139,18 @@ const routes = [
             name: "OrderDetail",
             component: OrderDetail,
             props: true,
+          },
+           {
+            path: "doi-mat-khau",
+            name: "ChangePassword",
+            component: ChangePassword,
+            meta: { requiresAuth: true },
+          },
+          {
+            path: "thong-tin-ca-nhan",
+            name: "PersonalInfo",
+            component: PersonalInfo,
+            meta: { requiresAuth: true },
           },
         ],
       },

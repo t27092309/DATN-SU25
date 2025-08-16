@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
 use App\Http\Controllers\API\Client\ReviewController as ClientReviewController;
 use App\Http\Controllers\API\Client\ProductReviewController;
+use App\Http\Controllers\API\Client\UserController;
 
 // Payment API (public, no auth required)
 Route::post('/payment/create', [PaymentController::class, 'createPayment']);
@@ -61,7 +62,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // Hồ sơ người dùng
         Route::get('/user/profile', [UserProfileController::class, 'show']);
-        Route::put('/user/profile', [UserProfileController::class, 'update']);
+    Route::post('/user/profile/update', [UserProfileController::class, 'update']);
 
         // Địa chỉ người dùng
         Route::get('/user/addresses', [UserAddressController::class, 'index']);
@@ -95,6 +96,11 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
+        // Thay đổi thông tin cá nhân
+        Route::get('/user/profile', [UserController::class, 'getProfile']);
+        Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
+        Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
+        Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
             //route quản lí đơn hàng bên admin
