@@ -15,7 +15,7 @@ class ClientBrandController extends Controller
             ->get()
             ->map(function ($brand) {
                 if ($brand->logo) {
-                    $brand->logo = asset(str_replace('public/', 'storage/', $brand->logo));
+                    $brand->logo = asset('storage/' . $brand->logo);
                 }
                 return $brand;
             });

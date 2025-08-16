@@ -17,7 +17,12 @@ class BrandController extends Controller
      */
     public function index()
     {
-        $brands = Brand::orderBy('id', 'desc')->get();
+        $brands = Brand::orderBy('id', 'desc')->get()->map(function ($brand) {
+            if ($brand->logo) {
+                $brand->logo_url = asset('storage/' . $brand->logo);
+            }
+            return $brand;
+        });
 
         return response()->json($brands, 200);
     }
@@ -67,6 +72,11 @@ class BrandController extends Controller
 
         $brand->save();
 
+        // Thêm URL cho logo nếu có
+        if ($brand->logo) {
+            $brand->logo_url = asset('storage/' . $brand->logo);
+        }
+
         return response()->json(['message' => 'Thương hiệu đã được thêm mới thành công!', 'brand' => $brand], 201);
     }
 
@@ -77,6 +87,9 @@ class BrandController extends Controller
     public function show(string $id)
     {
         $brand = Brand::findOrFail($id);
+        if ($brand->logo) {
+            $brand->logo_url = asset('storage/' . $brand->logo);
+        }
         return response()->json($brand);
     }
 
@@ -122,18 +135,23 @@ class BrandController extends Controller
         if ($request->hasFile('logo')) {
             // Xóa logo cũ nếu có
             if ($brand->logo) {
-                Storage::delete($brand->logo);
+                Storage::disk('public')->delete($brand->logo);
             }
-            $logoPath = $request->file('logo')->store('public/brands/logos');
+            $logoPath = $request->file('logo')->store('brands/logos', 'public');
             $brand->logo = $logoPath;
         } elseif ($request->input('clear_logo')) { // Xử lý nếu người dùng muốn xóa logo hiện tại
             if ($brand->logo) {
-                Storage::delete($brand->logo);
+                Storage::disk('public')->delete($brand->logo);
                 $brand->logo = null;
             }
         }
 
         $brand->save();
+
+        // Thêm URL cho logo nếu có
+        if ($brand->logo) {
+            $brand->logo_url = asset('storage/' . $brand->logo);
+        }
 
         return response()->json(['message' => 'Thương hiệu đã được cập nhật thành công!', 'brand' => $brand], 200);
     }
@@ -201,14 +219,39 @@ class BrandController extends Controller
 
         // Xóa logo vật lý nếu tồn tại trước khi xóa vĩnh viễn
         if ($brand->logo) {
-            $logoPath = str_replace(asset('storage/'), 'public/', $brand->logo);
-            if (Storage::exists($logoPath)) {
-                Storage::delete($logoPath);
-            }
+            Storage::disk('public')->delete($brand->logo);
         }
 
         $brand->forceDelete();
 
         return response()->json(['message' => 'Xóa vĩnh viễn thương hiệu thành công!'], 200);
+    }
+
+    /**
+     * Upload image for brand
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ], [
+            'image.required' => 'Vui lòng chọn ảnh.',
+            'image.image' => 'Tệp tải lên phải là hình ảnh.',
+            'image.mimes' => 'Hình ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB.',
+        ]);
+
+        try {
+            $path = $request->file('image')->store('brands/logos', 'public');
+            
+            return response()->json([
+                'message' => 'Ảnh đã được tải lên thành công.',
+                'path' => $path,
+                'url' => Storage::disk('public')->url($path),
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Lỗi khi tải lên ảnh: " . $e->getMessage());
+            return response()->json(['message' => 'Có lỗi xảy ra khi tải lên ảnh.', 'error' => $e->getMessage()], 500);
+        }
     }
 }

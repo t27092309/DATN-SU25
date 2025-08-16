@@ -181,7 +181,7 @@
                 @click="goToCategory(category.category_slug)"
                 class="category-item text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200 cursor-pointer"
                 :class="{
-                  'bg-gray-100 font-bold':
+                  ' font-bold':
                     selectedCategory === category.category_slug,
                 }">
                 {{ category.category_name }}
