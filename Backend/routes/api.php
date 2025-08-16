@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\Api\Admin\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Admin\BannerController;
 use App\Http\Controllers\api\admin\ChartController;
 use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\API\Admin\OrderController;
@@ -180,6 +181,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            // Nhóm banner
+            Route::apiResource('banners', BannerController::class);
         });
     });
 
