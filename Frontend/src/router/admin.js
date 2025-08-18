@@ -29,6 +29,7 @@ import CouponTrash from "@/views/admin/Coupons/CouponTrash.vue";
 
 import OrderList from "@/views/admin/Orders/OrderList.vue";
 import ShippingMethodList from "@/views/admin/ShippingMethod/ShippingMethodList.vue";
+import BanerManager from "@/views/admin/Banners/BanerManager.vue";
 
 export default [
   {
@@ -181,7 +182,16 @@ export default [
         name: "DonViVanChuyen",
         component: ShippingMethodList,
         meta: { requiresAdmin: true, title: "Quản lý đơn vị vận chuyển" }, // Thêm meta và tiêu đề
-      }
+      },
+      {
+        path: "banners",
+        name: "BannerManager",
+        component: BanerManager,
+        meta: {
+          requiresAdmin: true,
+          title: "Quản lý Banner",
+        },
+      },
     ],
   },
 ];
