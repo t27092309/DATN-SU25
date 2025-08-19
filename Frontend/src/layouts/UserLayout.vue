@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col md:flex-row max-w-8xl mx-auto min-h-screen bg-gray-100">
+  <div
+    class="flex flex-col md:flex-row max-w-8xl mx-auto min-h-screen bg-gray-100"
+  >
     <main class="flex-1 p-4 md:p-8 order-2 md:order-2">
       <div class="bg-white shadow-md rounded-lg p-6 h-full">
         <router-view></router-view>
@@ -11,7 +13,6 @@
         <!-- <div>
           <p class="font-semibold text-gray-800">{{ userName }}</p>
         </div> -->
-
       </div>
 
       <nav>
@@ -27,27 +28,98 @@
           </li> -->
 
           <li class="mb-2">
-            <a href="#" @click.prevent="toggleAccountSubMenu" :class="['flex items-center p-2 rounded',
-              'text-gray-700 hover:bg-red-50 hover:text-red-600']">
+            <a
+              href="#"
+              @click.prevent="toggleAccountSubMenu"
+              :class="[
+                'flex items-center p-2 rounded',
+                'text-gray-700 hover:bg-red-50 hover:text-red-600',
+              ]"
+            >
               <i class="fas fa-user-circle w-5 mr-3 text-blue-500"></i>
               Tài Khoản Của Tôi
               <i
-                :class="['fas ml-auto transition-transform duration-300', isAccountSubMenuOpen ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+                :class="[
+                  'fas ml-auto transition-transform duration-300',
+                  isAccountSubMenuOpen ? 'fa-chevron-up' : 'fa-chevron-down',
+                ]"
+              ></i>
             </a>
           </li>
 
           <li>
-            <ProfileSubMenu :isVisible="isAccountSubMenuOpen" :activeMenuItem="activeMenuItem"
-              @selectMenuItem="selectMenuItem" />
+            <ProfileSubMenu
+              :isVisible="isAccountSubMenuOpen"
+              :activeMenuItem="activeMenuItem"
+              @selectMenuItem="selectMenuItem"
+            />
           </li>
 
           <li class="mb-2">
-            <router-link to="don-hang" @click.prevent="selectMenuItem('orders')"
-              :class="['flex items-center p-2 rounded',
-                activeMenuItem === 'orders' ? 'text-red-600 bg-red-50 font-semibold' : 'text-gray-700 hover:bg-red-50 hover:text-red-600']">
-              <i class="fas fa-file-invoice w-5 mr-3"
-                :class="activeMenuItem === 'orders' ? 'text-red-600' : 'text-orange-500'"></i>
+            <router-link
+              to="don-hang"
+              @click.prevent="selectMenuItem('orders')"
+              :class="[
+                'flex items-center p-2 rounded',
+                activeMenuItem === 'orders'
+                  ? 'text-red-600 bg-red-50 font-semibold'
+                  : 'text-gray-700 hover:bg-red-50 hover:text-red-600',
+              ]"
+            >
+              <i
+                class="fas fa-file-invoice w-5 mr-3"
+                :class="
+                  activeMenuItem === 'orders'
+                    ? 'text-red-600'
+                    : 'text-orange-500'
+                "
+              ></i>
               Đơn mua
+            </router-link>
+          </li>
+
+          <li class="mb-2">
+            <router-link
+              to="/tai-khoan/doi-mat-khau"
+              @click.prevent="$emit('selectMenuItem', 'changePassword')"
+              :class="[
+                'flex items-center p-2 rounded',
+                activeMenuItem === 'changePassword'
+                  ? 'text-red-600 bg-red-50 font-semibold'
+                  : 'text-gray-700 hover:bg-red-50 hover:text-red-600',
+              ]"
+            >
+              <i
+                class="fas fa-key w-5 mr-3"
+                :class="
+                  activeMenuItem === 'changePassword'
+                    ? 'text-red-600'
+                    : 'text-yellow-500'
+                "
+              ></i>
+              Đổi mật khẩu
+            </router-link>
+          </li>
+          <li class="mb-2">
+            <router-link
+              to="/tai-khoan/thong-tin-ca-nhan"
+              @click="$emit('selectMenuItem', 'profile')"
+              :class="[
+                'flex items-center p-2 rounded',
+                activeMenuItem === 'profile'
+                  ? 'text-red-600 bg-red-50 font-semibold'
+                  : 'text-gray-700 hover:bg-red-50 hover:text-red-600',
+              ]"
+            >
+              <i
+                class="fas fa-id-card w-5 mr-3"
+                :class="
+                  activeMenuItem === 'profile'
+                    ? 'text-red-600'
+                    : 'text-green-500'
+                "
+              ></i>
+              Cập nhật hồ sơ
             </router-link>
           </li>
           <!-- <li class="mb-2">
@@ -75,27 +147,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth'; // Import auth store
-import ProfileSubMenu from '@/components/user/ProfileSubMenu.vue';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth"; // Import auth store
+import ProfileSubMenu from "@/components/user/ProfileSubMenu.vue";
 
 // Trạng thái đăng nhập
 const isLoggedIn = ref(false); // Mặc định là chưa đăng nhập
-const userName = ref('Guest'); // Tên người dùng
-
-
+const userName = ref("Guest"); // Tên người dùng
 
 const isAccountSubMenuOpen = ref(true);
-const activeMenuItem = ref('profile');
+const activeMenuItem = ref("profile");
 
 // Danh sách các mục con của "Tài Khoản Của Tôi"
-const accountSubMenuItems = ['profile', 'bank', 'address', 'password', 'notificationSetting', 'personalSetting'];
-
+const accountSubMenuItems = [
+  "profile",
+  "bank",
+  "address",
+  "password",
+  "changePassword",
+  "notificationSetting",
+  "personalSetting",
+];
 
 const toggleAccountSubMenu = () => {
   // Kiểm tra xem activeMenuItem hiện tại có phải là một trong các mục con này không
-  const isAnySubMenuItemActive = accountSubMenuItems.includes(activeMenuItem.value);
+  const isAnySubMenuItemActive = accountSubMenuItems.includes(
+    activeMenuItem.value
+  );
 
   // LOGIC 1: Khi một mục con đang active, click vào menu cha không đóng submenu
   if (isAnySubMenuItemActive) {
