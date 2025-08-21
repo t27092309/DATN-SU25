@@ -22,8 +22,6 @@
     </Splide>
 
     <div class="mega-menu mx-auto max-w-[1200px] px-4">
-      <h2 class="text-2xl font-bold text-gray-800 py-8">Nước hoa tại Florea</h2>
-
       <div class="py-4 px-4 items-center">
         <h2 class="text-2xl font-bold text-gray-800">
           Thương hiệu và danh mục
@@ -266,7 +264,7 @@ const splide = ref(null);
 
 const fetchBanners = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/admin/banners");
+    const response = await axios.get("http://127.0.0.1:8000/api/banners");
     banners.value = response.data.data.filter((banner) => banner.is_active);
     if (splide.value && splide.value.splide) {
       splide.value.splide.refresh(); // Làm mới Splide khi dữ liệu thay đổi

@@ -31,6 +31,7 @@ use App\Http\Controllers\API\Client\PaymentController;
 use App\Http\Controllers\API\Client\ReviewController as ClientReviewController;
 use App\Http\Controllers\API\Client\ProductReviewController;
 use App\Http\Controllers\API\Client\UserController;
+use App\Http\Controllers\API\BannerController as ClientBannerController;
 
 // Payment API (public, no auth required)
 Route::post('/payment/create', [PaymentController::class, 'createPayment']);
@@ -63,7 +64,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
         // Hồ sơ người dùng
         Route::get('/user/profile', [UserProfileController::class, 'show']);
-    Route::post('/user/profile/update', [UserProfileController::class, 'update']);
+        Route::post('/user/profile/update', [UserProfileController::class, 'update']);
 
         // Địa chỉ người dùng
         Route::get('/user/addresses', [UserAddressController::class, 'index']);
@@ -193,7 +194,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     });
 
 
-
+    Route::get('banners', [ClientBannerController::class, 'index']);
     Route::get('client/brands', [ClientBrandController::class, 'index']);
 
     //Route xác thực
