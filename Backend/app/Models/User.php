@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -47,7 +48,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function getAvatarAttribute($value)
+    {
+        // Kiểm tra nếu giá trị tồn tại
+        if ($value) {
+            // Trả về URL đầy đủ
+            return Storage::url($value);
+        }
 
+        return null; // Trả về null nếu không có ảnh
+    }
     public function addresses()
     {
         return $this->hasMany(UserAddress::class);
