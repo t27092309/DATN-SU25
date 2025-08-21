@@ -22,13 +22,14 @@
                         class="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
                         -{{ product.discount_percentage }}%
                     </span>
-                    <img :src="product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/150'"
-                        :alt="product.name" class="w-28 h-28 object-contain mb-2">
+                    <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
 
-                    <p class="text-xs text-gray-500 mb-1">
+
+                    <!-- <p class="text-xs text-gray-500 mb-1">
                         {{ product.description ? product.description.substring(0, 50) + '...' : '' }}
-                    </p>
-                    <p class="text-sm font-semibold mb-1 truncate w-full">{{ product.brand ? product.brand.name : 'N/A' }}</p>
+                    </p> -->
+                    <p class="text-sm font-semibold mb-1 truncate w-full">{{ product.brand ? product.brand.name : 'N/A'
+                        }}</p>
                     <p class="text-xs font-medium mb-1 truncate w-full">{{ product.name }}</p>
 
                     <p v-if="product.old_price" class="text-xs text-gray-400 line-through mt-2">

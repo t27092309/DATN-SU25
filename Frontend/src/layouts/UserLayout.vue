@@ -103,10 +103,10 @@
           <li class="mb-2">
             <router-link
               to="/tai-khoan/thong-tin-ca-nhan"
-              @click="$emit('selectMenuItem', 'profile')"
+              @click="$emit('selectMenuItem', 'profilechange')"
               :class="[
                 'flex items-center p-2 rounded',
-                activeMenuItem === 'profile'
+                activeMenuItem === 'profilechange'
                   ? 'text-red-600 bg-red-50 font-semibold'
                   : 'text-gray-700 hover:bg-red-50 hover:text-red-600',
               ]"
@@ -114,7 +114,7 @@
               <i
                 class="fas fa-id-card w-5 mr-3"
                 :class="
-                  activeMenuItem === 'profile'
+                  activeMenuItem === 'profilechange'
                     ? 'text-red-600'
                     : 'text-green-500'
                 "
