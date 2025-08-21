@@ -157,7 +157,7 @@ const fetchScentGroups = async () => {
     }
     await destroyAndReinitializeDataTable();
   } catch (error) {
-    toast.error(error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!"); // Thay thế listMessage
+    // toast.error(error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!");
     console.error("Lỗi khi tải danh sách:", error);
     await destroyAndReinitializeDataTable();
   }

@@ -14,7 +14,7 @@
               <span class="text-sm text-gray-600">({{ totalReviews }} đánh giá)</span>
               <span class="mx-2 text-gray-300">|</span>
               <span class="text-sm text-gray-600" v-if="selectedVariantSold !== 'N/A'">Đã bán {{ selectedVariantSold
-                }}</span>
+              }}</span>
               <span class="mx-2 text-gray-300" v-if="selectedVariantStock !== 'N/A'">|</span>
               <span class="text-sm text-gray-600" v-if="selectedVariantStock !== 'N/A'">Tồn kho: {{
                 selectedVariantStock }}</span>
@@ -23,7 +23,7 @@
 
             <div class="mb-4">
               <span class="font-semibold text-gray-600">Thương hiệu:</span>
-              <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand_name }}</a>
+              <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand.name }}</a>
             </div>
             <div class="mb-4">
               <span class="font-semibold text-gray-600">Loại sản phẩm:</span>
@@ -126,9 +126,9 @@
 
       <div class="w-full lg:w-[310px] lg:flex-shrink-0">
         <div class="p-4 border border-gray-200 rounded-lg shadow-sm">
-          <button class="w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 font-semibold mb-6">
-            {{ product.brand_id ? `Brand ID: ${product.brand_id}` : 'Thương hiệu không rõ' }}
-          </button>
+          <div v-if="product.brand" class="mb-6 flex justify-center">
+            <img :src="product.brand.logo" :alt="product.brand.name + ' logo'" class="max-h-[60px] w-auto" />
+          </div>
           <h3 class="text-center font-bold text-gray-800 mb-4">MÙI HƯƠNG CHÍNH (ACCORDS)</h3>
           <p class="text-center text-gray-500 text-xs italic mb-6">
             (*click tên nhóm hương để tìm hiểu chi tiết)

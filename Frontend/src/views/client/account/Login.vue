@@ -202,7 +202,7 @@ const handleLogin = async () => {
         const userRole = response.data.user.role; // Lấy role từ phản hồi của Laravel
 
         if (userRole === 'admin') {
-            router.push('/admin'); // Điều hướng đến trang admin
+            router.push('/admin/dashboard'); // Điều hướng đến trang admin
         } else if (userRole === 'staff') {
             router.push('/staff-dashboard'); // Điều hướng đến trang staff (ví dụ)
         } else {

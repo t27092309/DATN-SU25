@@ -12,7 +12,7 @@
                         <i class="fas fa-chevron-right text-xs"></i>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'products' }" class="hover:text-blue-800">Danh sách sản phẩm</router-link>
+                        <router-link :to="{ name: 'ScentGroups' }" class="hover:text-blue-800">Danh sách nhóm hương</router-link>
                     </li>
                     <li>
                         <i class="fas fa-chevron-right text-gray-400"></i>
