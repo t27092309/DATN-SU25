@@ -26,7 +26,8 @@ class ProductDetailResource extends JsonResource
             'view' => $this->views,
             'description' => $this->description,
             'has_variants' => $this->has_variants,
-
+            'stock' => $this->has_variants ? null : $this->stock,
+            'brand_id' => $this->brand_id,
             // Include brand_name when the 'brand' relationship is loaded
             'brand' => $this->whenLoaded('brand', function () {
                 return [
