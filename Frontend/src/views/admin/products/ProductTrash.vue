@@ -44,7 +44,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ product.name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            <img :src="product.image_url" :alt="product.name"
+                                            <img :src="product.image" :alt="product.name"
                                                 class="w-24 h-auto object-cover rounded-md mx-auto">
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDate(product.deleted_at) }}</td>

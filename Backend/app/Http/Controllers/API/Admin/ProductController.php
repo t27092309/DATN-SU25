@@ -617,15 +617,11 @@ class ProductController extends Controller
 
     public function trashed()
     {
-        // Lấy tất cả sản phẩm đã xóa mềm
-        $trashedProducts = Product::onlyTrashed()->get();
+        $trashedProducts = Product::onlyTrashed()
+            ->with(['category', 'brand'])
+            ->get();
 
-        // Bạn có thể trả về resource nếu cần
-        // return ProductCollection::make($trashedProducts);
-        return response()->json([
-            'message' => 'Danh sách sản phẩm đã xóa mềm.',
-            'data' => $trashedProducts
-        ]);
+        return ProductResource::collection($trashedProducts);
     }
 
     public function restore(string $id)
