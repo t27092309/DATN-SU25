@@ -353,16 +353,7 @@ class CheckoutController extends Controller
             $finalTotal += $shippingFee;
             Log::info('Tổng tiền cuối cùng trước khi tạo Order (finalTotal): ' . $finalTotal);
 
-            if ($validated['payment_method'] === 'vnpay') {
-                DB::commit(); // kết thúc transaction trước khi redirect sang VNPAY
 
-                $paymentResult = $this->createVnpayPayment($user, $cartItems, $addressData, $finalTotal, $validated);
-
-                return response()->json([
-                    'message' => 'Chuyển hướng đến VNPAY',
-                    'payment_info' => $paymentResult->getData(), // lấy payUrl
-                ], Response::HTTP_OK);
-            }
 
             $order = Order::create([
                 'user_id' => $user->id,

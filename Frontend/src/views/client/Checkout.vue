@@ -589,7 +589,7 @@ const placeOrder = async () => {
       paymentInfo.payUrl
     ) {
       toast.info("Hệ thống đang chuyển hướng đến trang thanh toán...");
-      // window.location.href = paymentInfo.payUrl;
+      window.location.href = paymentInfo.payUrl;
     } else {
       toast.success(response.data.message || "Đặt hàng thành công!");
       // Chuyển hướng sau khi toast hiển thị
