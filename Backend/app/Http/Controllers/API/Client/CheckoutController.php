@@ -353,6 +353,16 @@ class CheckoutController extends Controller
             $finalTotal += $shippingFee;
             Log::info('Tổng tiền cuối cùng trước khi tạo Order (finalTotal): ' . $finalTotal);
 
+            if ($validated['payment_method'] === 'vnpay') {
+                DB::commit(); // kết thúc transaction trước khi redirect sang VNPAY
+
+                $paymentResult = $this->createVnpayPayment($user, $cartItems, $addressData, $finalTotal, $validated);
+
+                return response()->json([
+                    'message' => 'Chuyển hướng đến VNPAY',
+                    'payment_info' => $paymentResult->getData(), // lấy payUrl
+                ], Response::HTTP_OK);
+            }
 
             $order = Order::create([
                 'user_id' => $user->id,
@@ -401,15 +411,6 @@ class CheckoutController extends Controller
 
                 $variant->decrement('stock', $item->quantity);
                 $variant->increment('sold', $item->quantity);
-
-                //lưu vào inventory_logs
-                //                 InventoryLog::create([
-                //                     'product_variant_id' => $variant->id,
-                //                     'user_id' => $user->id,
-                //                     'type' => 'import',
-                //                     'quantity_change' => $item->quantity,
-                //                     'note' => 'Hoàn tồn khi hủy đơn - Order #' . $order->id,
-                //                 ]);
 
                 // LOG 13: Cập nhật tồn kho cho mỗi item
 
@@ -923,9 +924,11 @@ class CheckoutController extends Controller
         ) {
             // Validate required fields for new address if they are provided
             // (already handled by the main validation, but good to be explicit)
-            if (!($validatedData['recipient_name'] && $validatedData['phone_number'] &&
-                $validatedData['address_line'] && $validatedData['ward'] &&
-                $validatedData['district'] && $validatedData['province'])) {
+            if (
+                !($validatedData['recipient_name'] && $validatedData['phone_number'] &&
+                    $validatedData['address_line'] && $validatedData['ward'] &&
+                    $validatedData['district'] && $validatedData['province'])
+            ) {
                 return response()->json(['message' => 'Vui lòng điền đầy đủ thông tin địa chỉ mới.'], Response::HTTP_BAD_REQUEST);
             }
             return [
