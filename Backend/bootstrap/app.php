@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'ability' => CheckAbilities::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
             // Bạn không cần alias 'auth:sanctum' ở đây nữa,
             // vì nó đã được Sanctum service provider tự động đăng ký.
             // Nếu bạn có alias 'auth:sanctum' nào đó, hãy xóa nó đi.

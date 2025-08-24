@@ -30,6 +30,8 @@ import CouponTrash from "@/views/admin/Coupons/CouponTrash.vue";
 import OrderList from "@/views/admin/Orders/OrderList.vue";
 import ShippingMethodList from "@/views/admin/ShippingMethod/ShippingMethodList.vue";
 import BanerManager from "@/views/admin/Banners/BanerManager.vue";
+import RoleManager from "@/views/admin/Roles/RoleManager.vue";
+import UserManager from "@/views/admin/Users/UserManager.vue";
 
 export default [
   {
@@ -190,6 +192,24 @@ export default [
         meta: {
           requiresAdmin: true,
           title: "Quản lý Banner",
+        },
+      },
+      {
+        path: "roles",
+        name: "RoleManager",
+        component: RoleManager,
+        meta: {
+          requiresAdmin: true,
+          title: "Quản lý Vai trò và Quyền hạn",
+        },
+      },
+      {
+        path: "users",
+        name: "UserManager",
+        component: UserManager,
+        meta: {
+          requiresAdmin: true,
+          title: "Quản lý Người dùng",
         },
       },
     ],
