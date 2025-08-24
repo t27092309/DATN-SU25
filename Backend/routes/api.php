@@ -98,13 +98,15 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
-        // Thay đổi thông tin cá nhân
-        Route::get('/user/profile', [UserController::class, 'getProfile']);
-        Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
-        Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
-        Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
-        // Route admin (yêu cầu quyền admin:full-access)
-        Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+        // Thay đổi thông tin cá nhân (chỉ user thường)
+        Route::middleware('user.role')->group(function () {
+            Route::get('/user/profile', [UserController::class, 'getProfile']);
+            Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
+            Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
+            Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
+        });
+        // Route admin (yêu cầu quyền admin:full-access và role admin/staff)
+        Route::middleware(['ability:admin:full-access', 'admin.role'])->prefix('admin')->group(function () {
             // Quản lý roles và permissions
             Route::get('/user/permissions', function () {
                 $user = \Illuminate\Support\Facades\Auth::user();

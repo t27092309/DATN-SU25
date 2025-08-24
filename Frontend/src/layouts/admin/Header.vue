@@ -98,14 +98,14 @@
                     @click="toggleUserMenu">
                     <div class="relative">
                         <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
-                            src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                            src="" alt="User Avatar" />
                         <div
                             class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white">
                         </div>
                     </div>
                     <div class="hidden sm:block">
-                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">John Doe</span>
-                        <p class="text-xs text-gray-500">Administrator</p>
+                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">{{ authStore.user?.name || 'User' }}</span>
+                        <p class="text-xs text-gray-500">{{ getRoleDisplayName(authStore.user?.role) }}</p>
                     </div>
                     <svg class="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-all duration-300"
                         :class="{ 'rotate-180 text-blue-600': showUserMenu }" fill="none" stroke="currentColor"
@@ -121,10 +121,10 @@
                         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                             <div class="flex items-center space-x-3">
                                 <img class="h-10 w-10 rounded-full object-cover border border-gray-200"
-                                    src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                                    src="" alt="User Avatar" />
                                 <div>
-                                    <p class="font-medium text-gray-800">John Doe</p>
-                                    <p class="text-xs text-gray-500">john@florea.com</p>
+                                    <p class="font-medium text-gray-800">{{ authStore.user?.name || 'User' }}</p>
+                                    <p class="text-xs text-gray-500">{{ authStore.user?.email || 'user@example.com' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -167,14 +167,31 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 // --- State cho User Menu ---
 const showUserMenu = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
 
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value;
     showNotifications.value = false;
+};
+
+const logout = () => {
+    authStore.logout();
+    router.push('/login');
+};
+
+const getRoleDisplayName = (role) => {
+    const roleNames = {
+        'admin': 'Administrator',
+        'staff': 'Staff',
+        'user': 'Customer'
+    };
+    return roleNames[role] || 'User';
 };
 
 // --- State cho Notifications ---
@@ -247,10 +264,6 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-const logout = () => {
-    alert('Đăng xuất...');
-    showUserMenu.value = false;
-};
 
 const route = useRoute();
 const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');

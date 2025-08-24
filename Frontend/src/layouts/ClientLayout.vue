@@ -9,8 +9,11 @@
               <a href="">
                 <span class="text-white font-semibold text-xs hidden sm:inline">Giới thiệu về chúng tôi</span>
               </a>
-              <router-link to="/order-history">
+              <router-link v-if="!isAdminOrStaff" to="/order-history">
                 <span class="text-white font-semibold text-xs ml-4">Tra cứu lịch sử mua hàng</span>
+              </router-link>
+              <router-link v-if="isAdminOrStaff" to="/admin/dashboard">
+                <span class="text-white font-semibold text-xs ml-4">Quản lý Admin</span>
               </router-link>
             </div>
 
@@ -451,6 +454,11 @@ const authStore = useAuthStore();
 // Khôi phục token và user từ localStorage khi ứng dụng load lại
 onMounted(() => {
   authStore.initializeAuth();
+});
+
+// Kiểm tra xem user có phải là admin hoặc staff không
+const isAdminOrStaff = computed(() => {
+  return authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'staff');
 });
 
 //Search
