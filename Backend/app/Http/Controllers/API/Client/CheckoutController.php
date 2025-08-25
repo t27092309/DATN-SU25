@@ -196,7 +196,7 @@ class CheckoutController extends Controller
                 'product' => [ // Trả về thông tin product đầy đủ hơn cho frontend
                     'id' => $variant->product->id ?? null,
                     'name' => $variant->product->name ?? 'Sản phẩm không rõ',
-                    'image' => $thumbnail_url ?? 'https://via.placeholder.com/64',
+                    'image' => $thumbnailUrl ?? 'https://via.placeholder.com/64',
                 ],
                 'price' => $variant->price,
                 'stock' => $variant->stock,
