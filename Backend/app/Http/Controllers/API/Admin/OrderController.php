@@ -247,7 +247,7 @@ class OrderController extends Controller
             $returnRequest->processed_at = now();
             $returnRequest->save();
 
-            // $order->status = 'rejected';
+            $order->status = 'rejected';
             $order->save();
 
             DB::commit();
