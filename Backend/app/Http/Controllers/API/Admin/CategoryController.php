@@ -26,7 +26,7 @@ class CategoryController extends Controller
         return response()->json($categories, 200);
     }
 
-     // Tạo danh mục mới
+    // Tạo danh mục mới
     // POST // http://localhost:8000/api/admin/categories
     public function store(CategoryRequest $request)
     {
@@ -66,25 +66,41 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         $category = Category::findOrFail($id);
+
+        // Kiểm tra xem danh mục có sản phẩm không
+        if ($category->products()->count() > 0) {
+            return response()->json([
+                'message' => 'Không thể xóa vì danh mục vẫn còn sản phẩm.'
+            ], 400);
+        }
+
         $category->delete();
-        return response()->json(['message' => 'Xóa mềm danh mục thành công '], 200);
+
+        return response()->json(['message' => 'Xóa mềm danh mục thành công'], 200);
     }
 
     // Khôi phục danh mục đã xóa mềm
 
     // PUT // http://localhost:8000/api/admin/categories/{id}/restore
-        public function restore(string $id)
+    public function restore(string $id)
     {
-        $category = Category::onlyTrashed()->findOrFail($id);
+        $category = Category::withTrashed()->findOrFail($id);
         $category->restore();
         return response()->json(['message' => 'Khôi phục danh mục thành công'], 200);
     }
 
-     // Xóa vĩnh viễn danh mục
+    // Xóa vĩnh viễn danh mục
     // DELETE // http://localhost:8000/api/admin/categories/{id}/force
     public function forceDelete($id)
     {
         $category = Category::onlyTrashed()->findOrFail($id);
+
+        if ($category->products()->count() > 0) {
+            return response()->json([
+                'message' => 'Không thể xóa vĩnh viễn vì danh mục vẫn còn sản phẩm.'
+            ], 400);
+        }
+
         $category->forceDelete();
 
         return response()->json(['message' => 'Xóa vĩnh viễn danh mục thành công.']);
