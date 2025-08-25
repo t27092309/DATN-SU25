@@ -130,6 +130,7 @@ const selectedAddress = computed(() => {
   return null;
 });
 
+
 const hasNewAddressDetails = computed(() => {
   const details = newAddressDetails.value;
   return (
@@ -594,7 +595,7 @@ const placeOrder = async () => {
       toast.success(response.data.message || "Đặt hàng thành công!");
       // Chuyển hướng sau khi toast hiển thị
       setTimeout(() => {
-        router.push({
+        router.replace({
           name: "DatHangThanhCong",
           params: { ma_don_hang: response.data.order_id },
         });
