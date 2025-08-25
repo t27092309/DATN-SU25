@@ -10,6 +10,7 @@ import Login from "@/views/client/account/Login.vue";
 import Checkout from "@/views/client/Checkout.vue";
 import OrderConfirmation from "@/views/client/order/OrderConfirmation.vue";
 import SearchResult from "@/views/client/SearchResult.vue";
+import BrandDetail from "@/views/client/brand/BrandDetail.vue";
 //-----User--------
 import UserLayout from "@/layouts/UserLayout.vue";
 import Profile from "@/views/client/user/Profile.vue";
@@ -46,6 +47,12 @@ const routes = [
         path: "thuong-hieu",
         name: "ThuongHieu",
         component: ThuongHieuPage,
+      },
+      {
+        path: "thuong-hieu/:slug",
+        name: "BrandDetail",
+        component: BrandDetail,
+        props: true,
       },
       {
         path: "gio-hang",

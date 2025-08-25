@@ -22,4 +22,34 @@ class ClientBrandController extends Controller
 
         return response()->json($brands, 200);
     }
+
+    public function showBySlug($slug)
+    {
+        $brand = Brand::where('slug', $slug)->first();
+
+        if (!$brand) {
+            return response()->json(['message' => 'Brand not found.'], 404);
+        }
+
+        // Biến đổi đường dẫn logo tương tự như phương thức index
+        if ($brand->logo) {
+            $brand->logo = asset('storage/' . $brand->logo);
+        }
+
+        return response()->json($brand, 200);
+    }
+
+    public function getProductsByBrandSlug($slug)
+    {
+        $brand = Brand::where('slug', $slug)->first();
+
+        if (!$brand) {
+            return response()->json([
+                'message' => 'Brand not found.'
+            ], 404);
+        }
+
+        $products = $brand->products()->whereNull('deleted_at')->get();
+        return response()->json($products, 200);
+    }
 }

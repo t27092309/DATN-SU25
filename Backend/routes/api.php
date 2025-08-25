@@ -196,6 +196,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
     Route::get('banners', [ClientBannerController::class, 'index']);
     Route::get('client/brands', [ClientBrandController::class, 'index']);
+    Route::get('client/brands/slug/{slug}', [ClientBrandController::class, 'showBySlug']);
+    Route::get('client/brands/{slug}/products', [ClientBrandController::class, 'getProductsByBrandSlug']);
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
