@@ -20,6 +20,12 @@
             <input v-model="form.phone_number" class="flex-1 border-b border-gray-300 py-2 focus:outline-none" />
           </div>
 
+          <!-- Email -->
+          <div class="mb-4 flex flex-col sm:flex-row sm:items-center">
+            <label class="w-full sm:w-32 text-gray-600 mb-1 sm:mb-0">Email</label>
+            <input v-model="form.email" type="email" class="flex-1 border-b border-gray-300 py-2 focus:outline-none" />
+          </div>
+
           <!-- Giới tính -->
           <div class="mb-4 flex flex-col sm:flex-row sm:items-center">
             <label class="w-full sm:w-32 text-gray-600 mb-1 sm:mb-0">Giới tính</label>
@@ -68,6 +74,7 @@ const user = ref({})
 const form = ref({
   name: '',
   phone_number: '',
+  email: '',
   gender: '',
   birthday: ''
 })
@@ -82,6 +89,7 @@ const loadUser = async () => {
     user.value = res.data
     form.value.name = res.data.name || ''
     form.value.phone_number = res.data.phone_number || ''
+    form.value.email = res.data.email || ''
     form.value.gender = res.data.gender || ''
     form.value.birthday = res.data.birthday || ''
   } catch (err) {
@@ -103,6 +111,7 @@ const updateProfile = async () => {
   const data = new FormData()
   data.append('name', form.value.name)
   data.append('phone_number', form.value.phone_number)
+  data.append('email', form.value.email)
   data.append('gender', form.value.gender)
   data.append('birthday', form.value.birthday)
   if (avatarFile.value) {
