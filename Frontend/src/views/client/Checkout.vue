@@ -320,7 +320,7 @@ async function fetchCheckoutItemsFromCart(itemIds) {
         product: {
           id: item.product_id,
           name: item.product_name,
-          thumbnail_url: item.thumbnail_url,
+          image: item.thumbnail_url,
         },
         quantity: item.quantity,
         variant: {
@@ -760,8 +760,8 @@ watch(
           <div class="grid grid-cols-5 items-center">
             <div class="col-span-2 flex items-center">
               <img
-                :src="item.product.thumbnail_url || 'https://via.placeholder.com/64'"
-                :alt="item.product_name || 'Sản phẩm'"
+                :src="item.product.image"
+                
                 class="w-16 h-16 mr-3 border rounded object-cover"
               />
               <div>
