@@ -172,6 +172,10 @@
                 </div>
               </div>
 
+              <router-link to="/gioi-thieu"
+                class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
+                Giới thiệu
+              </router-link>
               <router-link to="/thuong-hieu"
                 class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200">
                 Thương hiệu
