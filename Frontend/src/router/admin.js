@@ -32,6 +32,8 @@ import ShippingMethodList from "@/views/admin/ShippingMethod/ShippingMethodList.
 import BanerManager from "@/views/admin/Banners/BanerManager.vue";
 import RoleManager from "@/views/admin/Roles/RoleManager.vue";
 import UserManager from "@/views/admin/Users/UserManager.vue";
+import PostManager from "@/views/admin/Post/PostManager.vue";
+import PostTrash from "@/views/admin/Post/PostTrash.vue";
 
 export default [
   {
@@ -211,6 +213,18 @@ export default [
           requiresAdmin: true,
           title: "Quản lý Người dùng",
         },
+      },
+      {
+        path: "posts",
+        name: "PostManager",
+        component: PostManager,
+        meta: { requiresAdmin: true, title: "Quản lý bài viết" },
+      },
+      {
+        path: "posts/trash",
+        name: "PostTrash",
+        component: PostTrash,
+        meta: { requiresAdmin: true, title: "Thùng rác bài viết" },
       },
     ],
   },

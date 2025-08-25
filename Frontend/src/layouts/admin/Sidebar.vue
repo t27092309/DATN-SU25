@@ -241,6 +241,13 @@ const menuItems = ref([
     isOpen: false,
     children: [{ name: "Tất cả thương hiệu", route: "/admin/brands" }],
   },
+    {
+    name: "Bài viết",
+    route: "/admin/posts",
+    icon: "fas fa-star",
+    isOpen: false,
+    children: [{ name: "Tất cả bài viết", route: "/admin/posts" }],
+  },
   {
     name: "Mã giảm giá",
     route: "/admin/coupons",

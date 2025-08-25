@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Client\ClientBrandController;
 use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\API\Client\PaymentMethodController as ClientPaymentMethodController;
 use App\Http\Controllers\API\Client\ProductVariantController;
+use App\Http\Controllers\Api\PostController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\Client\ProductController as ClientProductController;
 use App\Http\Middleware\CorsMiddleware;
@@ -211,6 +212,13 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            
+            // Posts
+            Route::apiResource('posts', PostController::class);
+            Route::get('posts/trashed', [PostController::class, 'trashed']);
+            Route::put('posts/{id}/restore', [PostController::class, 'restore']);
+            Route::delete('posts/{id}/force', [PostController::class, 'forceDelete']);
+            Route::post('posts/{post}/image', [PostController::class, 'uploadImage']);
             // Nhóm banner
             Route::apiResource('banners', BannerController::class);
         });
