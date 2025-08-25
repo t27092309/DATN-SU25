@@ -108,7 +108,7 @@ export default [
         meta: { requiresAdmin: true, title: "Quản lý danh mục" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/categories/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "categories/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditCategory",
         component: EditCategory,
         meta: { requiresAdmin: true, title: "Sửa danh mục" }, // Thêm meta và tiêu đề
@@ -120,19 +120,19 @@ export default [
         meta: { requiresAdmin: true, title: "Quản lý thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/brand/them-moi", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "brand/them-moi", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandAdd",
         component: BrandAdd,
         meta: { requiresAdmin: true, title: "Thêm thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/brand/sua/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "brand/sua/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandEdit",
         component: BrandEdit,
         meta: { requiresAdmin: true, title: "Sửa thương hiệu" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/brand/thung-rac", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "brand/thung-rac", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "BrandTrash",
         component: BrandTrash,
         meta: { requiresAdmin: true, title: "Thùng rác Thương hiệu" }, // Thêm meta và tiêu đề
@@ -144,13 +144,13 @@ export default [
         meta: { requiresAdmin: true, title: "Quản lý mã giảm giá" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/coupons/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "coupons/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditCoupons",
         component: EditCoupon,
         meta: { requiresAdmin: true, title: "Sửa mã giảm giá" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/coupons/trash",
+        path: "coupons/trash",
         name: "CouponTrash",
         component: CouponTrash,
         meta: { requiresAdmin: true, title: "Thùng Rác Mã Giảm Giá" }, // Thêm meta
@@ -162,7 +162,7 @@ export default [
         meta: { requiresAdmin: true, title: "Quản lý nhóm hương" }, // Thêm meta và tiêu đề
       },
       {
-        path: "/scent-group/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
+        path: "scent-group/edit/:id", // Đây là route con nhưng path bắt đầu bằng `/`, sẽ không kế thừa `/admin`
         name: "EditScentGroup",
         component: EditScentGroup,
         meta: { requiresAdmin: true, title: "Sửa nhóm hương" }, // Thêm meta và tiêu đề

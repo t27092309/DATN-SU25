@@ -91,7 +91,14 @@
                     </div>
                 </Transition>
             </div>
-
+            <div class="border-t border-gray-200">
+                <a href="#" @click.prevent="logout" class="group flex items-center px-4 py-3 text-sm text-gray-700 hover:text-red-600 
+                                      hover:bg-red-50 transition-all duration-200">
+                    <i
+                        class="fas fa-sign-out-alt w-4 h-4 mr-3 text-gray-400 group-hover:text-red-600 transition-colors"></i>
+                    Đăng xuất
+                </a>
+            </div>
             <div class="relative">
                 <div class="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl 
                             hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all duration-300"
@@ -104,7 +111,8 @@
                         </div>
                     </div>
                     <div class="hidden sm:block">
-                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">{{ authStore.user?.name || 'User' }}</span>
+                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">{{
+                            authStore.user?.name || 'User' }}</span>
                         <p class="text-xs text-gray-500">{{ getRoleDisplayName(authStore.user?.role) }}</p>
                     </div>
                     <svg class="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-all duration-300"
@@ -120,11 +128,12 @@
 
                         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                             <div class="flex items-center space-x-3">
-                                <img class="h-10 w-10 rounded-full object-cover border border-gray-200"
-                                    src="" alt="User Avatar" />
+                                <img class="h-10 w-10 rounded-full object-cover border border-gray-200" src=""
+                                    alt="User Avatar" />
                                 <div>
                                     <p class="font-medium text-gray-800">{{ authStore.user?.name || 'User' }}</p>
-                                    <p class="text-xs text-gray-500">{{ authStore.user?.email || 'user@example.com' }}</p>
+                                    <p class="text-xs text-gray-500">{{ authStore.user?.email || 'user@example.com' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +191,7 @@ const toggleUserMenu = () => {
 
 const logout = () => {
     authStore.logout();
-    router.push('/login');
+    router.push('/dang-nhap');
 };
 
 const getRoleDisplayName = (role) => {
@@ -300,6 +309,4 @@ const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #2563eb, #7c3aed);
 }
-
-
 </style>
