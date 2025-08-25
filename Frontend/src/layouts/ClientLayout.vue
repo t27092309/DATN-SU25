@@ -311,7 +311,7 @@
               </div>
 
               <a
-                href="#"
+                href="/knowledge"
                 class="text-sm font-semibold text-gray-900 hover:text-red-600 transition duration-200"
               >
                 Kiến Thức
