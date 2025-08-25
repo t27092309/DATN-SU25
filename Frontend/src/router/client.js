@@ -22,6 +22,7 @@ import OrderDetail from "@/views/client/order/OrderDetail.vue";
 import OrderHistory from "@/views/client/OrderHistory.vue";
 import OrderDetails from "@/views/client/OrderDetails.vue";
 import AboutUs from "@/views/client/AboutUs.vue";
+import Contact from "@/views/client/Contact.vue";
 
 const ChangePassword = () => import("@/views/client/user/ChangePassword.vue");
 const PersonalInfo = () => import("@/views/client/user/PersonalInfo.vue");
@@ -40,6 +41,11 @@ const routes = [
         path: "/gioi-thieu",
         name: "AboutUs",
         component: AboutUs,
+      },
+      {
+        path: "/contact",
+        name: "Contact",
+        component: Contact,
       },
       {
         path: "nuoc-hoa",
