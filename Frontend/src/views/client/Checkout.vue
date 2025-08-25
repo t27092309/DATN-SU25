@@ -455,26 +455,27 @@ const handleShippingMethodSelected = (methodId) => {
   showShippingMethodModal.value = false; // Close the modal
 };
 
+
+const handleNewAddressAdded = (newAddress) => {
+  // 1. Thêm địa chỉ mới vào danh sách địa chỉ của người dùng
+  userAddresses.value.push(newAddress);
+
+  // 2. Tự động chọn địa chỉ mới này
+  selectedAddressId.value = newAddress.id;
+
+  // 3. Chuyển trạng thái sang "địa chỉ có sẵn"
+  useNewAddressForm.value = false;
+};
+
 // --- Address Selection Handler from Modal ---
 const handleAddressSelection = (payload) => {
-  if (payload.type === "existing") {
-    selectedAddressId.value = payload.id;
-    useNewAddressForm.value = false;
-    newAddressDetails.value = {
-      recipient_name: "",
-      phone_number: "",
-      address_line: "",
-      ward: "",
-      district: "",
-      province: "",
-    };
-  } else if (payload.type === "new") {
-    newAddressDetails.value = payload.details;
-    useNewAddressForm.value = true;
-    selectedAddressId.value = null;
-  }
+  // Hàm này giờ đây chỉ cần xử lý việc chọn địa chỉ
+  // Mọi logic thêm địa chỉ mới sẽ được xử lý bởi hàm handleNewAddressAdded
+  selectedAddressId.value = payload.id;
+  useNewAddressForm.value = false;
   showAddressModal.value = false;
 };
+
 
 // --- Payment Method Selection Handler ---
 const handlePaymentMethodSelection = (methodCode) => {
@@ -488,7 +489,8 @@ const placeOrder = async () => {
   errorMessage.value = null;
 
   if (checkoutItems.value.length === 0) {
-    toast.error("Vui lòng chọn sản phẩm để thanh toán.");
+
+    toast.error('Vui lòng chọn sản phẩm để thanh toán.');
     return;
   }
 
@@ -496,23 +498,9 @@ const placeOrder = async () => {
   let addressChosenSuccessfully = false;
 
   if (useNewAddressForm.value) {
-    const {
-      recipient_name,
-      phone_number,
-      address_line,
-      ward,
-      district,
-      province,
-    } = newAddressDetails.value;
-    if (
-      !recipient_name ||
-      !phone_number ||
-      !address_line ||
-      !ward ||
-      !district ||
-      !province
-    ) {
-      toast.error("Vui lòng điền đầy đủ thông tin địa chỉ mới.");
+    const { recipient_name, phone_number, address_line, ward, district, province } = newAddressDetails.value;
+    if (!recipient_name || !phone_number || !address_line || !ward || !district || !province) {
+      toast.error('Vui lòng điền đầy đủ thông tin địa chỉ mới.');
       return;
     }
     addressPayload = {
@@ -527,6 +515,7 @@ const placeOrder = async () => {
   } else {
     if (!selectedAddressId.value) {
       toast.error("Vui lòng chọn một địa chỉ có sẵn hoặc nhập địa chỉ mới.");
+
       return;
     }
     addressPayload = { address_id: selectedAddressId.value };
@@ -535,16 +524,19 @@ const placeOrder = async () => {
 
   if (!addressChosenSuccessfully) {
     toast.error("Vui lòng chọn hoặc nhập địa chỉ nhận hàng.");
+
     return;
   }
 
   if (!selectedShippingMethodId.value) {
     toast.error("Vui lòng chọn phương thức vận chuyển.");
+
     return;
   }
 
   // Sử dụng `confirm` là một lựa chọn tốt cho những cảnh báo quan trọng
-  if (!confirm("Bạn có chắc chắn muốn đặt hàng không?")) {
+
+  if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
     return;
   }
 
@@ -552,7 +544,8 @@ const placeOrder = async () => {
   let paymentInfo = null;
 
   try {
-    const isBuyNow = route.query.buy_now === "true";
+
+    const isBuyNow = route.query.buy_now === 'true';
     let orderData = {
       ...addressPayload,
       shipping_method_id: selectedShippingMethodId.value,
@@ -565,7 +558,8 @@ const placeOrder = async () => {
     if (isBuyNow) {
       const singleItem = checkoutItems.value[0];
       if (!singleItem || !singleItem.variant || !singleItem.variant.id) {
-        toast.error("Thông tin sản phẩm để mua ngay không hợp lệ.");
+
+        toast.error('Thông tin sản phẩm để mua ngay không hợp lệ.');
         loading.value = false;
         return;
       }
@@ -602,6 +596,7 @@ const placeOrder = async () => {
     }
   } catch (err) {
     console.error("Lỗi khi đặt hàng:", err);
+
     loading.value = false;
 
     if (err.response && err.response.data && err.response.data.message) {
@@ -640,6 +635,7 @@ const placeOrder = async () => {
     ) {
       loading.value = false;
     }
+
   }
 };
 
@@ -1001,22 +997,15 @@ watch(
       </div>
     </div>
 
-    <AddressSelectionModal
-      :is-visible="showAddressModal"
-      :addresses="userAddresses"
-      :selected-address-id="selectedAddressId"
-      :new-address-details="newAddressDetails"
-      :use-new-address-form="useNewAddressForm"
-      @update:is-visible="showAddressModal = $event"
-      @addressSelected="handleAddressSelection"
-    />
 
-    <ShippingMethodSelectionModal
-      :is-visible="showShippingMethodModal"
-      :current-selected-method-id="selectedShippingMethodId"
-      @update:is-visible="showShippingMethodModal = $event"
-      @methodSelected="handleShippingMethodSelected"
-    />
+    <AddressSelectionModal :is-visible="showAddressModal" :addresses="userAddresses"
+      :selected-address-id="selectedAddressId" :new-address-details="newAddressDetails"
+      :use-new-address-form="useNewAddressForm" @update:is-visible="showAddressModal = $event"
+      @addressSelected="handleAddressSelection" @newAddressAdded="handleNewAddressAdded" />
+
+    <ShippingMethodSelectionModal :is-visible="showShippingMethodModal"
+      :current-selected-method-id="selectedShippingMethodId" @update:is-visible="showShippingMethodModal = $event"
+      @methodSelected="handleShippingMethodSelected" />
   </div>
 </template>
 
