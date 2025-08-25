@@ -760,13 +760,13 @@ watch(
           <div class="grid grid-cols-5 items-center">
             <div class="col-span-2 flex items-center">
               <img
-                :src="item.thumbnail_url || 'https://via.placeholder.com/64'"
+                :src="item.product.thumbnail_url || 'https://via.placeholder.com/64'"
                 :alt="item.product_name || 'Sản phẩm'"
                 class="w-16 h-16 mr-3 border rounded object-cover"
               />
               <div>
                 <p class="text-gray-800">
-                  {{ item.product?.name || "Sản phẩm không rõ tên" }}
+                  {{ item.product.name || "Sản phẩm không rõ tên" }}
                 </p>
                 <p
                   v-if="item.variant && item.variant.name"
