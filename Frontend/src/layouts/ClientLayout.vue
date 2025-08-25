@@ -14,10 +14,11 @@
                   >Giới thiệu về chúng tôi</span
                 >
               </a>
-              <router-link to="/order-history">
-                <span class="text-white font-semibold text-xs ml-4"
-                  >Tra cứu lịch sử mua hàng</span
-                >
+              <router-link v-if="!isAdminOrStaff" to="/order-history">
+                <span class="text-white font-semibold text-xs ml-4">Tra cứu lịch sử mua hàng</span>
+              </router-link>
+              <router-link v-if="isAdminOrStaff" to="/admin/dashboard">
+                <span class="text-white font-semibold text-xs ml-4">Quản lý Admin</span>
               </router-link>
             </div>
 
@@ -528,12 +529,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-import logormbg from "@/assets/img/florea/Logo-bgremove.png";
-import UserDisplay from "@/components/user/UserDisplay.vue";
-import axios from "axios";
+import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import logormbg from '@/assets/img/florea/Logo-bgremove.png';
+import UserDisplay from '@/components/user/UserDisplay.vue';
+import axios from 'axios';
 
 // State
 const categories = ref([]);
@@ -633,6 +634,11 @@ const authStore = useAuthStore();
 // Khôi phục token và user từ localStorage khi ứng dụng load lại
 onMounted(() => {
   authStore.initializeAuth();
+});
+
+// Kiểm tra xem user có phải là admin hoặc staff không
+const isAdminOrStaff = computed(() => {
+  return authStore.user && (authStore.user.role === 'admin' || authStore.user.role === 'staff');
 });
 
 //Search

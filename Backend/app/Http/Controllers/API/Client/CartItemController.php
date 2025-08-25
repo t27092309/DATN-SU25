@@ -21,11 +21,13 @@ class CartItemController extends Controller
         $user = $request->user();
 
         // Lấy giỏ hàng đang hoạt động và load các quan hệ cần thiết
+        // Laravel sẽ tải cả hai quan hệ 'items.variant.product' và 'items.product'
+        // để đảm bảo dữ liệu luôn có sẵn.
         $cart = Cart::with([
             'items.variant.product',
             'items.variant.attributeValues.attribute',
             'items.variant.product.variants.attributeValues.attribute',
-            // 'items.product.variants.attributeValues.attribute' // This might be redundant if variant is always expected for complex products
+            'items.product',
         ])
             ->where('user_id', $user->id)
             ->where('status', 'active')
@@ -42,34 +44,37 @@ class CartItemController extends Controller
         }
 
         // Lấy danh sách item, sắp xếp giảm dần theo ID (mới nhất trước)
+        // và ánh xạ dữ liệu ra định dạng mong muốn.
         $items = $cart->items->sortByDesc('id')->map(function ($item) {
-            $productId = null;
-            $productName = 'Sản phẩm không xác định';
-            $productSlug = '';
-            $productImage = null;
-            $displayPrice = (float) $item->price;
-            $priceDifference = 0.0;
-            $variantData = null;
+            // Xác định đối tượng sản phẩm chính. Ưu tiên sản phẩm từ biến thể, sau đó đến sản phẩm đơn giản.
+            $product = $item->variant->product ?? $item->product;
 
+            if (!$product) {
+                // Nếu không tìm thấy sản phẩm, bỏ qua item này để tránh lỗi.
+                return null;
+            }
+
+            // Khởi tạo các biến với giá trị mặc định
+            $productId = $product->id;
+            $productName = $product->name;
+            $productSlug = $product->slug;
+            $productImage = $product->image;
+            $hasVariant = (bool) $product->has_variants;
+            $displayPrice = (float) $item->price;
+            $variantData = null;
+            $availableVariants = [];
+
+            // Nếu item là sản phẩm có biến thể
             if ($item->variant) {
                 $variant = $item->variant;
-                $product = $variant->product;
-
-                if ($product) {
-                    $productId = $product->id;
-                    $productName = $product->name;
-                    $productSlug = $product->slug;
-                    $productImage = $product->image;
-                    // Ensure product->price exists before calculation
-                    $priceDifference = (float) ($variant->price - ($product->price ?? 0));
-                }
+                $priceDifference = (float) ($variant->price - ($product->price ?? 0));
 
                 $variantData = [
                     'id' => $variant->id,
                     'name' => $this->getVariantName($variant),
                     'sku' => $variant->sku,
-                    'price' => (float) $variant->price, // Current variant price
-                    'stock' => $variant->stock, // Include stock for this variant
+                    'price' => (float) $variant->price,
+                    'stock' => $variant->stock,
                     'price_difference' => round($priceDifference, 2),
                     'attributes' => $variant->attributeValues->map(function ($attrValue) {
                         return [
@@ -80,28 +85,12 @@ class CartItemController extends Controller
                         ];
                     })->values()->all(),
                 ];
-            } elseif ($item->product) { // For simple products without variants
-                $product = $item->product;
-                $productId = $product->id;
-                $productName = $product->name;
-                $productSlug = $product->slug;
-                $productImage = $product->image;
             }
 
-            $availableVariants = [];
-            $currentProduct = null;
-            $fullThumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($productImage), '/');
-
-            if ($item->variant && $item->variant->product) {
-                $currentProduct = $item->variant->product;
-            } elseif ($item->product) {
-                $currentProduct = $item->product;
-            }
-
-            if ($currentProduct && $currentProduct->variants->isNotEmpty()) {
-                $availableVariants = $currentProduct->variants->map(function ($variant) use ($currentProduct) {
-                    // Calculate price difference for each available variant relative to the base product price
-                    $variantPriceDifference = (float) ($variant->price - ($currentProduct->price ?? 0));
+            // Lấy danh sách tất cả các biến thể có thể có của sản phẩm gốc
+            if ($product->has_variants && $product->variants->isNotEmpty()) {
+                $availableVariants = $product->variants->map(function ($variant) use ($product) {
+                    $variantPriceDifference = (float)($variant->price - ($product->price ?? 0));
                     return [
                         'id' => $variant->id,
                         'name' => $this->getVariantName($variant),
@@ -121,6 +110,8 @@ class CartItemController extends Controller
                 })->all();
             }
 
+            $fullThumbnailUrl = config('app.url') . '/' . ltrim(Storage::url($productImage), '/');
+
             return [
                 'id' => $item->id,
                 'product_id' => $productId,
@@ -130,9 +121,10 @@ class CartItemController extends Controller
                 'quantity' => $item->quantity,
                 'thumbnail_url' => $fullThumbnailUrl,
                 'variant' => $variantData,
+                'has_variants' => $hasVariant,
                 'available_variants' => $availableVariants,
             ];
-        });
+        })->filter()->values(); // Sử dụng filter() để loại bỏ các item null, đảm bảo mảng không có khoảng trống.
 
         // Tính tổng tiền
         $subtotal = $cart->items->sum(fn($item) => $item->price * $item->quantity);
@@ -141,7 +133,7 @@ class CartItemController extends Controller
             'cart_id' => $cart->id,
             'total_items' => $cart->items->sum('quantity'),
             'subtotal' => round($subtotal, 2),
-            'items' => $items->values(),
+            'items' => $items,
         ]);
     }
 
@@ -403,7 +395,10 @@ class CartItemController extends Controller
     protected function returnCartSummary($cart, $message)
     {
         // Reload the cart items to ensure latest data after operations
-        $cart->load('items');
+        $cart->load([
+            'items.variant.product',
+            'items.product',
+        ]);
         $totalItems = $cart->items->sum('quantity');
         $subtotal = $cart->items->sum(fn($item) => $item->price * $item->quantity);
 

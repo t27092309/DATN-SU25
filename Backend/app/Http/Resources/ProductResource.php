@@ -28,6 +28,9 @@ class ProductResource extends JsonResource
             'price' => $this->price ?? $this->variants->min('price') ?? 0, // Giá
             'brand' => $this->whenLoaded('brand', fn() => $this->brand->name ?? 'No Brand'), // Hãng
             'gender' => $this->gender ?? 'Unknown', // Giới tính
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'deleted_at' => $this->deleted_at,
         ];
 
         // Thêm trường cho trang chủ nếu query param 'for' = 'home'

@@ -340,44 +340,85 @@ const closeModal = () => {
   emit('update:isVisible', false);
 };
 
-const saveAddress = () => {
-  if (currentTab.value === 'existing') {
-    if (internalSelectedAddressId.value === null && props.addresses.length > 0) {
-      alert('Vui lòng chọn một địa chỉ.');
-      return;
-    }
-    emit('addressSelected', {
-      type: 'existing',
-      id: internalSelectedAddressId.value
-    });
-  } else { // currentTab === 'new'
-    const { recipient_name, phone_number, address_line, is_default } = internalNewAddressDetails.value;
-    const provinceName = provinces.value.find(p => p.code === selectedProvinceCode.value)?.name;
-    const districtName = districts.value.find(d => d.code === selectedDistrictCode.value)?.name;
-    const wardName = wards.value.find(w => w.code === selectedWardCode.value)?.name;
+const saveAddress = async () => {
+    if (currentTab.value === 'existing') {
+        if (internalSelectedAddressId.value === null && props.addresses.length > 0) {
+            alert('Vui lòng chọn một địa chỉ.');
+            return;
+        }
+        // This is correct and doesn't need to be changed.
+        emit('addressSelected', {
+            type: 'existing',
+            id: internalSelectedAddressId.value
+        });
+        closeModal();
+    } else { // currentTab === 'new'
+        const { recipient_name, phone_number, address_line, is_default } = internalNewAddressDetails.value;
+        const provinceName = provinces.value.find(p => p.code === selectedProvinceCode.value)?.name;
+        const districtName = districts.value.find(d => d.code === selectedDistrictCode.value)?.name;
+        const wardName = wards.value.find(w => w.code === selectedWardCode.value)?.name;
 
-    if (!recipient_name || !phone_number || !address_line || !selectedProvinceCode.value || !selectedDistrictCode.value || !selectedWardCode.value) {
-      alert('Vui lòng điền đầy đủ thông tin địa chỉ mới.');
-      return;
-    }
+        if (!recipient_name || !phone_number || !address_line || !provinceName || !districtName || !wardName) {
+            alert('Vui lòng điền đầy đủ thông tin địa chỉ mới.');
+            return;
+        }
 
-    emit('addressSelected', {
-      type: 'new',
-      details: {
-          recipient_name,
-          phone_number,
-          address_line,
-          ward: wardName,
-          district: districtName,
-          province: provinceName,
-          is_default: is_default || false,
-          province_code: selectedProvinceCode.value,
-          district_code: selectedDistrictCode.value,
-          ward_code: selectedWardCode.value,
-      }
-    });
-  }
-  closeModal();
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('Lỗi xác thực. Vui lòng đăng nhập lại.');
+                return;
+            }
+
+            const response = await axios.post('/user/addresses', { // Sử dụng baseURL đã được thiết lập
+                recipient_name: recipient_name,
+                phone_number: phone_number,
+                address_line: address_line,
+                ward: wardName,
+                district: districtName,
+                province: provinceName,
+                is_default: is_default,
+            });
+            
+            const newAddress = response.data.address;
+
+            // Bổ sung các bước sau khi thêm thành công:
+            
+            // 1. Thông báo thành công
+            alert(response.data.message);
+            
+            // 2. Thông báo cho component cha biết địa chỉ mới đã được thêm.
+            // Điều này quan trọng để component cha có thể cập nhật danh sách.
+            // Truyền cả object địa chỉ về.
+            emit('newAddressAdded', newAddress); 
+
+            // 3. Thông báo cho component cha biết địa chỉ này đã được chọn.
+            // Đây là bước quan trọng nhất để đồng bộ hóa.
+            // Bạn chỉ cần gửi ID của địa chỉ đã được chọn.
+            emit('addressSelected', {
+                type: 'existing',
+                id: newAddress.id,
+            });
+            
+            // 4. Đóng modal
+            closeModal();
+            
+        } catch (error) {
+            console.error("Lỗi khi thêm địa chỉ mới:", error);
+            if (error.response && error.response.status === 401) {
+                 alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            } else if (error.response && error.response.data && error.response.data.errors) {
+                const validationErrors = error.response.data.errors;
+                let errorMessages = 'Thông tin không hợp lệ:';
+                for (const key in validationErrors) {
+                    errorMessages += `\n- ${validationErrors[key][0]}`;
+                }
+                alert(errorMessages);
+            } else {
+                 alert('Đã có lỗi xảy ra. Vui lòng thử lại.');
+            }
+        }
+    }
 };
 
 // --- Lifecycle Hook ---

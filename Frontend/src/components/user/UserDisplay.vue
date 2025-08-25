@@ -21,14 +21,29 @@
             leave-to-class="opacity-0 transform scale-95 -translate-y-2">
             <div v-show="showDropdown" @mouseenter="handleDropdownEnter" @mouseleave="handleDropdownLeave"
                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                <router-link to="/tai-khoan"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">
-                    Tài khoản của tôi
-                </router-link>
-                <router-link to="/tai-khoan/don-hang"
-                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">
-                    Đơn mua
-                </router-link>
+                <!-- Menu cho user thường -->
+                <template v-if="authStore.user?.role === 'user'">
+                    <router-link to="/tai-khoan"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">
+                        Tài khoản của tôi
+                    </router-link>
+                    <router-link to="/tai-khoan/don-hang"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">
+                        Đơn mua
+                    </router-link>
+                </template>
+                
+                <!-- Menu cho admin/staff -->
+                <template v-if="authStore.user?.role === 'admin' || authStore.user?.role === 'staff'">
+                    <router-link to="/admin/dashboard"
+                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150">
+                        Quản lý Admin
+                    </router-link>
+                    <div class="px-4 py-2 text-xs text-gray-500">
+                        Vai trò: {{ getRoleDisplayName(authStore.user?.role) }}
+                    </div>
+                </template>
+                
                 <hr class="my-1 border-gray-200">
                 <button @click="handleLogout"
                     class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150">
@@ -85,6 +100,15 @@ const handleDropdownLeave = () => {
 const handleLogout = async () => {
     await authStore.logout();
     router.push('/');
+};
+
+const getRoleDisplayName = (role) => {
+    const roleNames = {
+        'admin': 'Administrator',
+        'staff': 'Staff',
+        'user': 'Customer'
+    };
+    return roleNames[role] || 'User';
 };
 </script>
 

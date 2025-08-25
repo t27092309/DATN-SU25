@@ -279,6 +279,18 @@ const menuItems = ref([
     icon: "fas fa-images",
     isOpen: false,
   },
+  {
+    name: "Người dùng",
+    route: "/admin/users",
+    icon: "fas fa-users",
+    isOpen: false,
+  },
+  {
+    name: "Vai trò & Quyền",
+    route: "/admin/roles",
+    icon: "fas fa-user-shield",
+    isOpen: false,
+  },
 ]);
 
 const toggleSubMenu = (item) => {
