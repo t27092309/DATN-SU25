@@ -51,8 +51,8 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ brand.name || "Không có" }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ brand.slug || "Không có" }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <img v-if="brand.logo" :src="brand.logo" alt="Brand Logo"
-                      class="w-12 h-12 object-contain rounded" />
+                    <img v-if="brand.logo_url" :src="brand.logo_url" alt="Brand Logo"
+                      class="w-20 h-20 object-contain rounded" />
                     <span v-else>Không có</span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

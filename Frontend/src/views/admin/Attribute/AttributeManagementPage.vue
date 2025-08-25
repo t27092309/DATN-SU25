@@ -125,7 +125,7 @@ const isLoadingValues = ref(false); // <-- Thêm biến này
 
 const fetchAttributes = async () => {
   try {
-    const response = await axios.get('/admin/attributes', {
+    const response = await axios.get('admin/attributes', {
       params: {
         page: currentPage.value,
         per_page: itemsPerPage.value
@@ -140,6 +140,9 @@ const fetchAttributes = async () => {
       } else {
         totalPages.value = response.data.last_page || 1;
         currentPage.value = response.data.current_page || 1;
+      }
+      if (attributes.value.length === 0) {
+        console.log("Chưa có thuộc tính");
       }
     } else {
       attributes.value = [];
@@ -176,10 +179,10 @@ const openAttributeModal = (attr = null) => {
 const saveAttribute = async (attributeToSave) => {
   try {
     if (attributeToSave.id) {
-      await axios.put(`/admin/attributes/${attributeToSave.id}`, attributeToSave);
+      await axios.put(`admin/attributes/${attributeToSave.id}`, attributeToSave);
       toast.success('Thuộc tính đã được cập nhật thành công!');
     } else {
-      await axios.post('/admin/attributes', attributeToSave);
+      await axios.post('admin/attributes', attributeToSave);
       toast.success('Thuộc tính đã được thêm mới thành công!');
     }
     showAttributeModal.value = false;
@@ -201,7 +204,7 @@ const saveAttribute = async (attributeToSave) => {
 const deleteAttribute = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa thuộc tính này không? Thao tác này sẽ xóa tất cả các giá trị và liên kết của thuộc tính này.')) {
     try {
-      await axios.delete(`/admin/attributes/${id}`);
+      await axios.delete(`admin/attributes/${id}`);
       toast.success('Thuộc tính đã được xóa thành công!');
       if (attributes.value.length === 1 && currentPage.value > 1) {
         currentPage.value--;
@@ -234,7 +237,7 @@ const handleSelectAttribute = (attr) => {
 const fetchAttributeValues = async (attributeId) => {
   isLoadingValues.value = true; // Bật loading
   try {
-    const response = await axios.get(`/admin/attributes/${attributeId}/values`);
+    const response = await axios.get(`admin/attributes/${attributeId}/values`);
     attributeValues.value = response.data.data;
   } catch (error) {
     console.error('Lỗi khi lấy giá trị thuộc tính:', error);
@@ -264,10 +267,10 @@ const openValueModal = (val = null) => {
 const saveAttributeValue = async (valueToSave) => {
   try {
     if (valueToSave.id) {
-      await axios.put(`/admin/attribute-values/${valueToSave.id}`, valueToSave);
+      await axios.put(`admin/attribute-values/${valueToSave.id}`, valueToSave);
       toast.success('Giá trị đã được cập nhật thành công!');
     } else {
-      await axios.post('/admin/attribute-values', valueToSave);
+      await axios.post('admin/attribute-values', valueToSave);
       toast.success('Giá trị đã được thêm mới thành công!');
     }
     showValueModal.value = false;
@@ -289,7 +292,7 @@ const saveAttributeValue = async (valueToSave) => {
 const deleteAttributeValue = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa giá trị này không?')) {
     try {
-      await axios.delete(`/admin/attribute-values/${id}`);
+      await axios.delete(`admin/attribute-values/${id}`);
       toast.success('Giá trị đã được xóa thành công!');
       fetchAttributeValues(selectedAttribute.value.id);
     } catch (error) {

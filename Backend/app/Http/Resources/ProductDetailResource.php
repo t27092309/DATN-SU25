@@ -28,13 +28,15 @@ class ProductDetailResource extends JsonResource
             'has_variants' => $this->has_variants,
 
             // Include brand_name when the 'brand' relationship is loaded
-            'brand_id' => $this->brand_id, // Still good to include the ID
-            'brand_name' => $this->whenLoaded('brand', function () {
-                return $this->brand->name;
-            },null),
-            'brand_slug' => $this->whenLoaded('brand', function () {
-                return $this->brand->slug;
-            }),
+            'brand' => $this->whenLoaded('brand', function () {
+                return [
+                    'id' => $this->brand->id,
+                    'name' => $this->brand->name,
+                    'slug' => $this->brand->slug,
+                    // Thêm trường logo ở đây
+                    'logo' => $this->brand->logo ? config('app.url') . '/' . ltrim(Storage::url($this->brand->logo), '/') : null,
+                ];
+            }, null), // Trả về null nếu relationship 'brand' không được tải
 
             // Include category_name when the 'category' relationship is loaded
             'category_id' => $this->category_id, // Still good to include the ID

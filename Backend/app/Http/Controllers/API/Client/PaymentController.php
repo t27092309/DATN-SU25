@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 
@@ -104,7 +105,7 @@ class PaymentController extends Controller
             'partnerCode' => $partnerCode,
             'accessKey' => $accessKey,
             'requestId' => $requestId,
-            'amount' => (int)$amount, // Đảm bảo là số nguyên
+            'amount' => (int) $amount, // Đảm bảo là số nguyên
             'orderId' => $momoOrderId,
             'orderInfo' => $orderInfo,
             'redirectUrl' => $redirectUrl,
@@ -261,13 +262,67 @@ class PaymentController extends Controller
 
     public function handleVnpayCallback(Request $request)
     {
-        return response()->json([
-            'message' => 'VNPAY callback received',
-            'data' => $request->all()
-        ]);
+        $data = $request->all();
+
+        Log::info('VNPAY callback received', $data);
+
+        try {
+            // Lấy order_id từ vnp_TxnRef (ví dụ: "29_29_1755768219" => 29 là order_id)
+            $txnRef = $data['vnp_TxnRef'] ?? null;
+            $orderId = null;
+
+            if ($txnRef) {
+                $parts = explode('_', $txnRef);
+                $orderId = $parts[0] ?? null;
+            }
+
+            if (!$orderId) {
+                return response()->json(['message' => 'Order ID not found in vnp_TxnRef'], 400);
+            }
+
+            $order = Order::find($orderId);
+            if (!$order) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            // Kiểm tra payment đã tồn tại hay chưa
+            $payment = Payment::where('order_id', $orderId)->first();
+
+            if (!$payment) {
+                $payment = new Payment();
+                $payment->order_id = $orderId;
+            }
+
+            // Cập nhật thông tin payment
+            $payment->payment_method = 'vnpay';
+            $payment->amount = ($data['vnp_Amount'] ?? 0) / 100; // VNPAY trả về nhân 100
+            $payment->transaction_id = $data['vnp_TransactionNo'] ?? null;
+            $payment->payer_id = $data['vnp_BankCode'] ?? null;
+            $payment->payment_details = $data;
+
+            if (($data['vnp_ResponseCode'] ?? null) === '00' && ($data['vnp_TransactionStatus'] ?? null) === '00') {
+                $payment->payment_status = Payment::PAYMENT_STATUS_PAID;
+                $payment->paid_at = Carbon::now();
+
+                // Update order status -> processing
+                $order->status = 'processing';
+                $order->save();
+            } else {
+                $payment->payment_status = Payment::PAYMENT_STATUS_FAILED;
+            }
+
+            $payment->save();
+
+            // Redirect về FE (xem chi tiết đơn hàng)
+            return redirect()->away("http://localhost:5173/tai-khoan/chi-tiet-don-hang/{$order->id}");
+
+        } catch (\Exception $e) {
+            Log::error('VNPAY callback error: ' . $e->getMessage());
+            return response()->json(['message' => 'Internal Server Error'], 500);
+        }
     }
 
-public function handleMomoIpn(Request $request)
+    public function handleMomoIpn(Request $request)
     {
         Log::info('MoMo IPN: --- BẮT ĐẦU XỬ LÝ IPN REQUEST ---');
         Log::info('MoMo IPN: Raw Request Data.', ['raw_data' => $request->all()]);
@@ -290,9 +345,18 @@ public function handleMomoIpn(Request $request)
 
         // Lấy tất cả các trường cần thiết để tạo chữ ký, đảm bảo chúng tồn tại
         $requiredFields = [
-            'partnerCode', 'accessKey', 'requestId', 'amount', 'orderId',
-            'orderInfo', 'message', 'localMessage', 'responseTime',
-            'errorCode', 'transId', 'extraData'
+            'partnerCode',
+            'accessKey',
+            'requestId',
+            'amount',
+            'orderId',
+            'orderInfo',
+            'message',
+            'localMessage',
+            'responseTime',
+            'errorCode',
+            'transId',
+            'extraData'
         ];
 
         foreach ($requiredFields as $field) {
@@ -356,8 +420,8 @@ public function handleMomoIpn(Request $request)
         // Kiểm tra cấu trúc JSON bạn lưu, có thể là `->first()` thay vì `->firstWhere()`
         // Hoặc dùng: where('payment_details->momo_order_id_request', $orderId)
         $payment = Payment::where('transaction_id', $transId) // MoMo transId là duy nhất và đáng tin cậy hơn
-                            ->orWhereJsonContains('payment_details->momo_order_id_request', $orderId)
-                            ->first();
+            ->orWhereJsonContains('payment_details->momo_order_id_request', $orderId)
+            ->first();
 
         if (!$payment) {
             Log::warning('MoMo IPN: Payment record not found for MoMo orderId/transId. orderId: ' . $orderId . ', transId: ' . $transId, $momoIpnData);

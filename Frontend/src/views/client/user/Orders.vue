@@ -7,7 +7,8 @@
         :class="['flex-shrink-0 px-3 sm:px-6 py-3 text-base font-medium border-b-2 transition-colors duration-200 flex items-center justify-center',
           activeTab === tab.value ? 'border-red-600 text-red-600' : 'border-transparent text-gray-700 hover:text-red-600 hover:border-red-100']">
         <span>{{ tab.label }}</span>
-        <span v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled'].includes(tab.value)"
+        <span
+          v-if="tab.count !== undefined && tab.count > 0 && !['all', 'delivered', 'cancelled', 'refunded', 'return_and_refund'].includes(tab.value)"
           class="ml-2 text-xs px-2 py-1 rounded-full bg-red-500 text-white font-bold">{{ tab.count }}</span>
       </button>
     </div>
@@ -30,7 +31,8 @@
       <span class="block sm:inline"> {{ error }}</span>
     </div>
 
-    <div v-else-if="orders.length === 0" class="text-center py-10 text-gray-500 text-lg bg-white rounded-lg shadow-sm">
+    <div v-else-if="!orders || orders.length === 0"
+      class="text-center py-10 text-gray-500 text-lg bg-white rounded-lg shadow-sm">
       Không có đơn hàng nào trong mục này.
     </div>
 
@@ -65,6 +67,16 @@
               {{ formatCurrency(item.price_each) }}
             </span>
           </div>
+          <div class="flex flex-col ml-4">
+            <button v-if="order.status === 'delivered' && !item.has_review" @click="reviewProduct(item)"
+              class="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-sm mb-2">
+              Đánh Giá
+            </button>
+            <button v-else-if="order.status === 'delivered' && item.has_review" @click="viewReview(item)"
+              class="px-4 py-2 text-sm bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 shadow-sm">
+              Xem Đánh Giá
+            </button>
+          </div>
         </div>
 
         <div class="text-right mb-4">
@@ -90,10 +102,32 @@
             </router-link>
           </template>
           <template v-else-if="order.status === 'delivered'">
+            <button @click="requestReturn(order.id)"
+              class="px-6 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors duration-200 shadow-sm">
+              Yêu Cầu Trả Hàng
+            </button>
             <button @click="reorder(order.id)"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm">
               Mua Lại
             </button>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
+          </template>
+          <template v-else-if="order.status === 'return_requested'">
+            <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+              Vui lòng chờ shop xử lý yêu cầu.
+            </p>
+            <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
+              class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
+              Xem Chi Tiết
+            </router-link>
+          </template>
+          <template v-else-if="order.status === 'refunded'">
+            <p class="text-xs text-gray-500 text-right sm:text-left flex-1 leading-relaxed">
+              Đơn hàng đã được hoàn tiền
+            </p>
             <router-link :to="{ name: 'OrderDetail', params: { idDonHang: order.id } }"
               class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors duration-200 shadow-sm text-center">
               Xem Chi Tiết
@@ -159,6 +193,9 @@
         </button>
       </div>
     </div>
+
+    <ReviewPopup :visible="showReviewPopup" :order-item-id="currentOrderItemId" :product-name="currentProductName"
+      :product-image="currentProductImage" @close="showReviewPopup = false" @submitted="handleReviewSubmitted" />
   </div>
 </template>
 
@@ -167,25 +204,34 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
+import ReviewPopup from '@/components/ReviewPopup.vue';
 
 const api = axios;
 const router = useRouter();
 
+const showReviewPopup = ref(false);
+const currentOrderItemId = ref(null);
+const currentProductName = ref('');
+const currentProductImage = ref('');
+
 const orders = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
-const activeTab = ref('all'); // Mặc định hiển thị tất cả
-const pagination = ref({}); // Dữ liệu phân trang từ API
-const searchQuery = ref(''); // Biến cho input tìm kiếm
+const activeTab = ref('all');
+const pagination = ref({});
+const searchQuery = ref('');
 
-// Định nghĩa lại các tab để phù hợp với trạng thái backend
+
 const orderTabs = ref([
   { label: 'Tất cả', value: 'all', count: 0 },
   { label: 'Chờ xác nhận', value: 'pending', count: 0 },
   { label: 'Đang xử lý', value: 'processing', count: 0 },
   { label: 'Đang giao hàng', value: 'shipped', count: 0 },
   { label: 'Đã giao hàng', value: 'delivered', count: 0 },
+  { label: 'Trả hàng', value: 'return_requested', count: 0 },
+  { label: 'Hoàn tiền', value: 'refunded', count: 0 },
   { label: 'Đã hủy', value: 'cancelled', count: 0 },
+  { label: 'Hoàn trả', value: 'return_and_refund', count: 0 }, // TAB MỚI: Gộp hai trạng thái
 ]);
 
 const showSuccess = (message) => {
@@ -207,23 +253,73 @@ const showError = (message) => {
   });
 };
 
+
+const reviewProduct = (item) => {
+  currentOrderItemId.value = item.id;
+  currentProductName.value = item.product_name;
+  currentProductImage.value = item.product_image;
+  showReviewPopup.value = true;
+};
+
+const handleReviewSubmitted = () => {
+  showReviewPopup.value = false;
+
+  // 1. Tìm và cập nhật OrderItem trong danh sách orders
+  const order = orders.value.find(o => o.items.some(item => item.id === currentOrderItemId.value));
+  if (order) {
+    const item = order.items.find(i => i.id === currentOrderItemId.value);
+    if (item) {
+      // Cập nhật trạng thái has_review của sản phẩm đó
+      item.has_review = true;
+    }
+  }
+
+  // 2. (Tùy chọn) Gọi lại API nếu cần thiết để đảm bảo dữ liệu luôn mới nhất
+  // Bỏ dòng này nếu bạn muốn tối ưu hiệu suất và chỉ cập nhật frontend
+  // fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
+
+  showSuccess('Đánh giá của bạn đã được gửi thành công!');
+};
+const viewReview = async (item) => {
+  // Lấy ID của đánh giá từ order item
+  // Giả định bạn có một route để xem đánh giá theo order_item_id
+  router.push({ name: 'ProductDetail', params: { slug: item.slug } });
+
+  // Hoặc bạn có thể dùng popup để hiển thị đánh giá
+  // try {
+  //   const response = await api.get(`/reviews/order-item/${item.id}`);
+  //   const review = response.data;
+  //   Swal.fire({
+  //     title: 'Đánh giá của bạn',
+  //     html: `
+  //       <p>Rating: ${review.rating} sao</p>
+  //       <p>Bình luận: ${review.comment}</p>
+  //     `,
+  //     icon: 'info'
+  //   });
+  // } catch (error) {
+  //   showError('Không thể tải đánh giá. Vui lòng thử lại.');
+  // }
+};
+
 const fetchOrders = async (status = 'all', page = 1, search = '') => {
   isLoading.value = true;
   error.value = null;
-  orders.value = []; // Clear current orders before fetching
+  orders.value = [];
   try {
     let url = `orders?page=${page}`;
-    if (status !== 'all') {
+    if (status === 'return_and_refund') {
+      url += `&statuses[]=return_requested&statuses[]=refunded`; // Gửi cả hai trạng thái lên API
+    } else if (status !== 'all') {
       url += `&status=${status}`;
+
     }
+
     if (search) {
-      url += `&search=${search}`; // Thêm query tìm kiếm
+      url += `&search=${search}`;
     }
 
     const response = await api.get(url);
-
-    // --- ADD CONSOLE.LOG HERE ---
-    console.log('API Response data:', response.data);
 
     orders.value = response.data.orders;
     pagination.value = response.data.pagination;
@@ -239,56 +335,60 @@ const fetchOrders = async (status = 'all', page = 1, search = '') => {
     isLoading.value = false;
   }
 };
-// Helper Function
+
+
 const formatDate = (datetimeString) => {
   if (!datetimeString) return 'N/A';
   const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
   return new Date(datetimeString).toLocaleDateString('vi-VN', options);
 };
-// MỚI: Hàm để lấy số lượng đơn hàng cho từng trạng thái
+
+// CẬP NHẬT: Lấy số lượng đơn hàng cho tab "Hoàn trả"
 const fetchOrderCounts = async () => {
   try {
-    const response = await api.get('orders/counts'); // Gọi API mới
+    const response = await api.get('orders/counts');
     const counts = response.data.counts;
     orderTabs.value.forEach(tab => {
-      if (counts[tab.value] !== undefined) {
+      if (tab.value === 'returns') {
+        tab.count = (counts['return_requested'] || 0) + (counts['refunded'] || 0);
+      } else if (counts[tab.value] !== undefined) {
         tab.count = counts[tab.value];
       }
     });
+
+    // Tính tổng số lượng cho tab "Hoàn trả"
+    const totalReturnAndRefund = (counts['return_requested'] || 0) + (counts['refunded'] || 0);
+    const returnAndRefundTab = orderTabs.value.find(tab => tab.value === 'return_and_refund');
+    if (returnAndRefundTab) {
+      returnAndRefundTab.count = totalReturnAndRefund;
+    }
   } catch (err) {
     console.error('Lỗi khi tải số lượng đơn hàng:', err);
   }
 };
 
-
-
-// Watch activeTab changes to refetch orders
 watch(activeTab, (newTab) => {
-  fetchOrders(newTab, 1, searchQuery.value); // Reset về trang 1 khi đổi tab
+  fetchOrders(newTab, 1, searchQuery.value);
 });
 
-// Watch searchQuery changes to refetch orders (debounce for better performance)
 let searchTimeout = null;
 watch(searchQuery, (newSearch) => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    fetchOrders(activeTab.value, 1, newSearch); // Reset về trang 1 khi tìm kiếm
-  }, 500); // Debounce 500ms
+    fetchOrders(activeTab.value, 1, newSearch);
+  }, 500);
 });
-
 
 onMounted(() => {
   fetchOrders(activeTab.value);
-  fetchOrderCounts(); // Gọi khi component được mount
+  fetchOrderCounts();
 });
 
-// --- Helper Functions ---
 const formatCurrency = (value) => {
   if (value === null || value === undefined || isNaN(value)) return '0₫';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
-// Ánh xạ trạng thái từ backend sang hiển thị và màu sắc
 const getStatusText = (status) => {
   switch (status) {
     case 'pending': return 'Chờ xác nhận';
@@ -296,23 +396,32 @@ const getStatusText = (status) => {
     case 'shipped': return 'Đang giao hàng';
     case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
+    case 'return_requested': return 'Đang xử lý hoàn trả';
+    case 'refunded': return 'Đã hoàn tiền'; // Giữ nguyên text cho trạng thái đã hoàn tiền
     default: return 'Không rõ';
   }
 };
 
+
+
+
 const getStatusClass = (status) => {
   switch (status) {
-    case 'pending': return 'text-yellow-600'; // Chờ xác nhận
-    case 'processing': return 'text-blue-600'; // Đang xử lý
-    case 'shipped': return 'text-purple-600'; // Đang giao hàng
-    case 'delivered': return 'text-green-600'; // Đã giao hàng
-    case 'cancelled': return 'text-gray-500'; // Đã hủy
+    case 'pending': return 'text-yellow-600';
+    case 'processing': return 'text-blue-600';
+    case 'shipped': return 'text-purple-600';
+    case 'delivered': return 'text-green-600';
+    case 'cancelled': return 'text-gray-500';
+    case 'return_requested': return 'text-orange-600';
+    case 'refunded': return 'text-pink-600';
+
     default: return 'text-gray-800';
   }
 };
 
-// --- Action Handlers ---
-const markAsDelivered = async (orderId) => { // Đổi tên biến từ idDonHang thành orderId cho rõ ràng
+// Action Handlers
+
+const markAsDelivered = async (orderId) => {
   Swal.fire({
     title: 'Xác nhận đã nhận hàng?',
     text: 'Bạn có chắc chắn muốn xác nhận đã nhận hàng cho đơn này không?',
@@ -325,20 +434,19 @@ const markAsDelivered = async (orderId) => { // Đổi tên biến từ idDonHan
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await api.post(`orders/${orderId}/mark-delivered`); // Đảm bảo URL chính xác
-        showSuccess(response.data.message); // Sử dụng SweetAlert2
-        // Tải lại danh sách đơn hàng và cập nhật số lượng
+        const response = await api.post(`orders/${orderId}/mark-delivered`);
+        showSuccess(response.data.message);
         fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
         fetchOrderCounts();
       } catch (err) {
         console.error('Lỗi khi đánh dấu đã nhận hàng:', err);
-        showError(err.response?.data?.message || 'Không thể đánh dấu đã nhận hàng. Vui lòng thử lại.'); // Lấy lỗi từ API
+        showError(err.response?.data?.message || 'Không thể đánh dấu đã nhận hàng. Vui lòng thử lại.');
       }
     }
   });
 };
 
-const cancelOrder = async (orderId) => { // Đổi tên biến từ idDonHang thành orderId cho rõ ràng
+const cancelOrder = async (orderId) => {
   Swal.fire({
     title: 'Hủy đơn hàng?',
     text: 'Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.',
@@ -351,20 +459,18 @@ const cancelOrder = async (orderId) => { // Đổi tên biến từ idDonHang th
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const response = await api.post(`orders/${orderId}/cancel`); // Đảm bảo URL chính xác
-        showSuccess(response.data.message); // Sử dụng SweetAlert2
-        // Tải lại danh sách đơn hàng và cập nhật số lượng
+        const response = await api.post(`orders/${orderId}/cancel`);
+        showSuccess(response.data.message);
         fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
         fetchOrderCounts();
       } catch (err) {
         console.error('Lỗi khi hủy đơn hàng:', err);
-        showError(err.response?.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại.'); // Lấy lỗi từ API
+        showError(err.response?.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại.');
       }
     }
   });
 };
 
-// Hàm mới để mua lại đơn hàng
 const reorder = async (orderId) => {
   Swal.fire({
     title: 'Mua lại đơn hàng?',
@@ -380,10 +486,47 @@ const reorder = async (orderId) => {
       try {
         const response = await api.post(`orders/${orderId}/reorder`);
         showSuccess(response.data.message);
-        router.push({ name: 'GioHang' }); // Chuyển hướng đến trang giỏ hàng
+        router.push({ name: 'GioHang' });
       } catch (err) {
         console.error('Lỗi khi mua lại đơn hàng:', err);
         showError(err.response?.data?.message || 'Không thể mua lại đơn hàng. Vui lòng thử lại.');
+      }
+    }
+  });
+};
+
+const requestReturn = async (orderId) => {
+  Swal.fire({
+    title: 'Yêu cầu trả hàng?',
+    html: `
+      <p class="text-sm text-gray-600 mb-4">Bạn có chắc chắn muốn yêu cầu trả hàng cho đơn này không? Yêu cầu sẽ được gửi đến người bán để xử lý.</p>
+      <textarea id="return-reason" class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" placeholder="Lý do trả hàng..." rows="4"></textarea>
+    `,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#00B060',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Gửi yêu cầu',
+    cancelButtonText: 'Hủy',
+    preConfirm: () => {
+      const reason = Swal.getPopup().querySelector('#return-reason').value;
+      if (!reason) {
+        Swal.showValidationMessage('Vui lòng nhập lý do trả hàng.');
+      }
+      return { reason: reason };
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await api.post(`orders/${orderId}/request-return`, {
+          reason: result.value.reason
+        });
+        showSuccess(response.data.message);
+        fetchOrders(activeTab.value, pagination.value.current_page, searchQuery.value);
+        fetchOrderCounts();
+      } catch (err) {
+        console.error('Lỗi khi gửi yêu cầu trả hàng:', err);
+        showError(err.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng thử lại.');
       }
     }
   });

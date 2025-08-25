@@ -10,10 +10,13 @@ use App\Http\Controllers\Api\Admin\AttributeValueController as AttributeValueCon
 use App\Http\Controllers\Api\Admin\ScentGroupController as AdminScentGroupController;
 use App\Http\Controllers\Api\Admin\ShippingMethodController as AdminShippingMethodController;
 use App\Http\Controllers\API\Admin\AuthController;
+use App\Http\Controllers\API\Admin\BannerController;
+use App\Http\Controllers\api\admin\ChartController;
 use App\Http\Controllers\API\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\API\Admin\OrderController;
 use App\Http\Controllers\API\Client\CartItemController;
 use App\Http\Controllers\API\Client\CheckoutController;
+use App\Http\Controllers\Api\Client\ClientBrandController;
 use App\Http\Controllers\API\Client\OrderController as ClientOrderController;
 use App\Http\Controllers\API\Client\PaymentMethodController as ClientPaymentMethodController;
 use App\Http\Controllers\API\Client\ProductVariantController;
@@ -25,10 +28,15 @@ use App\Http\Controllers\API\Client\UserAddressController;
 use App\Http\Controllers\API\Client\LocationController;
 use App\Http\Controllers\Api\OrderLookupController;
 use App\Http\Controllers\API\Client\PaymentController;
+use App\Http\Controllers\API\Client\ReviewController as ClientReviewController;
+use App\Http\Controllers\API\Client\ProductReviewController;
+use App\Http\Controllers\API\Client\UserController;
+use App\Http\Controllers\API\BannerController as ClientBannerController;
 
 // Payment API (public, no auth required)
-Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
+// route thanh toán cho Client
+Route::post('/payment/vnpay/create', [PaymentController::class, 'createVnpayPayment']);
 Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
 Route::post('/payment/momo/ipn', [PaymentController::class, 'handleMomoIpn']);
 Route::middleware([CorsMiddleware::class])->group(function () {
@@ -51,13 +59,14 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
 
 
+        Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
 
         // Hồ sơ người dùng
         Route::get('/user/profile', [UserProfileController::class, 'show']);
-        Route::put('/user/profile', [UserProfileController::class, 'update']);
+        Route::post('/user/profile/update', [UserProfileController::class, 'update']);
 
         // Địa chỉ người dùng
         Route::get('/user/addresses', [UserAddressController::class, 'index']);
@@ -79,12 +88,23 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::post('/{order}/mark-delivered', [ClientOrderController::class, 'markAsDelivered']);
             Route::post('/{order}/cancel', [ClientOrderController::class, 'cancelOrder']);
             Route::post('/{order}/reorder', [ClientOrderController::class, 'reorder']);
+            Route::post('/{order}/request-return', [ClientOrderController::class, 'requestReturn']);
+        });
+
+        Route::prefix('reviews')->controller(ClientReviewController::class)->group(function () {
+            Route::post('/', 'store'); // Lưu ý, route này đã được đặt tên là `store` trong controller của bạn
+            Route::post('/check-status', 'checkStatus');
         });
 
 
         //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
+        // Thay đổi thông tin cá nhân
+        Route::get('/user/profile', [UserController::class, 'getProfile']);
+        Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
+        Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
+        Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
         // Route admin (yêu cầu quyền admin:full-access)
         Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
             //route quản lí đơn hàng bên admin
@@ -94,12 +114,27 @@ Route::middleware([CorsMiddleware::class])->group(function () {
                 Route::patch('{order}/status', 'updateStatus');
                 Route::put('{order}/note', 'updateNote');
                 Route::get('{order}/payments', 'getPayments');
+                Route::get('/returns/requested', 'getReturnRequests');
+                Route::post('/{order}/returns/approve', 'approveReturn');
+                Route::post('/{order}/returns/reject', 'rejectReturn');
+                Route::post('/{order}/returns/received', 'markAsReturned');
+                Route::post('/{order}/returns/refund', 'refundOrder');
             });
 
             //Route quản lý kho hàng bên admin
             Route::get('inventory/overview', [AdminInventoryController::class, 'overview']);
             Route::post('inventory/adjust-stock', [AdminInventoryController::class, 'adjustStock']);
             Route::get('/inventory', [AdminInventoryController::class, 'index']);
+
+            //Bieu do`
+            Route::get('/reports/summary', [ChartController::class, 'getSummaryReport']);
+            Route::get('/reports/products', [ChartController::class, 'getProductsReport']);
+            Route::get('/reports/customers', [ChartController::class, 'getCustomersReport']);
+            Route::get('/reports/weekly-revenue', [ChartController::class, 'getWeeklyRevenue']);
+            Route::get('/reports/monthly-revenue', [ChartController::class, 'getMonthlyRevenue']);
+            Route::get('/reports/yearly-revenue', [ChartController::class, 'getYearlyRevenue']);
+            Route::get('/reports/customer-growth', [ChartController::class, 'getCustomerGrowth']);
+            Route::get('/reports/top-coupons', [ChartController::class, 'getTopCoupons']);
 
 
             Route::apiResource('shipping-methods', AdminShippingMethodController::class);
@@ -155,9 +190,14 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            // Nhóm banner
+            Route::apiResource('banners', BannerController::class);
         });
     });
 
+
+    Route::get('banners', [ClientBannerController::class, 'index']);
+    Route::get('client/brands', [ClientBrandController::class, 'index']);
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);
@@ -178,6 +218,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
     Route::get('/detailproducts/{slug}', [ClientProductController::class, 'ShowBySlug']);
     //test postman:   http://localhost:8000/api/detailproducts/đường dẫn slug
     Route::get('/products/search', [ClientProductController::class, 'search']);
+    Route::get('products/{slug}/reviews', [ProductReviewController::class, 'index']);
 });
 
 // use Illuminate\Support\Facades\Route;

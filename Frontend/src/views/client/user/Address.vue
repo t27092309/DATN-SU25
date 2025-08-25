@@ -65,7 +65,7 @@
     <div v-if="showUpdateModal"
       class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div ref="updateModalRef"
-        class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-lg transform scale-100 transition-all duration-300 ease-out">
+        class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl transform scale-100 transition-all duration-300 ease-out">
         <h3 class="text-2xl font-semibold mb-6 text-gray-800">Cập nhật Địa chỉ</h3>
         <form @submit.prevent="saveUpdatedAddress">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -125,7 +125,7 @@
             </div>
           </div>
 
-          <div class="flex items-center space-x-4 mb-6">
+          <!-- <div class="flex items-center space-x-4 mb-6">
             <label class="inline-flex items-center cursor-pointer">
               <input type="checkbox" v-model="currentAddress.is_return_address"
                 class="form-checkbox h-5 w-5 text-blue-600 rounded" />
@@ -136,7 +136,7 @@
                 class="form-checkbox h-5 w-5 text-blue-600 rounded" />
               <span class="ml-2 text-gray-700">Địa chỉ lấy hàng</span>
             </label>
-          </div>
+          </div> -->
 
           <div class="flex justify-end space-x-3">
             <button type="button" @click="showUpdateModal = false"
@@ -214,13 +214,13 @@
             </div>
           </div>
 
-          <div class="flex items-center space-x-4 mb-6">
+          <!-- <div class="flex items-center space-x-4 mb-6">
             <label class="inline-flex items-center cursor-pointer">
               <input type="checkbox" v-model="newAddress.set_as_default"
                 class="form-checkbox h-5 w-5 text-green-600 rounded" />
               <span class="ml-2 text-gray-700">Đặt làm địa chỉ mặc định</span>
             </label>
-          </div>
+          </div> -->
 
           <div class="flex justify-end space-x-3">
             <button type="button" @click="showAddModal = false"

@@ -1,11 +1,11 @@
 <template>
-  <div v-if="attributeValues.length === 0" class="text-center text-gray-500 py-16 text-xl">
+  <div v-if="sortedAttributeValues.length === 0" class="text-center text-gray-500 py-16 text-xl">
     <p class="mb-4">Chưa có giá trị nào cho thuộc tính này.</p>
     <p>Hãy thêm giá trị mới!</p>
   </div>
   <ul v-else class="divide-y divide-gray-200">
     <li
-      v-for="val in attributeValues"
+      v-for="val in sortedAttributeValues"
       :key="val.id"
       class="py-5 px-4 -mx-4 flex justify-between items-center hover:bg-gray-50 transition-colors duration-200 rounded-lg"
     >
@@ -35,9 +35,9 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 
-defineProps({
+const props = defineProps({
   attributeValues: {
     type: Array,
     required: true,
@@ -45,4 +45,20 @@ defineProps({
 });
 
 defineEmits(['edit-value', 'delete-value']);
+
+// Hàm để tách số từ chuỗi (ví dụ: "1ml" -> 1, "25ml" -> 25)
+const extractNumber = (str) => {
+  const match = str.match(/\d+(\.\d+)?/);
+  return match ? parseFloat(match[0]) : Infinity;
+};
+
+// Sử dụng computed property để sắp xếp mảng
+const sortedAttributeValues = computed(() => {
+  // Tạo một bản sao để tránh thay đổi prop trực tiếp
+  return [...props.attributeValues].sort((a, b) => {
+    const numA = extractNumber(a.value);
+    const numB = extractNumber(b.value);
+    return numA - numB;
+  });
+});
 </script>

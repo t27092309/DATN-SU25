@@ -11,10 +11,10 @@
               <div class="flex text-yellow-400 mr-2">
                 <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9734;</span>
               </div>
-              <span class="text-sm text-gray-600">(9 đánh giá)</span>
+              <span class="text-sm text-gray-600">({{ totalReviews }} đánh giá)</span>
               <span class="mx-2 text-gray-300">|</span>
-              <span class="text-sm text-gray-600" v-if="selectedVariantStock !== 'N/A'">Đã bán {{
-                formatSold(product.variants) }}</span>
+              <span class="text-sm text-gray-600" v-if="selectedVariantSold !== 'N/A'">Đã bán {{ selectedVariantSold
+              }}</span>
               <span class="mx-2 text-gray-300" v-if="selectedVariantStock !== 'N/A'">|</span>
               <span class="text-sm text-gray-600" v-if="selectedVariantStock !== 'N/A'">Tồn kho: {{
                 selectedVariantStock }}</span>
@@ -23,7 +23,7 @@
 
             <div class="mb-4">
               <span class="font-semibold text-gray-600">Thương hiệu:</span>
-              <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand_name }}</a>
+              <a href="#" class="text-blue-600 hover:underline ml-2">{{ product.brand.name }}</a>
             </div>
             <div class="mb-4">
               <span class="font-semibold text-gray-600">Loại sản phẩm:</span>
@@ -34,7 +34,10 @@
             </div>
             <div class="mb-6">
               <span class="font-semibold text-gray-600">Tình trạng:</span>
-              <span
+              <span v-if="selectedVariantStatus === 'pending_selection'" class="font-bold ml-2 text-gray-500">
+                Vui lòng chọn thuộc tính sản phẩm
+              </span>
+              <span v-else
                 :class="['font-bold ml-2', selectedVariantStatus === 'available' ? 'text-green-600' : 'text-red-600']">
                 {{ selectedVariantStatus === 'available' ? 'Còn hàng' : 'Hết hàng / Ngừng kinh doanh' }}
               </span>
@@ -123,9 +126,9 @@
 
       <div class="w-full lg:w-[310px] lg:flex-shrink-0">
         <div class="p-4 border border-gray-200 rounded-lg shadow-sm">
-          <button class="w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 font-semibold mb-6">
-            {{ product.brand_id ? `Brand ID: ${product.brand_id}` : 'Thương hiệu không rõ' }}
-          </button>
+          <div v-if="product.brand" class="mb-6 flex justify-center">
+            <img :src="product.brand.logo" :alt="product.brand.name + ' logo'" class="max-h-[60px] w-auto" />
+          </div>
           <h3 class="text-center font-bold text-gray-800 mb-4">MÙI HƯƠNG CHÍNH (ACCORDS)</h3>
           <p class="text-center text-gray-500 text-xs italic mb-6">
             (*click tên nhóm hương để tìm hiểu chi tiết)
@@ -153,55 +156,63 @@
               <div class="text-gray-400 text-2xl mb-1">&#10052;</div>
               <div class="text-sm font-semibold text-gray-700">Đông</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-blue-500 rounded-full" :style="{ width: `${product.usage_profile.winter_percent}%` }"></div>
+                <div class="h-full bg-blue-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.winter_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127807;</div>
               <div class="text-sm font-semibold text-gray-700">Xuân</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-green-500 rounded-full" :style="{ width: `${product.usage_profile.spring_percent}%` }"></div>
+                <div class="h-full bg-green-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.spring_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#9728;</div>
               <div class="text-sm font-semibold text-gray-700">Hè</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-red-500 rounded-full" :style="{ width: `${product.usage_profile.summer_percent}%` }"></div>
+                <div class="h-full bg-red-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.summer_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127809;</div>
               <div class="text-sm font-semibold text-gray-700">Thu</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-orange-500 rounded-full" :style="{ width: `${product.usage_profile.autumn_percent}%` }"></div>
+                <div class="h-full bg-orange-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.autumn_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#9728;</div>
               <div class="text-sm font-semibold text-gray-700">Ngày</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-yellow-500 rounded-full" :style="{ width: `${product.usage_profile.suitable_day}%` }"></div>
+                <div class="h-full bg-yellow-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.suitable_day}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127769;</div>
               <div class="text-sm font-semibold text-gray-700">Đêm</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div class="h-full bg-gray-500 rounded-full" :style="{ width: `${product.usage_profile.suitable_night}%` }"></div>
+                <div class="h-full bg-gray-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.suitable_night}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#128337;</div>
-              <div class="text-sm font-semibold text-gray-700">Lưu đến <br> {{ formatLongevity(product.usage_profile.longevity_hours) }}</div>
+              <div class="text-sm font-semibold text-gray-700">Lưu đến <br> {{
+                formatLongevity(product.usage_profile.longevity_hours) }}</div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#128100;</div>
-              <div class="text-sm font-semibold text-gray-700">Toả <br> ~ {{ product.usage_profile.sillage_range_m }}</div>
+              <div class="text-sm font-semibold text-gray-700">Toả <br> ~ {{ product.usage_profile.sillage_range_m }}
+              </div>
             </div>
           </div>
           <div v-else class="text-center text-gray-500">Không có thông tin hồ sơ sử dụng.</div>
-          </div>
+        </div>
       </div>
     </div>
     <div v-else class="text-center text-xl text-gray-500 py-10">Đang tải thông tin sản phẩm...</div>
@@ -232,11 +243,21 @@ const foundVariant = ref(null);
 const quantity = ref(1);
 const cartMessage = ref('');
 const cartError = ref(false);
+const reviews = ref([]);
+const totalReviews = computed(() => reviews.value.length);
 
 const selectedVariantPrice = computed(() => foundVariant.value ? foundVariant.value.price : product.value ? product.value.price : '0');
 const selectedVariantStock = computed(() => foundVariant.value ? foundVariant.value.stock : 'N/A');
-const selectedVariantStatus = computed(() => foundVariant.value ? foundVariant.value.status : 'N/A');
-const selectedVariantSku = computed(() => foundVariant.value ? foundVariant.value.sku : 'N/A');
+const selectedVariantSold = computed(() => foundVariant.value ? foundVariant.value.sold : 'N/A');
+
+// Thay đổi đoạn code cũ
+const selectedVariantStatus = computed(() => {
+  if (!foundVariant.value) {
+    // Trả về trạng thái mới khi chưa có biến thể nào được chọn
+    return 'pending_selection';
+  }
+  return foundVariant.value.status;
+}); const selectedVariantSku = computed(() => foundVariant.value ? foundVariant.value.sku : 'N/A');
 
 const computedProductImages = computed(() => {
   if (!product.value) return [];
@@ -562,6 +583,10 @@ onMounted(async () => {
     }
     const data = await response.json();
     product.value = data.data;
+
+    // Lấy thông tin đánh giá
+    const reviewsResponse = await axios.get(`http://localhost:8000/api/products/${productSlug}/reviews`);
+    reviews.value = reviewsResponse.data.reviews; // Gán dữ liệu đánh giá
 
     if (product.value && product.value.variants && product.value.variants.length > 0) {
       const firstVariant = product.value.variants[0];

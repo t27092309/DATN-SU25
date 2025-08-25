@@ -30,64 +30,64 @@
 
         <div class="card-body">
           <div class="overflow-x-auto mb-8">
-            <table id="add-row" class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã màu</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày cập nhật</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                    style="width: 10%">Hành động</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="scentGroupItem in scentGroups" :key="scentGroupItem.id">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.id }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.name || "Không có" }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span :style="{ backgroundColor: scentGroupItem.color_code }"
-                      class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"></span>
-                    {{ scentGroupItem.color_code || "Không có" }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{
-                      scentGroupItem.created_at
-                        ? new Date(scentGroupItem.created_at).toLocaleString('vi-VN')
-                        : "Không có"
-                    }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{
-                      scentGroupItem.updated_at
-                        ? new Date(scentGroupItem.updated_at).toLocaleString('vi-VN')
-                        : "Không có"
-                    }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex space-x-2">
-                      <button type="button" title="Chỉnh sửa nhóm hương"
-                        class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        @click="startEdit(scentGroupItem)">
-                        <i class="fa fa-edit"></i>
-                      </button>
-                      <button type="button" title="Xóa mềm"
-                        class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        @click="confirmSoftDeleteWithSwal(scentGroupItem.id)">
-                        <i class="fa fa-times"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="!scentGroups || scentGroups.length === 0">
-                  <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                    Không có nhóm hương nào.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div v-if="scentGroups && scentGroups.length > 0">
+              <table id="add-row" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã màu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày cập nhật</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      style="width: 10%">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="scentGroupItem in scentGroups" :key="scentGroupItem.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ scentGroupItem.name || "Không có" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span :style="{ backgroundColor: scentGroupItem.color_code }"
+                        class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"></span>
+                      {{ scentGroupItem.color_code || "Không có" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{
+                        scentGroupItem.created_at
+                          ? new Date(scentGroupItem.created_at).toLocaleString('vi-VN')
+                          : "Không có"
+                      }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {{
+                        scentGroupItem.updated_at
+                          ? new Date(scentGroupItem.updated_at).toLocaleString('vi-VN')
+                          : "Không có"
+                      }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div class="flex space-x-2">
+                        <button type="button" title="Chỉnh sửa nhóm hương"
+                          class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          @click="startEdit(scentGroupItem)">
+                          <i class="fa fa-edit"></i>
+                        </button>
+                        <button type="button" title="Xóa mềm"
+                          class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          @click="confirmSoftDeleteWithSwal(scentGroupItem.id)">
+                          <i class="fa fa-times"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+            <div v-else class="px-6 py-4 text-center text-sm text-gray-500">
+              Không có nhóm hương nào.
+            </div>
+          </div>
 
           <div class="w-full px-4 mt-8">
             <form @submit.prevent="isEditing ? updateScentGroup() : addScentGroup()"
@@ -120,7 +120,7 @@
                   <i class="fas fa-times mr-2"></i> Hủy
                 </button>
               </div>
-              </form>
+            </form>
           </div>
         </div>
       </div>
@@ -133,11 +133,11 @@ import { onMounted, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { useToast } from "vue-toastification"; // Import useToast
+import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast(); // Khởi tạo instance của toast
+const toast = useToast();
 
 const scentGroup = ref({
   id: null,
@@ -145,27 +145,26 @@ const scentGroup = ref({
   color_code: "#000000",
 });
 const scentGroups = ref([]);
-// Bỏ addMessage, addMessageClass, listMessage, listMessageClass vì dùng toast
 const isEditing = ref(false);
 
 const fetchScentGroups = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/admin/scent-groups");
     scentGroups.value = Array.isArray(response.data) ? response.data : response.data.data || [];
-    if (!scentGroups.value.length) {
-      toast.info("Không có nhóm hương nào."); // Thay thế listMessage
-    }
     await destroyAndReinitializeDataTable();
+    if (scentGroups.value.length === 0) {
+      toast.info("Không có nhóm hương nào.");
+    }
   } catch (error) {
-    toast.error(error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!"); // Thay thế listMessage
     console.error("Lỗi khi tải danh sách:", error);
     await destroyAndReinitializeDataTable();
+    toast.error("Có lỗi khi tải danh sách nhóm hương!");
   }
 };
 
 const addScentGroup = async () => {
   if (!scentGroup.value.name || !scentGroup.value.color_code) {
-    toast.error("Vui lòng nhập tên nhóm hương và chọn màu!"); // Thay thế addMessage
+    toast.error("Vui lòng nhập tên nhóm hương và chọn màu!");
     return;
   }
   try {
@@ -177,16 +176,16 @@ const addScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    toast.success(response.data.message || "Thêm nhóm hương thành công!"); // Thay thế addMessage
+    toast.success(response.data.message || "Thêm nhóm hương thành công!");
     resetForm();
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
     if (errors) {
-      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
+      toast.error(Object.values(errors).flat().join(" "));
     } else {
-      toast.error(error.response?.data?.message || "Có lỗi khi thêm nhóm hương!"); // Thay thế addMessage
+      toast.error(error.response?.data?.message || "Có lỗi khi thêm nhóm hương!");
     }
   }
 };
@@ -199,7 +198,7 @@ const startEdit = (item) => {
 
 const updateScentGroup = async () => {
   if (!scentGroup.value.name || !scentGroup.value.color_code || !scentGroup.value.id) {
-    toast.error("Dữ liệu cập nhật không hợp lệ!"); // Thay thế addMessage
+    toast.error("Dữ liệu cập nhật không hợp lệ!");
     return;
   }
   try {
@@ -211,16 +210,16 @@ const updateScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    toast.success(response.data.message || "Cập nhật nhóm hương thành công!"); // Thay thế addMessage
+    toast.success(response.data.message || "Cập nhật nhóm hương thành công!");
     resetForm();
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
     if (errors) {
-      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
+      toast.error(Object.values(errors).flat().join(" "));
     } else {
-      toast.error(error.response?.data?.message || "Có lỗi khi cập nhật nhóm hương!"); // Thay thế addMessage
+      toast.error(error.response?.data?.message || "Có lỗi khi cập nhật nhóm hương!");
     }
   }
 };
@@ -254,45 +253,47 @@ const confirmSoftDeleteWithSwal = async (id) => {
     if (result.isConfirmed) {
       const response = await axios.delete(`http://localhost:8000/api/admin/scent-groups/${id}`);
       await fetchScentGroups();
-      toast.success(response.data.message || 'Xóa mềm nhóm hương thành công!'); // Thay thế Swal.fire success
+      toast.success(response.data.message || 'Xóa mềm nhóm hương thành công!');
     } else {
         toast.info("Thao tác xóa mềm đã bị hủy.");
     }
   } catch (error) {
     console.error('Lỗi khi xóa mềm nhóm hương:', error);
     const errorMessage = error.response?.data?.message || 'Không kết nối được tới server. Vui lòng kiểm tra mạng của bạn.';
-    toast.error(`Xảy ra lỗi: ${errorMessage}`); // Thay thế Swal.fire error
+    toast.error(`Xảy ra lỗi: ${errorMessage}`);
   }
 };
 
 let dataTableInstance = null;
 const destroyAndReinitializeDataTable = async () => {
+  // Always destroy if an instance exists
   if (dataTableInstance) {
     dataTableInstance.destroy();
     dataTableInstance = null;
   }
-  await nextTick();
-  if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
-    dataTableInstance = jQuery("#add-row").DataTable({
-      pageLength: 10,
-      responsive: true,
-      destroy: true,
-      language: {
-        lengthMenu: "Hiển thị _MENU_ mục",
-        search: "Tìm kiếm:",
-        info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
-        paginate: {
-          previous: "Trước",
-          next: "Tiếp",
+  // Only initialize if there is data
+  if (scentGroups.value.length > 0) {
+    await nextTick();
+    if (typeof jQuery !== "undefined" && jQuery.fn.DataTable) {
+      dataTableInstance = jQuery("#add-row").DataTable({
+        pageLength: 10,
+        responsive: true,
+        destroy: true,
+        language: {
+          lengthMenu: "Hiển thị _MENU_ mục",
+          search: "Tìm kiếm:",
+          info: "Hiển thị _START_ đến _END_ của _TOTAL_ mục",
+          paginate: {
+            previous: "Trước",
+            next: "Tiếp",
+          },
+          emptyTable: "Không có dữ liệu trong bảng",
         },
-        emptyTable: "Không có dữ liệu trong bảng",
-      },
-      drawCallback: () => {
-        // No Bootstrap tooltips needed.
-      },
-    });
-  } else {
-    console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
+        drawCallback: () => {},
+      });
+    } else {
+      console.error("DataTables không được tải đúng cách hoặc không có jQuery.");
+    }
   }
 };
 
@@ -334,7 +335,6 @@ onMounted(async () => {
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
-    // Có thể hiển thị một toast thông báo lỗi tải tài nguyên ở đây
     toast.error("Không thể tải đầy đủ tài nguyên cần thiết. Vui lòng thử lại.");
   }
 });
