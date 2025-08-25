@@ -397,21 +397,26 @@ const handleShippingMethodSelected = (methodId) => {
 };
 
 
+const handleNewAddressAdded = (newAddress) => {
+  // 1. Thêm địa chỉ mới vào danh sách địa chỉ của người dùng
+  userAddresses.value.push(newAddress);
+
+  // 2. Tự động chọn địa chỉ mới này
+  selectedAddressId.value = newAddress.id;
+
+  // 3. Chuyển trạng thái sang "địa chỉ có sẵn"
+  useNewAddressForm.value = false;
+};
+
 // --- Address Selection Handler from Modal ---
 const handleAddressSelection = (payload) => {
-  if (payload.type === 'existing') {
-    selectedAddressId.value = payload.id;
-    useNewAddressForm.value = false;
-    newAddressDetails.value = {
-      recipient_name: '', phone_number: '', address_line: '', ward: '', district: '', province: '',
-    };
-  } else if (payload.type === 'new') {
-    newAddressDetails.value = payload.details;
-    useNewAddressForm.value = true;
-    selectedAddressId.value = null;
-  }
+  // Hàm này giờ đây chỉ cần xử lý việc chọn địa chỉ
+  // Mọi logic thêm địa chỉ mới sẽ được xử lý bởi hàm handleNewAddressAdded
+  selectedAddressId.value = payload.id;
+  useNewAddressForm.value = false;
   showAddressModal.value = false;
 };
+
 
 // --- Payment Method Selection Handler ---
 const handlePaymentMethodSelection = (methodCode) => {
@@ -422,138 +427,138 @@ const handlePaymentMethodSelection = (methodCode) => {
 
 // --- Order Placement ---
 const placeOrder = async () => {
-    // Xóa thông báo lỗi cũ
-    errorMessage.value = null;
+  // Xóa thông báo lỗi cũ
+  errorMessage.value = null;
 
-    if (checkoutItems.value.length === 0) {
-        toast.error('Vui lòng chọn sản phẩm để thanh toán.');
-        return;
+  if (checkoutItems.value.length === 0) {
+    toast.error('Vui lòng chọn sản phẩm để thanh toán.');
+    return;
+  }
+
+  let addressPayload = {};
+  let addressChosenSuccessfully = false;
+
+  if (useNewAddressForm.value) {
+    const { recipient_name, phone_number, address_line, ward, district, province } = newAddressDetails.value;
+    if (!recipient_name || !phone_number || !address_line || !ward || !district || !province) {
+      toast.error('Vui lòng điền đầy đủ thông tin địa chỉ mới.');
+      return;
     }
-
-    let addressPayload = {};
-    let addressChosenSuccessfully = false;
-
-    if (useNewAddressForm.value) {
-        const { recipient_name, phone_number, address_line, ward, district, province } = newAddressDetails.value;
-        if (!recipient_name || !phone_number || !address_line || !ward || !district || !province) {
-            toast.error('Vui lòng điền đầy đủ thông tin địa chỉ mới.');
-            return;
-        }
-        addressPayload = {
-            recipient_name,
-            phone_number,
-            address_line,
-            ward,
-            district,
-            province,
-        };
-        addressChosenSuccessfully = true;
-    } else {
-        if (!selectedAddressId.value) {
-            toast.error('Vui lòng chọn một địa chỉ có sẵn hoặc nhập địa chỉ mới.');
-            return;
-        }
-        addressPayload = { address_id: selectedAddressId.value };
-        addressChosenSuccessfully = true;
+    addressPayload = {
+      recipient_name,
+      phone_number,
+      address_line,
+      ward,
+      district,
+      province,
+    };
+    addressChosenSuccessfully = true;
+  } else {
+    if (!selectedAddressId.value) {
+      toast.error('Vui lòng chọn một địa chỉ có sẵn hoặc nhập địa chỉ mới.');
+      return;
     }
+    addressPayload = { address_id: selectedAddressId.value };
+    addressChosenSuccessfully = true;
+  }
 
-    if (!addressChosenSuccessfully) {
-        toast.error('Vui lòng chọn hoặc nhập địa chỉ nhận hàng.');
-        return;
-    }
+  if (!addressChosenSuccessfully) {
+    toast.error('Vui lòng chọn hoặc nhập địa chỉ nhận hàng.');
+    return;
+  }
 
-    if (!selectedShippingMethodId.value) {
-        toast.error('Vui lòng chọn phương thức vận chuyển.');
-        return;
-    }
+  if (!selectedShippingMethodId.value) {
+    toast.error('Vui lòng chọn phương thức vận chuyển.');
+    return;
+  }
 
-    // Sử dụng `confirm` là một lựa chọn tốt cho những cảnh báo quan trọng
-    if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
-        return;
-    }
+  // Sử dụng `confirm` là một lựa chọn tốt cho những cảnh báo quan trọng
+  if (!confirm('Bạn có chắc chắn muốn đặt hàng không?')) {
+    return;
+  }
 
-    loading.value = true;
-    let paymentInfo = null;
+  loading.value = true;
+  let paymentInfo = null;
 
-    try {
-        const isBuyNow = route.query.buy_now === 'true';
-        let orderData = {
-            ...addressPayload,
-            shipping_method_id: selectedShippingMethodId.value,
-            notes: message.value,
-            coupon_code: selectedCouponCode.value,
-            payment_method: selectedPaymentMethod.value,
-        };
+  try {
+    const isBuyNow = route.query.buy_now === 'true';
+    let orderData = {
+      ...addressPayload,
+      shipping_method_id: selectedShippingMethodId.value,
+      notes: message.value,
+      coupon_code: selectedCouponCode.value,
+      payment_method: selectedPaymentMethod.value,
+    };
 
-        let response;
-        if (isBuyNow) {
-            const singleItem = checkoutItems.value[0];
-            if (!singleItem || !singleItem.variant || !singleItem.variant.id) {
-                toast.error('Thông tin sản phẩm để mua ngay không hợp lệ.');
-                loading.value = false;
-                return;
-            }
-            orderData.product_variant_id = singleItem.variant.id;
-            orderData.quantity = singleItem.quantity;
-            response = await axios.post('checkout/buy-now', orderData);
-        } else {
-            const cartItemIdsString = route.query.cart_item_ids;
-            const cartItemIds = cartItemIdsString ? cartItemIdsString.split(',').map(Number) : [];
-            orderData.cart_item_ids = cartItemIds;
-            response = await axios.post('checkout/place-order', orderData);
-        }
-
-        paymentInfo = response.data.payment_info;
-
-        if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl) {
-            toast.info('Hệ thống đang chuyển hướng đến trang thanh toán...');
-            window.location.href = paymentInfo.payUrl;
-        } else {
-            toast.success(response.data.message || 'Đặt hàng thành công!');
-            // Chuyển hướng sau khi toast hiển thị
-            setTimeout(() => {
-                 router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
-            }, 1000); // Đợi 1 giây để người dùng thấy thông báo
-        }
-
-    } catch (err) {
-        console.error('Lỗi khi đặt hàng:', err);
+    let response;
+    if (isBuyNow) {
+      const singleItem = checkoutItems.value[0];
+      if (!singleItem || !singleItem.variant || !singleItem.variant.id) {
+        toast.error('Thông tin sản phẩm để mua ngay không hợp lệ.');
         loading.value = false;
-
-        if (err.response && err.response.data && err.response.data.message) {
-            const apiMessage = err.response.data.message;
-
-            // Kiểm tra các lỗi đặc biệt từ backend (ví dụ: hết hàng)
-            const isOutOfStockError = apiMessage && (
-                apiMessage.includes('hết hàng') ||
-                apiMessage.includes('không đủ số lượng') ||
-                apiMessage.includes('out of stock')
-            );
-            
-            if (isOutOfStockError) {
-                toast.error('Sản phẩm bạn vừa chọn đã hết hàng hoặc không đủ số lượng. Vui lòng kiểm tra lại.');
-            } else if (err.response.data.errors) {
-                let errorDetails = '';
-                for (const key in err.response.data.errors) {
-                    errorDetails += `${err.response.data.errors[key].join(', ')} `;
-                }
-                toast.error(`Lỗi đặt hàng: ${errorDetails}`);
-            } else {
-                toast.error(apiMessage);
-            }
-            // Bạn có thể giữ lại errorMessage.value nếu muốn hiển thị lỗi ở một vị trí cụ thể trong component
-            errorMessage.value = apiMessage;
-
-        } else {
-            toast.error('Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại.');
-            errorMessage.value = 'Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại.';
-        }
-
-    } finally {
-        if (!(paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl)) {
-            loading.value = false;
-        }
+        return;
+      }
+      orderData.product_variant_id = singleItem.variant.id;
+      orderData.quantity = singleItem.quantity;
+      response = await axios.post('checkout/buy-now', orderData);
+    } else {
+      const cartItemIdsString = route.query.cart_item_ids;
+      const cartItemIds = cartItemIdsString ? cartItemIdsString.split(',').map(Number) : [];
+      orderData.cart_item_ids = cartItemIds;
+      response = await axios.post('checkout/place-order', orderData);
     }
+
+    paymentInfo = response.data.payment_info;
+
+    if (paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl) {
+      toast.info('Hệ thống đang chuyển hướng đến trang thanh toán...');
+      window.location.href = paymentInfo.payUrl;
+    } else {
+      toast.success(response.data.message || 'Đặt hàng thành công!');
+      // Chuyển hướng sau khi toast hiển thị
+      setTimeout(() => {
+        router.push({ name: 'DatHangThanhCong', params: { ma_don_hang: response.data.order_id } });
+      }, 1000); // Đợi 1 giây để người dùng thấy thông báo
+    }
+
+  } catch (err) {
+    console.error('Lỗi khi đặt hàng:', err);
+    loading.value = false;
+
+    if (err.response && err.response.data && err.response.data.message) {
+      const apiMessage = err.response.data.message;
+
+      // Kiểm tra các lỗi đặc biệt từ backend (ví dụ: hết hàng)
+      const isOutOfStockError = apiMessage && (
+        apiMessage.includes('hết hàng') ||
+        apiMessage.includes('không đủ số lượng') ||
+        apiMessage.includes('out of stock')
+      );
+
+      if (isOutOfStockError) {
+        toast.error('Sản phẩm bạn vừa chọn đã hết hàng hoặc không đủ số lượng. Vui lòng kiểm tra lại.');
+      } else if (err.response.data.errors) {
+        let errorDetails = '';
+        for (const key in err.response.data.errors) {
+          errorDetails += `${err.response.data.errors[key].join(', ')} `;
+        }
+        toast.error(`Lỗi đặt hàng: ${errorDetails}`);
+      } else {
+        toast.error(apiMessage);
+      }
+      // Bạn có thể giữ lại errorMessage.value nếu muốn hiển thị lỗi ở một vị trí cụ thể trong component
+      errorMessage.value = apiMessage;
+
+    } else {
+      toast.error('Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại.');
+      errorMessage.value = 'Không thể đặt hàng. Vui lòng kiểm tra kết nối và thử lại.';
+    }
+
+  } finally {
+    if (!(paymentInfo && paymentInfo.status === 'redirect' && paymentInfo.payUrl)) {
+      loading.value = false;
+    }
+  }
 };
 
 
@@ -797,7 +802,7 @@ watch(userAddresses, (newAddresses) => {
     <AddressSelectionModal :is-visible="showAddressModal" :addresses="userAddresses"
       :selected-address-id="selectedAddressId" :new-address-details="newAddressDetails"
       :use-new-address-form="useNewAddressForm" @update:is-visible="showAddressModal = $event"
-      @addressSelected="handleAddressSelection" />
+      @addressSelected="handleAddressSelection" @newAddressAdded="handleNewAddressAdded" />
 
     <ShippingMethodSelectionModal :is-visible="showShippingMethodModal"
       :current-selected-method-id="selectedShippingMethodId" @update:is-visible="showShippingMethodModal = $event"
