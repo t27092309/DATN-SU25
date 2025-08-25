@@ -34,8 +34,9 @@ use App\Http\Controllers\API\Client\UserController;
 use App\Http\Controllers\API\BannerController as ClientBannerController;
 
 // Payment API (public, no auth required)
-Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
+// route thanh toán cho Client
+Route::post('/payment/vnpay/create', [PaymentController::class, 'createVnpayPayment']);
 Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
 Route::post('/payment/momo/ipn', [PaymentController::class, 'handleMomoIpn']);
 Route::middleware([CorsMiddleware::class])->group(function () {
@@ -58,6 +59,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
 
 
+        Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
