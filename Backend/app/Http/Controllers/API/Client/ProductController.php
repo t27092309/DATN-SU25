@@ -79,11 +79,15 @@ class ProductController extends Controller
 
     public function showBySlug($slug)
     {
-        //http://localhost:8000/api/detailproducts/đường dẫn slug
         $product = Product::with([
             'brand',
             'category',
             'usageProfile',
+            'scentProfiles' => function ($q) {
+                $q->whereHas('scentGroup', function ($sq) {
+                    $sq->where('is_active', 1); // Chỉ lấy nhóm hương đang bật
+                });
+            },
             'scentProfiles.scentGroup',
             'variants.attributeValues.attribute',
             'images',
@@ -91,6 +95,7 @@ class ProductController extends Controller
 
         return new ProductDetailResource($product);
     }
+
 
     public function search(Request $request)
     {
