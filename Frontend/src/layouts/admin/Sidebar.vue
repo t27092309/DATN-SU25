@@ -285,12 +285,12 @@ const menuItems = ref([
     icon: "fas fa-users",
     isOpen: false,
   },
-  {
-    name: "Vai trò & Quyền",
-    route: "/admin/roles",
-    icon: "fas fa-user-shield",
-    isOpen: false,
-  },
+  // {
+  //   name: "Vai trò & Quyền",
+  //   route: "/admin/roles",
+  //   icon: "fas fa-user-shield",
+  //   isOpen: false,
+  // },
 ]);
 
 const toggleSubMenu = (item) => {

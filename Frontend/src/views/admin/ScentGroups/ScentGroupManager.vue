@@ -4,10 +4,7 @@
       <div class="mb-6 flex justify-between items-center">
         <ul class="flex items-center space-x-2 text-gray-600 text-sm">
           <li class="nav-home">
-            <router-link
-              :to="{ name: 'AdminDashboard' }"
-              class="hover:text-blue-600"
-            >
+            <router-link :to="{ name: 'AdminDashboard' }" class="hover:text-blue-600">
               <i class="fas fa-home"></i>
             </router-link>
           </li>
@@ -39,107 +36,73 @@
               <table id="add-row" class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Tên
                     </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Mã màu
                     </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày tạo
                     </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày cập nhật
                     </th>
-                    <th
-                      scope="col"
+                    <th scope="col"
                       class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                      style="width: 10%"
-                    >
+                      style="width: 10%">
                       Hành động
                     </th>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Trạng thái
                     </th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <tr
-                    v-for="scentGroupItem in scentGroups"
-                    :key="scentGroupItem.id"
-                  >
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
+                  <tr v-for="scentGroupItem in scentGroups" :key="scentGroupItem.id">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{ scentGroupItem.id }}
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{ scentGroupItem.name || "Không có" }}
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
-                      <span
-                        :style="{ backgroundColor: scentGroupItem.color_code }"
-                        class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"
-                      ></span>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span :style="{ backgroundColor: scentGroupItem.color_code }"
+                        class="inline-block w-5 h-5 align-middle mr-2 border border-gray-300 rounded"></span>
                       {{ scentGroupItem.color_code || "Không có" }}
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{
                         scentGroupItem.created_at
                           ? new Date(scentGroupItem.created_at).toLocaleString(
-                              "vi-VN"
-                            )
+                            "vi-VN"
+                          )
                           : "Không có"
                       }}
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{
                         scentGroupItem.updated_at
                           ? new Date(scentGroupItem.updated_at).toLocaleString(
-                              "vi-VN"
-                            )
+                            "vi-VN"
+                          )
                           : "Không có"
                       }}
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                    >
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div class="flex space-x-2">
-                        <button
-                          type="button"
-                          title="Chỉnh sửa nhóm hương"
+                        <button type="button" title="Chỉnh sửa nhóm hương"
                           class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                          @click="startEdit(scentGroupItem)"
-                        >
+                          @click="startEdit(scentGroupItem)">
                           <i class="fa fa-edit"></i>
                         </button>
 
@@ -152,34 +115,21 @@
                           <i class="fa fa-times"></i>
                         </button> -->
 
-                        <button
-                          type="button"
-                          :title="
-                            scentGroupItem.is_active
-                              ? 'Ẩn nhóm hương'
-                              : 'Hiện nhóm hương'
+                        <button type="button" :title="scentGroupItem.is_active
+                          ? 'Ẩn nhóm hương'
+                          : 'Hiện nhóm hương'
                           "
                           class="text-yellow-600 hover:text-yellow-900 p-1 rounded-full hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                          @click="toggleScentGroup(scentGroupItem.id)"
-                        >
-                          <i
-                            :class="
-                              scentGroupItem.is_active
-                                ? 'fa fa-eye'
-                                : 'fa fa-eye-slash'
-                            "
-                          ></i>
+                          @click="toggleScentGroup(scentGroupItem.id)">
+                          <i :class="scentGroupItem.is_active
+                            ? 'fa fa-eye'
+                            : 'fa fa-eye-slash'
+                            "></i>
                         </button>
                       </div>
                     </td>
-                    <td
-                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                    >
-                      <span
-                        v-if="scentGroupItem.is_active"
-                        class="text-green-600 font-semibold"
-                        >Đang hiển thị</span
-                      >
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span v-if="scentGroupItem.is_active" class="text-green-600 font-semibold">Đang hiển thị</span>
                       <span v-else class="text-gray-500">Đang ẩn</span>
                     </td>
                   </tr>
@@ -192,10 +142,8 @@
           </div>
 
           <div class="w-full px-4 mt-8">
-            <form
-              @submit.prevent="isEditing ? updateScentGroup() : addScentGroup()"
-              class="p-6 border border-gray-200 rounded-lg shadow-sm"
-            >
+            <form @submit.prevent="isEditing ? updateScentGroup() : addScentGroup()"
+              class="p-6 border border-gray-200 rounded-lg shadow-sm">
               <div class="mb-6">
                 <h5 class="text-xl font-semibold text-gray-800">
                   {{
@@ -204,55 +152,34 @@
                 </h5>
               </div>
               <div class="mb-4">
-                <label
-                  for="name"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                  >Tên nhóm hương</label
-                >
-                <input
-                  type="text"
-                  v-model="scentGroup.name"
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Tên nhóm hương</label>
+                <input type="text" v-model="scentGroup.name"
                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  id="name"
-                  placeholder="Nhập tên nhóm hương"
-                  required
-                />
+                  id="name" placeholder="Nhập tên nhóm hương" required />
                 <p class="mt-1 text-sm text-gray-500">
                   Ví dụ: Hương hoa, Hương gỗ (Tên này sẽ được lưu nguyên bản)
                 </p>
               </div>
               <div class="mb-6">
-                <label
-                  for="color_code"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                  >Mã màu</label
-                >
-                <input
-                  type="color"
-                  v-model="scentGroup.color_code"
-                  class="block w-full h-10 px-1 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
-                  id="color_code"
-                  required
-                />
-                <p class="mt-1 text-sm text-gray-500">Chọn màu từ bảng màu</p>
+                <label for="color_code" class="block text-sm font-medium text-gray-700 mb-1">Mã màu</label>
+                <div class="flex items-center space-x-2">
+                  <input type="color" v-model="scentGroup.color_code"
+                    class="block w-30 h-10 px-1 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
+                    id="color_code_picker" required />
+                  <input type="text" v-model="scentGroup.color_code" placeholder="#FFFFFF"
+                    class="block h-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    id="color_code_text" required />
+                </div>
+                <p class="mt-1 text-sm text-gray-500">Chọn màu từ bảng màu hoặc nhập mã HEX</p>
               </div>
               <div class="flex justify-end space-x-2">
-                <button
-                  type="submit"
-                  class="inline-flex items-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <i
-                    :class="isEditing ? 'fas fa-save' : 'fas fa-plus'"
-                    class="mr-2"
-                  ></i>
+                <button type="submit"
+                  class="inline-flex items-center px-5 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <i :class="isEditing ? 'fas fa-save' : 'fas fa-plus'" class="mr-2"></i>
                   {{ isEditing ? "Cập nhật nhóm hương" : "Thêm nhóm hương" }}
                 </button>
-                <button
-                  v-if="isEditing"
-                  type="button"
-                  @click="cancelEdit"
-                  class="inline-flex items-center px-5 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
+                <button v-if="isEditing" type="button" @click="cancelEdit"
+                  class="inline-flex items-center px-5 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   <i class="fas fa-times mr-2"></i> Hủy
                 </button>
               </div>
@@ -456,7 +383,7 @@ const destroyAndReinitializeDataTable = async () => {
           },
           emptyTable: "Không có dữ liệu trong bảng",
         },
-        drawCallback: () => {},
+        drawCallback: () => { },
       });
     } else {
       console.error(

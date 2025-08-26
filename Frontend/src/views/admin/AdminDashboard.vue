@@ -6,9 +6,9 @@
       
       <!-- Ví dụ sử dụng PermissionGuard -->
       <PermissionGuard permission="reports:view">
-        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+        <!-- <div class="mt-4 p-4 bg-blue-50 rounded-lg">
           <p class="text-blue-800">Bạn có quyền xem báo cáo này</p>
-        </div>
+        </div> -->
       </PermissionGuard>
     </div>
 
