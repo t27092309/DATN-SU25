@@ -370,50 +370,29 @@ class ProductController extends Controller
             'usage_profile.sillage_range_m' => 'nullable|string|max:255',
         ];
 
-        if ($request->has('has_variants')) {
-            if ($request->boolean('has_variants')) {
-                $rules['price'] = 'nullable|numeric|min:0';
-                $rules['stock'] = 'nullable|integer|min:0';
-                $rules['variants'] = 'required|json';
-            } else {
-                $rules['price'] = 'required|numeric|min:0';
-                $rules['stock'] = 'required|integer|min:0';
-                $rules['variants'] = 'nullable|string';
-            }
+        // if ($request->has('has_variants')) {
+        //     if ($request->boolean('has_variants')) {
+        //         $rules['price'] = 'nullable|numeric|min:0';
+        //         $rules['stock'] = 'nullable|integer|min:0';
+        //         $rules['variants'] = 'required|json';
+        //     } else {
+        //         $rules['price'] = 'required|numeric|min:0';
+        //         $rules['stock'] = 'required|integer|min:0';
+        //         $rules['variants'] = 'nullable|string';
+        //     }
+        // }
+
+        if ($request->boolean('has_variants')) {
+            $rules['variants'] = 'required|json';
+        } elseif ($request->has('variants')) {
+            $rules['variants'] = 'nullable|json';
+        } else {
+            $rules['price'] = 'required|numeric|min:0';
+            $rules['stock'] = 'required|integer|min:0';
         }
 
         try {
             $validated = $request->validate($rules);
-
-            // $submittedVariantsData = [];
-            // if (isset($validated['variants'])) {
-            //     $submittedVariantsData = json_decode($validated['variants'], true);
-            //     if (json_last_error() !== JSON_ERROR_NONE) {
-            //         throw new \Exception('Dữ liệu biến thể không phải là một mảng JSON hợp lệ.');
-            //     }
-
-            //     $variantsValidator = Validator::make($submittedVariantsData, [
-            //         '*.id' => 'nullable|integer|exists:product_variants,id',
-            //         '*.sku' => [
-            //             'required',
-            //             'string',
-            //             'max:255',
-            //             // Logic mới: ignore SKU của biến thể cũ cùng id
-            //             Rule::unique('product_variants', 'sku')->ignore(
-            //                 // Lấy ID của các biến thể hiện có từ request để ignore
-            //                 collect($submittedVariantsData)->pluck('id')->filter()->toArray()
-            //             )
-            //         ],
-            //         '*.price' => 'required|numeric|min:0',
-            //         '*.stock' => 'required|integer|min:0',
-            //         '*.attribute_values' => 'required|array|min:1',
-            //         '*.attribute_values.*' => 'exists:attribute_values,id',
-            //     ], [
-            //         '*.sku.unique' => 'SKU :input đã tồn tại.',
-            //     ]);
-            //     $variantsValidator->validate();
-            // }
-
             $submittedVariantsData = [];
             if (isset($validated['variants'])) {
                 $submittedVariantsData = json_decode($validated['variants'], true);
@@ -422,23 +401,6 @@ class ProductController extends Controller
                 }
 
                 foreach ($submittedVariantsData as $variantIndex => $variantData) {
-                    // $variantValidator = Validator::make($variantData, [
-                    //     'id' => 'nullable|integer|exists:product_variants,id',
-                    //     'sku' => [
-                    //         'required',
-                    //         'string',
-                    //         'max:255',
-                    //         Rule::unique('product_variants', 'sku')
-                    //             ->ignore($variantData['id'] ?? null) // chỉ ignore id hiện tại
-                    //     ],
-                    //     'price' => 'required|numeric|min:0',
-                    //     'stock' => 'required|integer|min:0',
-                    //     'attribute_values' => 'nullable|array',
-                    //     'attribute_values.*' => 'exists:attribute_values,id',
-                    // ], [
-                    //     'sku.unique' => "SKU {$variantData['sku']} đã tồn tại.",
-                    // ]);
-
                     $variantValidator = Validator::make($variantData, [
                         'id' => 'nullable|integer|exists:product_variants,id',
                         'sku' => [
@@ -449,16 +411,30 @@ class ProductController extends Controller
                         ],
                         'price' => 'required|numeric|min:0',
                         'stock' => 'required|integer|min:0',
-                        'attribute_values'   => 'sometimes|array',           // ⬅️ đổi từ nullable -> sometimes
-                        'attribute_values.*' => 'exists:attribute_values,id',
-                    ], [
-                        'sku.unique' => "SKU {$variantData['sku']} đã tồn tại.",
+                        'active' => 'required|boolean',
                     ]);
 
                     $variantValidator->validate();
+
+                    // Validate attribute_values nếu có
+                    if (array_key_exists('attribute_values', $variantData)) {
+                        if (!is_array($variantData['attribute_values'])) {
+                            throw ValidationException::withMessages([
+                                "variants.$variantIndex.attribute_values" => 'attribute_values phải là mảng.'
+                            ]);
+                        }
+
+                        foreach ($variantData['attribute_values'] as $valueId) {
+                            if (!AttributeValue::where('id', $valueId)->exists()) {
+                                throw ValidationException::withMessages([
+                                    "variants.$variantIndex.attribute_values" => "Giá trị thuộc tính ID $valueId không tồn tại."
+                                ]);
+                            }
+                        }
+                    }
                 }
             }
-
+            /////////////////////////
             $scentGroupsData = [];
             if (isset($validated['scent_groups'])) {
                 $scentGroupsData = json_decode($validated['scent_groups'], true);
@@ -504,28 +480,6 @@ class ProductController extends Controller
                 'usage_profile',
             ])->toArray();
 
-            // --- Cải thiện: Logic xử lý ảnh chính rõ ràng hơn ---
-            // if ($request->hasFile('image')) {
-            //     // Có ảnh mới -> xóa ảnh cũ nếu có
-            //     if ($product->image && Storage::disk('public')->exists($product->image)) {
-            //         Storage::disk('public')->delete($product->image);
-            //     }
-            //     $productDataForUpdate['image'] = $request->file('image')->store('products/main_images', 'public');
-            // } elseif ($request->has('remove_main_image') && $request->boolean('remove_main_image')) {
-            //     // Không có ảnh mới, có yêu cầu xóa ảnh cũ -> xóa ảnh
-            //     if ($product->image && Storage::disk('public')->exists($product->image)) {
-            //         Storage::disk('public')->delete($product->image);
-            //     }
-            //     $productDataForUpdate['image'] = null;
-            // }
-
-            // if (isset($validated['name'])) {
-            //     $productDataForUpdate['slug'] = Str::slug($validated['name']);
-            // }
-            // if (isset($validated['has_variants']) && $validated['has_variants']) {
-            //     $productDataForUpdate['price'] = null;
-            //     $productDataForUpdate['stock'] = null;
-            // }
 
             Log::info("🔹 Bắt đầu xử lý ảnh chính sản phẩm #{$product->id}", [
                 'hasFile'      => $request->hasFile('image'),
@@ -556,23 +510,44 @@ class ProductController extends Controller
             $product->update($productDataForUpdate);
 
             // --- Cải thiện: Xử lý ảnh Gallery một cách an toàn ---
-            // 1. Xóa các file vật lý và record database của các ảnh bị xóa
+
+            // 1. Xóa ảnh
             if (isset($validated['deleted_image_ids'])) {
                 $imagesToDelete = $product->images()->whereIn('id', $validated['deleted_image_ids'])->get();
+
+                Log::info("🗑️ Xóa các ảnh gallery với IDs:", $validated['deleted_image_ids']);
+
                 foreach ($imagesToDelete as $image) {
                     if (Storage::disk('public')->exists($image->path)) {
                         Storage::disk('public')->delete($image->path);
+                        Log::info("🗑️ Đã xóa file ảnh: {$image->path}");
                     }
                     $image->delete();
+                    Log::info("🗑️ Đã xóa record ảnh với ID: {$image->id} trong DB");
                 }
+
+                $remainingImagesAfterDelete = $product->images()->pluck('id')->toArray();
+                Log::info("✅ Ảnh gallery còn lại sau khi xóa:", $remainingImagesAfterDelete);
             }
 
-            // 2. Cập nhật thứ tự cho các ảnh cũ còn lại
+            // 2. Cập nhật thứ tự ảnh còn lại
             if (isset($validated['gallery_images_order'])) {
-                foreach ($validated['gallery_images_order'] as $item) {
+                // Nếu gallery_images_order là chuỗi JSON, decode nó
+                if (is_string($validated['gallery_images_order'])) {
+                    $galleryOrder = json_decode($validated['gallery_images_order'], true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        Log::error('❌ Lỗi decode JSON gallery_images_order: ' . json_last_error_msg());
+                        $galleryOrder = [];
+                    }
+                } else {
+                    $galleryOrder = $validated['gallery_images_order'];
+                }
+
+                foreach ($galleryOrder as $item) {
                     ProductImage::where('id', $item['id'])
                         ->where('product_id', $product->id)
                         ->update(['order' => $item['order']]);
+                    Log::info("🔄 Cập nhật order ảnh ID {$item['id']} thành {$item['order']}");
                 }
             }
 
@@ -582,50 +557,55 @@ class ProductController extends Controller
                 foreach ($request->file('new_additional_images') as $file) {
                     $newPath = $file->store('products/gallery', 'public');
                     $newImages[] = ['path' => $newPath, 'product_id' => $product->id];
+                    Log::info("➕ Upload ảnh mới: {$newPath}");
                 }
-                ProductImage::insert($newImages); // Dùng insert để hiệu quả hơn
+                ProductImage::insert($newImages);
+                Log::info("✅ Đã thêm " . count($newImages) . " ảnh mới vào gallery");
             }
+
             // --- Kết thúc xử lý Gallery ---
 
             // --- Cải thiện: Logic cập nhật Variants hiệu quả hơn ---
-            $existingVariants = $product->variants;
-            // $submittedVariantIds = collect($submittedVariantsData)->pluck('id')->filter()->toArray();
+            // --- Xử lý cập nhật Variants (an toàn, tránh mất hết biến thể khi không gửi variants) ---
+            $existingVariants = $product->variants()->get();
 
-            // // Xóa các biến thể cũ không còn trong request
-            // foreach ($existingVariants as $variant) {
-            //     if (!in_array($variant->id, $submittedVariantIds)) {
-            //         $variant->attributeValues()->detach();
-            //         $variant->delete();
-            //     }
-            // }
-            $submittedVariantIds = collect($submittedVariantsData)
-                ->pluck('id')->filter()->all();
+            if (is_array($submittedVariantsData) && count($submittedVariantsData) > 0) {
+                $touchedIds = [];
 
-            foreach ($existingVariants as $variant) {
-                if (!in_array($variant->id, $submittedVariantIds, true)) {
-                    $variant->attributeValues()->detach();
-                    $variant->delete();
+                foreach ($submittedVariantsData as $variantData) {
+                    $attrsToSync = isset($variantData['attribute_values']) && is_array($variantData['attribute_values'])
+                        ? $variantData['attribute_values'] : null;
+                    unset($variantData['attribute_values']);
+
+                    // Ép kiểu active về 0/1
+                    $variantData['active'] = (int) filter_var($variantData['active'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+                    if (!empty($variantData['id'])) {
+                        // Update variant cũ
+                        $variant = $existingVariants->firstWhere('id', $variantData['id']);
+                        if ($variant) {
+                            $variant->update($variantData);
+                            if (is_array($attrsToSync)) {
+                                $variant->attributeValues()->sync($attrsToSync);
+                            }
+                            $touchedIds[] = $variant->id;
+                        }
+                    } else {
+                        // Tạo variant mới
+                        $newVariant = $product->variants()->create($variantData);
+                        if (is_array($attrsToSync)) {
+                            $newVariant->attributeValues()->sync($attrsToSync);
+                        }
+                        $touchedIds[] = $newVariant->id;
+                    }
+                }
+
+                // Tắt các biến thể không có trong danh sách FE gửi (tương đương "bỏ tick")
+                if (!empty($touchedIds)) {
+                    $product->variants()->whereNotIn('id', $touchedIds)->update(['active' => 0]);
                 }
             }
-
-
             // Cập nhật hoặc tạo mới các biến thể từ request
-            // foreach ($submittedVariantsData as $variantData) {
-            //     $variantId = $variantData['id'] ?? null;
-            //     $attributesToSync = $variantData['attribute_values'] ?? [];
-            //     unset($variantData['attribute_values']);
-
-            //     if ($variantId) {
-            //         $variant = $existingVariants->firstWhere('id', $variantId);
-            //         if ($variant) {
-            //             $variant->update($variantData);
-            //             $variant->attributeValues()->sync($attributesToSync);
-            //         }
-            //     } else {
-            //         $newVariant = $product->variants()->create($variantData);
-            //         $newVariant->attributeValues()->sync($attributesToSync);
-            //     }
-            // }
 
             foreach ($submittedVariantsData as $variantData) {
                 $variantId = $variantData['id'] ?? null;
@@ -637,16 +617,19 @@ class ProductController extends Controller
                     : null;
 
                 unset($variantData['attribute_values']); // Tránh fill vào cột không tồn tại
-
+                if (isset($variantData['active'])) {
+                    $variantData['active'] = filter_var($variantData['active'], FILTER_VALIDATE_BOOLEAN);
+                }
                 if ($variantId) {
                     $variant = $existingVariants->firstWhere('id', $variantId);
                     if ($variant) {
                         // Cập nhật thông tin biến thể
                         $variant->update($variantData);
 
+
                         // Chỉ đồng bộ attribute_values nếu được gửi và không rỗng
-                        if ($attributesToSync !== null) {
-                            $variant->attributeValues()->sync($attributesToSync);
+                        if ($hasAttrValuesKey) {
+                            $variant->attributeValues()->sync($attributesToSync ?? []);
                         }
                         // Nếu không gửi attribute_values hoặc mảng rỗng, giữ nguyên giá trị cũ
                     }

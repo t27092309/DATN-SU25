@@ -555,11 +555,12 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr
+                    <!-- <tr
                       v-for="(variant, index) in product.variants"
                       :key="index"
                       class="hover:bg-gray-50"
-                    >
+                    > -->
+                   <tr v-for="(variant, index) in product.variants" :key="variant.id" class="hover:bg-gray-50">
 
                       <td
                         class="py-3 px-4 whitespace-nowrap text-sm font-medium text-gray-900"
@@ -624,13 +625,45 @@
                       <td
                         class="py-3 px-4 whitespace-nowrap text-sm text-gray-700"
                       >
-                        <button
+                        <!-- <button
                           type="button"
                           class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                           @click="removeSpecificVariant(index)"
                         >
                           Xóa
-                        </button>
+                        </button> -->
+                        <!-- <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                          <label class="inline-flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              v-model="variant.active"
+                                :true-value="'1'"
+                                :false-value="'0'"
+                              class="form-checkbox h-4 w-4 text-green-600"
+                              :id="'variantActive' + index"
+                            />
+                            <span>Hoạt động</span>
+                          </label>
+                        </td> -->
+                        <td class="py-3 px-4 whitespace-nowrap text-sm text-gray-700">
+                          <label class="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              class="sr-only peer"
+                              v-model="variant.active"
+                              :true-value="1"
+                              :false-value="0"
+                            />
+
+                            <div
+                              class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-colors"
+                            ></div>
+                            <div
+                              class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"
+                            ></div>
+                          </label>
+                        </td>
+                        
                       </td>
                     </tr>
                   </tbody>
@@ -1050,6 +1083,7 @@ const fetchProduct = async () => {
           status: variant.status,
           barcode: variant.barcode,
           description: variant.description,
+          active: Number(variant.active), // <--- Ép kiểu từ string sang số
           attributes: variant.attributes, // Giữ nguyên mảng attributes
         };
       });
@@ -1152,45 +1186,19 @@ const generateVariants = () => {
       barcode: existingVariant ? existingVariant.barcode : "",
       description: existingVariant ? existingVariant.description : "",
       attributes: attribute_values,
+      active: existingVariant ? existingVariant.active : 0, // <- thêm dòng này
     };
   });
 
   // Cập nhật mảng variants
   product.value.variants = newVariants;
 };
-const removeSpecificVariant = (index) => {
-  Swal.fire({
-    title: "Bạn có chắc chắn?",
-    text: "Biến thể này sẽ bị xóa vĩnh viễn!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Có, xóa nó đi!",
-    cancelButtonText: "Hủy",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const variantToDelete = product.value.variants[index];
-      const attributeValuesToDelete = variantToDelete.attributes.map(
-        (attr) => attr.value_id
-      );
 
-      product.value.variants.splice(index, 1);
+const activeVariants = computed(() => {
+  return product.value.variants.filter(v => v.active === 1);
+});
 
-      const remainingValues = product.value.variants.flatMap((v) =>
-        v.attributes.map((a) => a.value_id)
-      );
 
-      for (const attrId in selectedAttributeValues.value) {
-        selectedAttributeValues.value[attrId] = selectedAttributeValues.value[
-          attrId
-        ].filter((val) => remainingValues.includes(val.valueId));
-      }
-
-      Swal.fire("Đã xóa!", "Biến thể đã được xóa thành công.", "success");
-    }
-  });
-};
 watch(
   () => props.usageProfileData,
   (newVal) => {
@@ -1332,10 +1340,14 @@ const updateProduct = async () => {
 
     // Xoá ảnh gallery
     if (galleryImagesToDelete.value.length > 0) {
-      formData.append(
-        "deleted_image_ids",
-        JSON.stringify(galleryImagesToDelete.value)
-      );
+      galleryImagesToDelete.value.forEach((id) => {
+        const numericId = Number(id);
+        if (Number.isInteger(numericId)) {
+          formData.append("deleted_image_ids[]", numericId);
+        } else {
+          console.warn("⚠️ ID không hợp lệ:", id);
+        }
+      });
     }
 
     // Cập nhật order ảnh cũ
@@ -1379,6 +1391,7 @@ const updateProduct = async () => {
         sku: v.sku || "",
         price: v.price || 0,
         stock: v.stock || 0,
+        active: v.active == 1 ? true : false, // chuyển thành boolean cho API
         attribute_values: v.attributes.map((attr) => attr.value_id),
       }));
       formData.append("variants", JSON.stringify(variantsData));

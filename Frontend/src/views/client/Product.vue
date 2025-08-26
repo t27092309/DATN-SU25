@@ -72,6 +72,8 @@
                     </span>
                   </button>
                 </div>
+
+
               </div>
             </div>
             <div v-else-if="!product.variants || product.variants.length === 0" class="mb-8 text-gray-600">
@@ -312,6 +314,10 @@ const groupedAttributes = computed(() => {
     values: Array.from(attrGroup.values.values())
   }));
 });
+//////////////////////////////
+const activeVariants = computed(() => {
+  return product.value.variants.filter(v => v.active === 1);
+});
 
 const selectAttributeValue = (attributeSlug, attributeValue) => {
   if (selectedAttributes.value[attributeSlug]?.value_id === attributeValue.value_id) {
@@ -331,15 +337,19 @@ const isSelectedAttribute = (attributeSlug, attributeValue) => {
 };
 
 const isAttributeValueAvailable = (currentAttributeSlug, currentAttributeValue) => {
-  if (!product.value || !product.value.variants || product.value.variants.length === 0) {
-    return false;
-  }
+  // if (!product.value || !product.value.variants || product.value.variants.length === 0) {
+  //   return false;
+  // }
+  if (!activeVariants.value || activeVariants.value.length === 0) {
+  return false;
+}
+
 
   const currentSelectionsWithoutThisAttribute = Object.entries(selectedAttributes.value)
     .filter(([slug]) => slug !== currentAttributeSlug)
     .map(([, value]) => value);
-
-  return product.value.variants.some(variant => {
+//
+  return activeVariants.value.some(variant => {
     const hasCurrentValue = variant.attributes.some(attr =>
       attr.attribute_slug === currentAttributeSlug && attr.value_id === currentAttributeValue.value_id
     );

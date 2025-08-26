@@ -19,7 +19,8 @@ class ProductVariant extends Model
         'sold',
         'status',
         'barcode',
-        'description'
+        'description',
+         'active'
     ];
 
     protected $appends = ['slug'];

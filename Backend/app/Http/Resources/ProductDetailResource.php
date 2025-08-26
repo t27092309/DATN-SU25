@@ -29,6 +29,7 @@ class ProductDetailResource extends JsonResource
             'stock' => $this->has_variants ? null : $this->stock,
             'brand_id' => $this->brand_id,
             'has_variants_computed' => $this->variants->isNotEmpty(),
+            'active' => $this->active,
             // Include brand_name when the 'brand' relationship is loaded
             'brand' => $this->whenLoaded('brand', function () {
                 return [
@@ -108,6 +109,9 @@ class ProductDetailResource extends JsonResource
                         'stock' => $variant->stock,
                         'sold' => $variant->sold,
                         'status' => $variant->status,
+                        // 'active' => $variant->active,
+                        'active' => (int) $variant->active,
+                        
                         'barcode' => $variant->barcode,
                         'description' => $variant->description,
                         'attributes' => $variant->relationLoaded('attributeValues') ?

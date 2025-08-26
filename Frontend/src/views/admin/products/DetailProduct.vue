@@ -251,7 +251,9 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr v-for="variant in product.variants" :key="variant.id">
+                                        <tr v-for="variant in activeVariants" :key="variant.id">
+
+
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <img v-if="variant.image_url" :src="variant.image_url" alt="Variant Image" class="w-12 h-12 object-cover rounded-sm" />
                                                 <span v-else class="text-gray-500">N/A</span>
@@ -342,6 +344,10 @@ const product = ref({
     usage_profile: null, // Directly the usage_profile object
     scent_profiles: [], // Directly the array of scent profile objects
     variants: [],
+});
+
+const activeVariants = computed(() => {
+  return product.value.variants.filter(v => Number(v.active) === 1);
 });
 
 // A computed property to infer if the product has variants
