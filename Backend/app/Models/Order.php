@@ -41,6 +41,7 @@ class Order extends Model
         'coupon_id',
         // 'payment_method', // <-- Đã xóa khỏi fillable
         'shipping_fee',
+        'product_name', 
     ];
 
     protected $casts = [
