@@ -127,7 +127,7 @@
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
                     <img 
-                      :src="user.avatar || '/default-avatar.png'" 
+                      :src="user.avatar  " 
                       :alt="user.name"
                       class="h-10 w-10 rounded-full object-cover"
                     >

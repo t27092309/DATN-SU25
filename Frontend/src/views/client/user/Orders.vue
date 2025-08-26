@@ -228,10 +228,10 @@ const orderTabs = ref([
   { label: 'Đang xử lý', value: 'processing', count: 0 },
   { label: 'Đang giao hàng', value: 'shipped', count: 0 },
   { label: 'Đã giao hàng', value: 'delivered', count: 0 },
-  { label: 'Trả hàng', value: 'return_requested', count: 0 },
+  { label: 'Trả hàng',  value: 'return_requested', count: 0 },
   { label: 'Hoàn tiền', value: 'refunded', count: 0 },
   { label: 'Đã hủy', value: 'cancelled', count: 0 },
-  { label: 'Hoàn trả', value: 'return_and_refund', count: 0 }, // TAB MỚI: Gộp hai trạng thái
+  { label: 'Từ chối hoàn trả', value: 'rejected', count: 0 }, // TAB MỚI: Gộp hai trạng thái
 ]);
 
 const showSuccess = (message) => {
@@ -398,6 +398,7 @@ const getStatusText = (status) => {
     case 'cancelled': return 'Đã hủy';
     case 'return_requested': return 'Đang xử lý hoàn trả';
     case 'refunded': return 'Đã hoàn tiền'; // Giữ nguyên text cho trạng thái đã hoàn tiền
+    case 'rejected': return 'Từ chối'; // Giữ nguyên text cho trạng thái đã hoàn tiền
     default: return 'Không rõ';
   }
 };
@@ -414,6 +415,7 @@ const getStatusClass = (status) => {
     case 'cancelled': return 'text-gray-500';
     case 'return_requested': return 'text-orange-600';
     case 'refunded': return 'text-pink-600';
+    case 'rejected': return 'text-gray-500';
 
     default: return 'text-gray-800';
   }
