@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class=" mx-auto px-4 py-8 max-w-full">
     <div class="page-inner">
       <div class="mb-6 flex justify-between items-center">
         <h3 class="text-3xl font-bold mb-3">
@@ -37,7 +37,8 @@
 
         <div class="card-body">
           <div v-if="loadingBrand" class="text-center py-5">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-4 border-blue-600 border-r-transparent">
+            <div
+              class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-4 border-blue-600 border-r-transparent">
               <span class="sr-only">Đang tải...</span>
             </div>
             <p class="mt-2 text-gray-600">Đang tải thông tin thương hiệu...</p>
@@ -61,9 +62,8 @@
               <label for="brandSlug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
               <input type="text" id="brandSlug" v-model="brand.slug"
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-              <small class="mt-1 block text-xs text-gray-500"
-                >Tự động tạo nếu để trống, hoặc bạn có thể nhập thủ công.</small
-              >
+              <small class="mt-1 block text-xs text-gray-500">Tự động tạo nếu để trống, hoặc bạn có thể nhập thủ
+                công.</small>
               <div v-if="errors.slug" class="text-red-500 text-xs mt-1">
                 {{ errors.slug[0] }}
               </div>
@@ -85,9 +85,8 @@
               </label>
               <input type="file" id="newBrandLogo" @change="handleLogoUpload"
                 class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-              <small class="mt-1 block text-xs text-gray-500"
-                >Chọn file ảnh logo (JPG, PNG, GIF, WebP). Sẽ thay thế logo hiện tại.</small
-              >
+              <small class="mt-1 block text-xs text-gray-500">Chọn file ảnh logo (JPG, PNG, GIF, WebP). Sẽ thay thế logo
+                hiện tại.</small>
               <div v-if="errors.logo" class="text-red-500 text-xs mt-1">
                 {{ errors.logo[0] }}
               </div>
@@ -99,20 +98,16 @@
 
             <div class="mb-6">
               <label for="brandDescription" class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-              <Editor
-                v-model="brand.description"
-                :init="{
-                  height: 300,
-                  menubar: true,
-                  base_url: '/tinymce',
-                  suffix: '.min',
-                  external_plugins: null,
-                  plugins:
-                    'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
-                  toolbar:
-                    'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                }"
-              />
+              <Editor v-model="brand.description" :init="{
+                height: 1000,
+                menubar: true,
+                base_url: '/tinymce',
+                suffix: '.min',
+                external_plugins: null,
+                plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+                toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                content_style: 'body { max-width: 1200px; margin: 0 auto; padding: 0 25px; transform: scale(0.9); transform-origin: top left;}'
+              }" />
               <div v-if="errors.description" class="text-red-500 text-xs mt-1">
                 {{ errors.description[0] }}
               </div>
@@ -121,9 +116,12 @@
             <button type="submit" :disabled="loadingUpdate"
               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
               <span v-if="loadingUpdate" class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true">
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
                 </svg>
               </span>
               <span v-else><i class="fas fa-save mr-2"></i> Cập nhật</span>
@@ -346,10 +344,12 @@ onMounted(() => {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
+
 .animate-spin {
   animation: spin 1s linear infinite;
 }
@@ -357,9 +357,12 @@ onMounted(() => {
 /* Base container and page layout,
    though most of this is now handled by Tailwind classes in the template */
 .container {
-  max-width: 900px; /* Equivalent to max-w-3xl or custom width in Tailwind */
-  margin-left: auto; /* mx-auto in Tailwind */
-  margin-right: auto; /* mx-auto in Tailwind */
+  max-width: 900px;
+  /* Equivalent to max-w-3xl or custom width in Tailwind */
+  margin-left: auto;
+  /* mx-auto in Tailwind */
+  margin-right: auto;
+  /* mx-auto in Tailwind */
 }
 
 /* No other scoped styles needed as Tailwind handles most of the styling */
