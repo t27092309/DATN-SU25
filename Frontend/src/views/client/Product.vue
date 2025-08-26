@@ -373,7 +373,7 @@ import ProductCarousel from "@/components/ProductCarousel.vue";
 import RelatedProduct from "@/components/RelatedProduct.vue";
 
 const product = ref(null);
-const relatedProducts = ref([]); // THÊM BIẾN MỚI
+const relatedProducts = ref([]);
 const route = useRoute();
 const router = useRouter();
 
@@ -400,10 +400,8 @@ const selectedVariantSold = computed(() =>
   foundVariant.value ? foundVariant.value.sold : "N/A"
 );
 
-// Thay đổi đoạn code cũ
 const selectedVariantStatus = computed(() => {
   if (!foundVariant.value) {
-    // Trả về trạng thái mới khi chưa có biến thể nào được chọn
     return "pending_selection";
   }
   return foundVariant.value.status;
@@ -414,13 +412,11 @@ const selectedVariantSku = computed(() =>
 
 const computedProductImages = computed(() => {
   if (!product.value) return [];
-
   const images = [];
   const mainImageUrl = product.value.image;
   const galleryImages = Array.isArray(product.value.images)
     ? product.value.images
     : [];
-
   if (
     mainImageUrl &&
     typeof mainImageUrl === "string" &&
@@ -428,7 +424,6 @@ const computedProductImages = computed(() => {
   ) {
     images.push(mainImageUrl);
   }
-
   galleryImages.forEach((imgUrl) => {
     if (
       imgUrl &&
@@ -440,7 +435,6 @@ const computedProductImages = computed(() => {
       images.push(imgUrl);
     }
   });
-
   return images;
 });
 
@@ -452,9 +446,7 @@ const groupedAttributes = computed(() => {
   ) {
     return [];
   }
-
   const attributeMap = new Map();
-
   product.value.variants.forEach((variant) => {
     if (variant.attributes) {
       variant.attributes.forEach((attr) => {
@@ -475,7 +467,6 @@ const groupedAttributes = computed(() => {
       });
     }
   });
-
   return Array.from(attributeMap.values()).map((attrGroup) => ({
     ...attrGroup,
     values: Array.from(attrGroup.values.values()),
@@ -516,24 +507,20 @@ const isAttributeValueAvailable = (
   ) {
     return false;
   }
-
   const currentSelectionsWithoutThisAttribute = Object.entries(
     selectedAttributes.value
   )
     .filter(([slug]) => slug !== currentAttributeSlug)
     .map(([, value]) => value);
-
   return product.value.variants.some((variant) => {
     const hasCurrentValue = variant.attributes.some(
       (attr) =>
         attr.attribute_slug === currentAttributeSlug &&
         attr.value_id === currentAttributeValue.value_id
     );
-
     if (!hasCurrentValue) {
       return false;
     }
-
     const matchesOtherSelections = currentSelectionsWithoutThisAttribute.every(
       (selectedVal) => {
         const selectedValSlug = Object.keys(selectedAttributes.value).find(
@@ -546,14 +533,12 @@ const isAttributeValueAvailable = (
         );
       }
     );
-
     return hasCurrentValue && matchesOtherSelections;
   });
 };
 
 const findMatchingVariant = () => {
   foundVariant.value = null;
-
   if (
     !product.value ||
     !product.value.variants ||
@@ -561,9 +546,7 @@ const findMatchingVariant = () => {
   ) {
     return;
   }
-
   const currentSelectedAttrSlugs = Object.keys(selectedAttributes.value);
-
   if (groupedAttributes.value.length === 0) {
     const defaultVariant = product.value.variants.find(
       (v) => !v.attributes || v.attributes.length === 0
@@ -573,16 +556,13 @@ const findMatchingVariant = () => {
     }
     return;
   }
-
   if (currentSelectedAttrSlugs.length !== groupedAttributes.value.length) {
     return;
   }
-
   const matchingVariant = product.value.variants.find((variant) => {
     if (!variant.attributes || variant.attributes.length === 0) {
       return false;
     }
-
     return currentSelectedAttrSlugs.every((attrSlug) => {
       const selectedVal = selectedAttributes.value[attrSlug];
       return variant.attributes.some(
@@ -592,7 +572,6 @@ const findMatchingVariant = () => {
       );
     });
   });
-
   foundVariant.value = matchingVariant;
 };
 
@@ -636,7 +615,6 @@ const isDarkColor = (hexColor) => {
   return luminance < 0.5;
 };
 
-// Hàm mới để định dạng thời gian lưu hương
 const formatLongevity = (longevity) => {
   if (longevity === null || longevity === undefined) return "N/A";
   const hours = parseFloat(longevity);
@@ -647,24 +625,18 @@ const formatLongevity = (longevity) => {
   return `hơn 24 giờ`;
 };
 
-// Hàm mới để tính phần trăm lưu hương (giả định max là 12h hoặc 24h để làm mốc)
 const calculateLongevityPercent = (longevity) => {
   if (longevity === null || longevity === undefined) return 0;
   const hours = parseFloat(longevity);
   if (isNaN(hours) || hours <= 0) return 0;
-  // Giả định mức tối đa là 12 giờ cho thanh phần trăm.
-  // Bạn có thể điều chỉnh 12 (hoặc 24) tùy theo thang điểm mong muốn.
   const maxHoursForDisplay = 12;
   return Math.min(100, (hours / maxHoursForDisplay) * 100);
 };
 
-// Hàm mới để tính phần trăm toả hương (giả định max là 2-3m để làm mốc)
 const calculateSillagePercent = (sillage) => {
   if (sillage === null || sillage === undefined) return 0;
-  const sillageValue = parseFloat(sillage.replace("m", "")); // Loại bỏ 'm' và chuyển sang số
+  const sillageValue = parseFloat(sillage.replace("m", ""));
   if (isNaN(sillageValue) || sillageValue <= 0) return 0;
-  // Giả định mức tối đa là 3 mét cho thanh phần trăm.
-  // Bạn có thể điều chỉnh 3 tùy theo thang điểm mong muốn.
   const maxSillageForDisplay = 3;
   return Math.min(100, (sillageValue / maxSillageForDisplay) * 100);
 };
@@ -672,20 +644,17 @@ const calculateSillagePercent = (sillage) => {
 const addToCart = async () => {
   cartMessage.value = "";
   cartError.value = false;
-
   if (!foundVariant.value) {
     cartMessage.value =
       "Vui lòng chọn đầy đủ các thuộc tính để thêm sản phẩm vào giỏ hàng.";
     cartError.value = true;
     return;
   }
-
   if (quantity.value < 1) {
     cartMessage.value = "Số lượng phải lớn hơn hoặc bằng 1.";
     cartError.value = true;
     return;
   }
-
   if (
     selectedVariantStatus.value === "unavailable" ||
     selectedVariantStock.value === 0
@@ -694,19 +663,16 @@ const addToCart = async () => {
     cartError.value = true;
     return;
   }
-
   if (quantity.value > selectedVariantStock.value) {
     cartMessage.value = `Số lượng yêu cầu (${quantity.value}) vượt quá tồn kho hiện có (${selectedVariantStock.value}).`;
     cartError.value = true;
     return;
   }
-
   try {
     const response = await axios.post("cart-items", {
       product_variant_id: foundVariant.value.id,
       quantity: quantity.value,
     });
-
     if (response.status === 200 || response.status === 201) {
       cartMessage.value =
         response.data.message ||
@@ -749,19 +715,16 @@ const addToCart = async () => {
 const handleBuyNowClick = () => {
   cartMessage.value = "";
   cartError.value = false;
-
   if (!foundVariant.value) {
     cartMessage.value = "Vui lòng chọn đầy đủ các thuộc tính để mua sản phẩm.";
     cartError.value = true;
     return;
   }
-
   if (quantity.value < 1) {
     cartMessage.value = "Số lượng phải lớn hơn hoặc bằng 1.";
     cartError.value = true;
     return;
   }
-
   if (
     selectedVariantStatus.value === "unavailable" ||
     selectedVariantStock.value === 0
@@ -771,13 +734,11 @@ const handleBuyNowClick = () => {
     cartError.value = true;
     return;
   }
-
   if (quantity.value > selectedVariantStock.value) {
     cartMessage.value = `Số lượng yêu cầu (${quantity.value}) vượt quá tồn kho hiện có (${selectedVariantStock.value}).`;
     cartError.value = true;
     return;
   }
-
   router.push({
     path: "/thanh-toan",
     query: {
@@ -788,13 +749,17 @@ const handleBuyNowClick = () => {
   });
 };
 
-onMounted(async () => {
-  const productSlug = route.params.slug;
+const fetchProductData = async (productSlug) => {
   if (!productSlug) {
     console.error("Không tìm thấy slug sản phẩm trong URL.");
     return;
   }
-
+  // Reset product data and other states to show loading/empty state
+  product.value = null;
+  selectedAttributes.value = {};
+  foundVariant.value = null;
+  cartMessage.value = "";
+  cartError.value = false;
   try {
     const response = await fetch(
       `http://localhost:8000/api/detailproducts/${productSlug}`
@@ -803,17 +768,9 @@ onMounted(async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-
-    // Gán dữ liệu sản phẩm chính
-    product.value = data.product; // SỬA TỪ 'data.data' THÀNH 'data.product'
-
-    // Gán dữ liệu sản phẩm liên quan từ API
+    product.value = data.product;
     relatedProducts.value = data.related || [];
-    // Lấy thông tin đánh giá
-    const reviewsResponse = await axios.get(
-      `http://localhost:8000/api/products/${productSlug}/reviews`
-    );
-    reviews.value = reviewsResponse.data.reviews; // Gán dữ liệu đánh giá
+    reviews.value = data.reviews || [];
 
     if (
       product.value &&
@@ -831,7 +788,6 @@ onMounted(async () => {
         });
       }
       selectedAttributes.value = initialSelectedAttributes;
-      findMatchingVariant();
     } else if (
       product.value &&
       (!product.value.variants || product.value.variants.length === 0)
@@ -851,5 +807,19 @@ onMounted(async () => {
       "Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.";
     cartError.value = true;
   }
+};
+
+onMounted(() => {
+  fetchProductData(route.params.slug);
 });
+
+// Thêm watcher để theo dõi sự thay đổi của slug trong URL
+watch(
+  () => route.params.slug,
+  (newSlug, oldSlug) => {
+    if (newSlug && newSlug !== oldSlug) {
+      fetchProductData(newSlug);
+    }
+  }
+);
 </script>
