@@ -211,6 +211,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            Route::put('scent-groups/{id}/toggle', [AdminScentGroupController::class, 'toggle']);
+
             // Nhóm banner
             Route::apiResource('banners', BannerController::class);
         });
