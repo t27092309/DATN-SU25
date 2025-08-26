@@ -142,5 +142,10 @@ app.use(Toast, options);
 const authStore = useAuthStore();
 authStore.initializeAuth();
 
+// --- Khởi tạo permissions store ---
+import { usePermissionsStore } from '@/stores/permissions';
+const permissionsStore = usePermissionsStore();
+permissionsStore.initializePermissions();
+
 // --- Mount ứng dụng Vue ---
 app.mount('#app');

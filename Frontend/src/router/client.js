@@ -22,11 +22,13 @@ import ProductDetail from "@/views/client/Product.vue";
 import OrderDetail from "@/views/client/order/OrderDetail.vue";
 import OrderHistory from "@/views/client/OrderHistory.vue";
 import OrderDetails from "@/views/client/OrderDetails.vue";
+import AboutUs from "@/views/client/AboutUs.vue";
+import Contact from "@/views/client/Contact.vue";
+import Knowledge from "@/views/client/Knowledge.vue";
+import KnowledgeDetail from "@/views/client/KnowledgeDetail.vue";
 
-const ChangePassword = () =>
-  import("@/views/client/user/ChangePassword.vue");
-const PersonalInfo = () =>
-  import("@/views/client/user/PersonalInfo.vue");
+const ChangePassword = () => import("@/views/client/user/ChangePassword.vue");
+const PersonalInfo = () => import("@/views/client/user/PersonalInfo.vue");
 
 const routes = [
   {
@@ -37,6 +39,26 @@ const routes = [
         path: "",
         name: "Home",
         component: Home,
+      },
+      {
+        path: "/gioi-thieu",
+        name: "AboutUs",
+        component: AboutUs,
+      },
+      {
+        path: "/contact",
+        name: "Contact",
+        component: Contact,
+      },
+      {
+        path: "/knowledge",
+        name: "Knowledge",
+        component: Knowledge,
+      },
+      {
+        path: "/knowledge/:id",
+        name: "KnowledgeDetail",
+        component: KnowledgeDetail,
       },
       {
         path: "nuoc-hoa",
@@ -122,9 +144,9 @@ const routes = [
             component: Profile,
           },
           {
-            path: 'ho-so/chinh-sua',
-            name: 'PersonalInfo',
-            component: PersonalInfo
+            path: "ho-so/chinh-sua",
+            name: "PersonalInfo",
+            component: PersonalInfo,
           },
           {
             path: "dia-chi",
@@ -147,7 +169,7 @@ const routes = [
             component: OrderDetail,
             props: true,
           },
-           {
+          {
             path: "doi-mat-khau",
             name: "ChangePassword",
             component: ChangePassword,

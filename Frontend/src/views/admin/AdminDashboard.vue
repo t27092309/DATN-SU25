@@ -3,6 +3,13 @@
     <div class="bg-white p-6 rounded-lg shadow-md mb-6">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard Báo Cáo Doanh Thu</h1>
       <p class="text-gray-600">Tổng quan doanh thu và phân tích chi tiết theo sản phẩm, khách hàng</p>
+      
+      <!-- Ví dụ sử dụng PermissionGuard -->
+      <PermissionGuard permission="reports:view">
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p class="text-blue-800">Bạn có quyền xem báo cáo này</p>
+        </div>
+      </PermissionGuard>
     </div>
 
     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -243,6 +250,7 @@
 import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
+import PermissionGuard from '@/components/common/PermissionGuard.vue';
 
 // Reactive data
 const loading = ref(false);
