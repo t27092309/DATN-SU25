@@ -605,43 +605,45 @@ class ProductController extends Controller
                     $product->variants()->whereNotIn('id', $touchedIds)->update(['active' => 0]);
                 }
             }
+
+
             // Cập nhật hoặc tạo mới các biến thể từ request
 
+            $newSkus = [];
             foreach ($submittedVariantsData as $variantData) {
                 $variantId = $variantData['id'] ?? null;
+                $sku = $variantData['sku'] ?? null;
 
-                // Kiểm tra xem attribute_values có được gửi và không rỗng
-                $hasAttrValuesKey = array_key_exists('attribute_values', $variantData);
-                $attributesToSync = $hasAttrValuesKey && is_array($variantData['attribute_values']) && !empty($variantData['attribute_values'])
-                    ? $variantData['attribute_values']
-                    : null;
-
-                unset($variantData['attribute_values']); // Tránh fill vào cột không tồn tại
-                if (isset($variantData['active'])) {
-                    $variantData['active'] = filter_var($variantData['active'], FILTER_VALIDATE_BOOLEAN);
+                if (!$sku) {
+                    throw ValidationException::withMessages([
+                        'variants' => 'SKU không được để trống.'
+                    ]);
                 }
+
+                // Kiểm tra trùng giữa các biến thể mới
+                if (!$variantId && in_array($sku, $newSkus)) {
+                    throw ValidationException::withMessages([
+                        'variants' => "SKU '$sku' trùng trong request."
+                    ]);
+                }
+
+                // Nếu variant cũ đang update mà đổi SKU, check trùng với các variant cũ khác
                 if ($variantId) {
-                    $variant = $existingVariants->firstWhere('id', $variantId);
-                    if ($variant) {
-                        // Cập nhật thông tin biến thể
-                        $variant->update($variantData);
-
-
-                        // Chỉ đồng bộ attribute_values nếu được gửi và không rỗng
-                        if ($hasAttrValuesKey) {
-                            $variant->attributeValues()->sync($attributesToSync ?? []);
-                        }
-                        // Nếu không gửi attribute_values hoặc mảng rỗng, giữ nguyên giá trị cũ
+                    $existingVariant = $existingVariants->firstWhere('id', $variantId);
+                    if ($existingVariant && $existingVariant->sku !== $sku && $existingVariants->where('sku', $sku)->count()) {
+                        throw ValidationException::withMessages([
+                            'variants' => "SKU '$sku' đã tồn tại trong DB."
+                        ]);
                     }
                 } else {
-                    // Tạo biến thể mới
-                    $newVariant = $product->variants()->create($variantData);
-
-                    // Chỉ đồng bộ attribute_values nếu được gửi và không rỗng
-                    if ($attributesToSync !== null) {
-                        $newVariant->attributeValues()->sync($attributesToSync);
+                    // Kiểm tra trùng với các variant cũ
+                    if ($existingVariants->where('sku', $sku)->count()) {
+                        throw ValidationException::withMessages([
+                            'variants' => "SKU '$sku' đã tồn tại trong DB."
+                        ]);
                     }
-                    // Nếu không gửi, để trống (hoặc không sync)
+
+                    $newSkus[] = $sku;
                 }
             }
 
