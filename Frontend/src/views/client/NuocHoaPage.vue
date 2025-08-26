@@ -1,15 +1,16 @@
-<style scoped>
-@import '@/assets/tailwind.css';
-</style>
 <template>
   <div class="container mx-auto p-4 max-w-[1200px]">
     <p class="font-bold text-3xl text-black">Nước hoa</p>
-    <nav class="text-sm breadcrumbs mb-6 ">
-      <ul class="flex items-center space-x-2">
-        <li><router-link to="/" class="ml-2"><span class="text-base text-gray-500">Trang chủ</span></router-link>
+    <nav class="text-sm text-gray-500 mb-6">
+      <ul class="flex items-center space-x-1">
+        <li class="flex items-center">
+          <router-link to="/" class="text-base hover:text-gray-700 transition-colors duration-200">Trang
+            chủ</router-link>
         </li>
-        <span class="text-gray-500 text-base">/</span>
-        <li class="text-gray-900 font-bold text-base">Nước Hoa</li>
+        <li class="flex items-center">
+          <span class="mx-2 text-gray-400">/</span>
+          <span class="text-gray-900 font-bold text-base">Nước hoa</span>
+        </li>
       </ul>
     </nav>
     <div class=" flex flex-col md:flex-row gap-8 mt-5">
