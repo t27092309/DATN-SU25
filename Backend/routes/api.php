@@ -117,7 +117,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
                 }
                 return response()->json(['permissions' => $user->getAllPermissions()]);
             });
-            
+
             Route::apiResource('roles', \App\Http\Controllers\API\Admin\RoleController::class);
             Route::get('roles/permissions', [\App\Http\Controllers\API\Admin\RoleController::class, 'getAvailablePermissions']);
             Route::post('roles/assign', [\App\Http\Controllers\API\Admin\RoleController::class, 'assignToUser']);
@@ -173,10 +173,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('coupons', AdminCouponController::class);
 
             // brands
-            Route::apiResource('brands', AdminBrandController::class);
             Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
             Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
             Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+            Route::apiResource('brands', AdminBrandController::class);
             Route::post('upload-image', [AdminBrandController::class, 'uploadImage']);
 
             // Soft Delete product

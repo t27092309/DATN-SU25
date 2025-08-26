@@ -70,7 +70,7 @@ class CategoryController extends Controller
         // Kiểm tra xem danh mục có sản phẩm không
         if ($category->products()->count() > 0) {
             return response()->json([
-                'message' => 'Không thể xóa vì danh mục vẫn còn sản phẩm.'
+                'message' => 'Không thể xóa danh mục này vì có sản phẩm đang thuộc về nó.'
             ], 400);
         }
 
@@ -97,7 +97,7 @@ class CategoryController extends Controller
 
         if ($category->products()->count() > 0) {
             return response()->json([
-                'message' => 'Không thể xóa vĩnh viễn vì danh mục vẫn còn sản phẩm.'
+                'message' => 'Không thể xóa danh mục này vì có sản phẩm đang thuộc về nó.'
             ], 400);
         }
 

@@ -162,19 +162,22 @@ class BrandController extends Controller
     public function destroy(string $id)
     {
         try {
-            $brand = Brand::findOrFail($id); // Tìm Brand theo ID
+            $brand = Brand::findOrFail($id);
+            // Kiểm tra xem có sản phẩm nào thuộc thương hiệu này không
+            if ($brand->products()->count() > 0) {
+                // Trả về lỗi nếu có sản phẩm đang sử dụng thương hiệu này
+                return response()->json([
+                    'message' => 'Không thể xóa thương hiệu này vì có sản phẩm đang thuộc về nó. '
+                ], 409); // Mã 409 Conflict là phù hợp cho trường hợp này
+            }
 
-            // LOGGING: Ghi log trước khi xóa
-            Log::info('Attempting to soft delete brand:', ['brand_id' => $id, 'brand_name' => $brand->name]);
+            $brand->delete();
 
-            $brand->delete(); // <-- Đảm bảo bạn gọi PHƯƠNG THỨC delete() này cho soft delete
-
-            // LOGGING: Ghi log sau khi xóa thành công
             Log::info('Brand soft deleted successfully:', ['brand_id' => $id]);
 
             return response()->json(['message' => 'Thương hiệu đã được chuyển vào thùng rác thành công!'], 200);
+
         } catch (\Exception $e) {
-            // LOGGING: Ghi log nếu có lỗi khi xóa
             Log::error('Error soft deleting brand:', ['brand_id' => $id, 'message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Lỗi khi xóa mềm thương hiệu: ' . $e->getMessage()], 500);
         }
@@ -182,7 +185,7 @@ class BrandController extends Controller
 
     public function trashed()
     {
-        dd('trashed method reached!'); // <-- Thêm dòng này để debug
+        // dd('trashed method reached!'); // <-- Thêm dòng này để debug
 
         // Thêm log để kiểm tra trước khi truy vấn
         Log::info('Attempting to fetch trashed brands...');
@@ -193,9 +196,24 @@ class BrandController extends Controller
                 ->get();
 
             Log::info('Fetched trashed brands count:', ['count' => $brands->count()]);
-            Log::info('First trashed brand data (if any):', $brands->first() ? $brands->first()->toArray() : 'None');
 
-            // ... (Logic transform logo nếu có) ...
+            // CÁCH KHẮC PHỤC CHÍNH: Đảm bảo tham số thứ hai luôn là một mảng
+            if ($brands->isNotEmpty()) {
+                Log::info('First trashed brand data:', ['data' => $brands->first()->toArray()]);
+            } else {
+                Log::info('First trashed brand data:', ['data' => 'None']);
+            }
+
+            // Hoặc một cách viết ngắn gọn hơn:
+            // Log::info('First trashed brand data (if any):', ['data' => $brands->first() ? $brands->first()->toArray() : 'None']);
+
+            // Thêm URL cho logo nếu có
+            $brands = $brands->map(function ($brand) {
+                if ($brand->logo) {
+                    $brand->logo_url = asset('storage/' . $brand->logo);
+                }
+                return $brand;
+            });
 
             return response()->json($brands, 200);
         } catch (\Exception $e) {
@@ -216,6 +234,12 @@ class BrandController extends Controller
     public function forceDelete(string $id)
     {
         $brand = Brand::onlyTrashed()->findOrFail($id);
+        if ($brand->products()->count() > 0) {
+            // Trả về lỗi nếu có sản phẩm đang sử dụng thương hiệu này
+            return response()->json([
+                'message' => 'Không thể xóa vĩnh viễn thương hiệu này vì có sản phẩm đang thuộc về nó.'
+            ], 409); // Mã 409 Conflict là phù hợp cho trường hợp này
+        }
 
         // Xóa logo vật lý nếu tồn tại trước khi xóa vĩnh viễn
         if ($brand->logo) {
@@ -243,7 +267,7 @@ class BrandController extends Controller
 
         try {
             $path = $request->file('image')->store('brands/logos', 'public');
-            
+
             return response()->json([
                 'message' => 'Ảnh đã được tải lên thành công.',
                 'path' => $path,
