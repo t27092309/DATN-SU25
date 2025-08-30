@@ -105,8 +105,11 @@
                             hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all duration-300"
                     @click="toggleUserMenu">
                     <div class="relative">
-                        <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
-                            src="" alt="User Avatar" />
+                        <!-- <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
+                            src="" alt="User Avatar" /> -->
+                           <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-xl">
+                                👤
+                            </div>
                         <div
                             class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white">
                         </div>
@@ -280,6 +283,7 @@ const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 </script>
 
 <style scoped>
+
 /* Transition animations */
 .fade-slide-enter-active,
 .fade-slide-leave-active {

@@ -219,7 +219,8 @@ const getStatusText = (status) => {
     case 'delivered': return 'Đã giao hàng';
     case 'cancelled': return 'Đã hủy';
     case 'return_requested': return 'Đang xử lý hoàn trả';
-    case 'refunded': return 'Đã hoàn tiền';
+    case 'refunded': return 'Đã hoàn tiền'; // Giữ nguyên text cho trạng thái đã hoàn tiền
+    case 'rejected': return 'Từ chối'; // Giữ nguyên text cho trạng thái đã hoàn tiền
     default: return 'Không rõ';
   }
 };
