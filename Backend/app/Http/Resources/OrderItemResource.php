@@ -11,6 +11,7 @@ class OrderItemResource extends JsonResource
     {
         return [
             'id'              => $this->id,
+            'product_name'    => $this->product_name,
             'product_variant' => new ProductVariantResource($this->whenLoaded('productVariant')),
             'variant_name'    => $this->variant_name,
             'variant_sku'     => $this->variant_sku,

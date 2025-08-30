@@ -91,6 +91,37 @@
                                             Từ chối
                                         </button>
                                     </template>
+<button v-if="order.return_request?.status === 'approved'" @click="markAsReturned(order)"
+    class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors duration-200">
+    Đã nhận hàng hoàn
+</button>
+
+<button v-if="order.return_request?.status === 'returned'" @click="refundOrder(order)"
+    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
+    Hoàn tiền
+</button>
+</template> -->
+
+                                <template
+                                    v-if="['return_requested', 'return_approved', 'return_received', 'rejected'].includes(order.status)">
+                                    <template v-if="order.return_request?.status === 'requested'">
+                                        <button @click="approveReturn(order)"
+                                            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200">
+                                            Duyệt trả hàng
+                                        </button>
+                                        <button @click="rejectReturn(order)"
+                                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200">
+                                            Từ chối
+                                        </button>
+                                    </template>
+
+                                    <template v-else-if="order.return_request?.status === 'rejected'">
+                                        <span
+                                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md inline-block font-semibold">
+                                            Yêu cầu trả hàng đã bị từ chối
+                                        </span>
+                                    </template>
+
                                     <button v-if="order.return_request?.status === 'approved'"
                                         @click="markAsReturned(order)"
                                         class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors duration-200">
@@ -99,33 +130,6 @@
 
                                     <button v-if="order.return_request?.status === 'returned'"
                                         @click="refundOrder(order)"
-                                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
-                                        Hoàn tiền
-                                    </button>
-                                </template> -->
-
-                                <template v-if="['return_requested', 'return_approved', 'return_received', 'rejected'].includes(order.status)">
-                                    <template v-if="order.return_request?.status === 'requested'">
-                                        <button @click="approveReturn(order)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200">
-                                            Duyệt trả hàng
-                                        </button>
-                                        <button @click="rejectReturn(order)" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors duration-200">
-                                            Từ chối
-                                        </button>
-                                    </template>
-
-                                     <template v-else-if="order.return_request?.status === 'rejected'">
-                                        <span class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md inline-block font-semibold">
-                                        Yêu cầu trả hàng đã bị từ chối
-                                        </span>
-                                    </template>
-
-                                    <button v-if="order.return_request?.status === 'approved'" @click="markAsReturned(order)"
-                                        class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-md transition-colors duration-200">
-                                        Đã nhận hàng hoàn
-                                    </button>
-
-                                    <button v-if="order.return_request?.status === 'returned'" @click="refundOrder(order)"
                                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200">
                                         Hoàn tiền
                                     </button>
@@ -202,9 +206,10 @@
                     <p v-else class="ml-4 mb-4 text-gray-500 italic">Không có địa chỉ giao hàng.</p>
 
                     <h4 class="text-lg font-semibold text-gray-700 mb-2 mt-4">Sản phẩm:</h4>
-                    <ul v-if="selectedOrder.items && selectedOrder.items.length" class="list-disc pl-8 mb-4">
-                        <li v-for="item in selectedOrder.items" :key="item.id" class="mb-1 text-gray-700">
-                            {{ item.variant_name || 'Sản phẩm không xác định' }} ({{ item.quantity }} x {{
+                    <ul v-if="selectedOrder.orderItems && selectedOrder.orderItems.length" class="list-disc pl-8 mb-4">
+                        <li v-for="item in selectedOrder.orderItems" :key="item.id" class="mb-1 text-gray-700">
+                            {{ item.product_name || item.variant_name || 'Sản phẩm không xác định' }} ({{ item.quantity
+                            }} x {{
                                 formatCurrency(item.price_each) }})
                         </li>
                     </ul>
@@ -396,7 +401,7 @@ async function viewOrderDetails(orderId) {
             shipping_fee: parseFloat(orderData.shipping_fee) || 0,
             total_price_formatted: formatCurrency(parseFloat(orderData.total_price) || 0),
             display_created_at: formatOrderCreatedAt(orderData.created_at),
-            orderItems: orderData.orderItems ? orderData.orderItems.map(item => ({
+            orderItems: orderData.items ? orderData.items.map(item => ({
                 ...item,
                 price_each: parseFloat(item.price_each) || 0
             })) : [],
@@ -659,27 +664,27 @@ async function rejectReturn(order) {
 
     if (notes !== undefined) {
         try {
-        //     const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
-        //     Swal.fire('Thành công!', response.data.message, 'success');
-        //     Object.assign(order, response.data.data.order);
+            //     const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
+            //     Swal.fire('Thành công!', response.data.message, 'success');
+            //     Object.assign(order, response.data.data.order);
 
-        //      const updatedOrder = response.data.data.order;
-        //     updatedOrder.return_request = updatedOrder.returnRequest;
+            //      const updatedOrder = response.data.data.order;
+            //     updatedOrder.return_request = updatedOrder.returnRequest;
 
-        //     // Cập nhật reactive order
-        //     // Object.assign(order, updatedOrder);
+            //     // Cập nhật reactive order
+            //     // Object.assign(order, updatedOrder);
 
-        //     delete updatedOrder.returnRequest;
+            //     delete updatedOrder.returnRequest;
 
-        // // Cập nhật reactive order đúng cách
-        // for (const key in updatedOrder) {
-        //     // Gán từng thuộc tính, đảm bảo Vue detect được thay đổi
-        //     order[key] = updatedOrder[key];
-        // }
-            
-        //     order.status_label = statusLabelMap[order.status] || order.status;
-        //     order.originalStatus = order.status;
-        const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
+            // // Cập nhật reactive order đúng cách
+            // for (const key in updatedOrder) {
+            //     // Gán từng thuộc tính, đảm bảo Vue detect được thay đổi
+            //     order[key] = updatedOrder[key];
+            // }
+
+            //     order.status_label = statusLabelMap[order.status] || order.status;
+            //     order.originalStatus = order.status;
+            const response = await axios.post(`http://localhost:8000/api/admin/orders/${order.id}/returns/reject`, { notes });
 
             Swal.fire('Thành công!', response.data.message, 'success');
 
@@ -689,14 +694,14 @@ async function rejectReturn(order) {
             // Đảm bảo thuộc tính 'return_request' tồn tại và có giá trị
             // Sử dụng updatedOrderData.returnRequest từ API để gán cho return_request
             updatedOrderData.return_request = updatedOrderData.returnRequest;
-            
+
             // Xóa thuộc tính 'returnRequest' cũ nếu có để tránh trùng lặp
             delete updatedOrderData.returnRequest;
 
             // Cập nhật tất cả các thuộc tính của đối tượng `order` bằng dữ liệu mới.
             // Vue sẽ nhận biết được sự thay đổi này và tự động cập nhật giao diện.
             Object.assign(order, updatedOrderData);
-            
+
             // Cập nhật lại các thuộc tính bổ sung nếu cần
             order.status_label = statusLabelMap[order.status] || order.status;
             order.originalStatus = order.status;

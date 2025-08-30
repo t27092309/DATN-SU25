@@ -147,7 +147,7 @@ class OrderController extends Controller
             };
             return [
                 'id' => $item->id,
-                'product_name' => $item->productVariant->product->name ?? 'N/A',
+                'product_name' => $item->product_name ?? ($item->productVariant->product->name ?? 'N/A'),
                 'product_image' => $productImage, // Tên biến thể đã được định dạng
                 'slug' => $slug,
                 'variant_name' => $displayVariantName,
