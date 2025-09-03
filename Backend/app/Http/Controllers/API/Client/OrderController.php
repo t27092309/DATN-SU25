@@ -29,8 +29,6 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-
-        // Bắt đầu truy vấn
         $ordersQuery = Order::where('user_id', $user->id);
 
         // --- Bổ sung logic lọc theo trạng thái ---
@@ -50,15 +48,21 @@ class OrderController extends Controller
                 }
                 // Tìm kiếm theo tên sản phẩm trong OrderItems
                 $query->orWhereHas('orderItems.productVariant.product', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%');
+                    // Thêm withTrashed() để tìm kiếm trong cả sản phẩm đã xóa mềm
+                    $q->withTrashed()->where('name', 'like', '%' . $search . '%');
                 });
             });
         }
 
-
         // Eager load các mối quan hệ cần thiết để giảm số lượng truy vấn DB
         $orders = $ordersQuery->with([
-            'orderItems.productVariant.product',
+            'orderItems.productVariant' => function ($query) {
+                $query->withTrashed()->with([
+                    'product' => function ($q) {
+                        $q->withTrashed();
+                    }
+                ]);
+            },
             'orderAddress',
             'payments'
         ])
@@ -94,12 +98,13 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // Tìm đơn hàng theo ID và đảm bảo nó thuộc về người dùng hiện tại
         $order = Order::where('id', $orderId)
             ->where('user_id', $user->id)
             ->with([
-                'orderItems.productVariant.product',
-                'orderItems.productVariant.attributeValues.attribute', // Tải chi tiết thuộc tính
+                'orderItems.productVariant.product' => function ($query) {
+                    $query->withTrashed(); // Thay đổi quan trọng: bao gồm cả các sản phẩm đã xóa mềm
+                },
+                'orderItems.productVariant.attributeValues.attribute',
                 'orderAddress',
                 'primaryPayment',
                 'payments'
@@ -125,35 +130,41 @@ class OrderController extends Controller
     private function formatOrderData(Order $order): array
     {
         $items = $order->orderItems->map(function ($item) {
+            $product = $item->productVariant->product ?? null;
+            // Thêm trường mới để kiểm tra sản phẩm đã bị xóa mềm chưa
+            $isDeleted = $product ? $product->trashed() : true;
+
             // Reconstruct variant name with attributes
             $variantNameParts = [];
+            // Kiểm tra an toàn trước khi truy cập mối quan hệ
             if ($item->productVariant && $item->productVariant->attributeValues) {
                 foreach ($item->productVariant->attributeValues as $attrValue) {
+                    // Kiểm tra an toàn trước khi truy cập thuộc tính
                     if ($attrValue->attribute && $attrValue->value) {
                         $variantNameParts[] = $attrValue->attribute->name . ': ' . $attrValue->value;
                     }
                 }
             }
-            $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : $item->variant_name;
+            $displayVariantName = !empty($variantNameParts) ? implode(' / ', $variantNameParts) : ($item->variant_name ?? 'N/A');
 
             $productImage = 'https://via.placeholder.com/64'; // Default placeholder
-            if ($item->productVariant && $item->productVariant->product && $item->productVariant->product->image) {
-                $productImage = asset('storage/' . $item->productVariant->product->image);
+            // Sử dụng $product thay vì truy cập lồng nhau
+            if ($product && $product->image) {
+                $productImage = asset('storage/' . $product->image);
             }
-            $slug = null;
-            if ($item->productVariant && $item->productVariant->product) {
-                $product = $item->productVariant->product;
-                $slug = $product->slug;
-            };
+            $slug = $product->slug ?? null;
+
             return [
                 'id' => $item->id,
-                'product_name' => $item->product_name ?? ($item->productVariant->product->name ?? 'N/A'),
-                'product_image' => $productImage, // Tên biến thể đã được định dạng
+                // Sửa lại logic này để sử dụng $product
+                'product_name' => $product->name ?? $item->product_name ?? 'N/A',
+                'product_image' => $productImage,
                 'slug' => $slug,
                 'variant_name' => $displayVariantName,
                 'quantity' => $item->quantity,
                 'price_each' => (float) $item->price_each,
                 'subtotal' => (float) $item->price_each * $item->quantity,
+                'is_deleted' => $isDeleted, // **Điểm mấu chốt: Thêm cờ này vào đây**
             ];
         });
 
@@ -162,7 +173,7 @@ class OrderController extends Controller
             $primaryPaymentInfo = [
                 'payment_method' => $order->primaryPayment->payment_method,
                 'amount' => (float) $order->primaryPayment->amount,
-                'payment_status' => $order->primaryPayment->payment_status, // Dùng 'status' thay vì 'payment_status'
+                'payment_status' => $order->primaryPayment->payment_status,
                 'paid_at' => $order->primaryPayment->paid_at ? $order->primaryPayment->paid_at->toDateTimeString() : null,
             ];
         }

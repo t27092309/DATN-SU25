@@ -80,18 +80,19 @@ class ProductController extends Controller
 
     public function showBySlug($slug)
     {
-        $product = Product::with([
+        $product = Product::withTrashed()->with([
             'brand',
             'category',
             'usageProfile',
             'scentProfiles' => function ($q) {
                 $q->whereHas('scentGroup', function ($sq) {
-                    $sq->where('is_active', 1); // Chỉ lấy nhóm hương đang bật
+                    $sq->where('is_active', 1);
                 });
             },
             'scentProfiles.scentGroup',
             'variants.attributeValues.attribute',
             'images',
+            'reviews'
         ])->where('slug', $slug)->firstOrFail();
 
         // Lấy danh sách ID nhóm hương của sản phẩm này
@@ -103,7 +104,7 @@ class ProductController extends Controller
                 ->whereHas('scentGroup', fn($sq) => $sq->where('is_active', 1));
         })
             ->where('id', '!=', $product->id)
-            ->with(['brand', 'images', 'variants', 'category']) // Đã thêm 'category'
+            ->with(['brand', 'images', 'variants', 'category'])
             ->limit(10)
             ->get();
 
