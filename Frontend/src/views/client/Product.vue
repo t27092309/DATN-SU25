@@ -171,7 +171,8 @@
                 :disabled="
                   selectedVariantStatus === 'unavailable' ||
                   selectedVariantStock === 0 ||
-                  !foundVariant
+                  !foundVariant ||
+                  (product && product.is_deleted)
                 "
                 @click="addToCart"
               >
@@ -187,12 +188,13 @@
                       !foundVariant,
                   }, // Thêm !foundVariant vào điều kiện làm mờ
                 ]"
-                @click="handleBuyNowClick"
                 :disabled="
                   selectedVariantStatus === 'unavailable' ||
                   selectedVariantStock === 0 ||
-                  !foundVariant
+                  !foundVariant ||
+                  (product && product.is_deleted)
                 "
+                @click="handleBuyNowClick"
               >
                 Mua ngay
               </button>
@@ -403,6 +405,9 @@ const selectedVariantSold = computed(() =>
 );
 
 const selectedVariantStatus = computed(() => {
+  if (product.value && product.value.is_deleted) {
+    return "unavailable";
+  }
   if (!foundVariant.value) {
     return "pending_selection";
   }
