@@ -83,44 +83,61 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch } from 'vue'
 
 const props = defineProps({
-    usageProfileData: {
-        type: Object,
-        default: () => ({
-            spring_percent: 0,
-            summer_percent: 0,
-            autumn_percent: 0,
-            winter_percent: 0,
-            suitable_day: 0,
-            suitable_night: 0,
-            longevity_hours: 0.0,
-            sillage_range_m: '',
-        }),
-    },
-});
+  usageProfileData: {
+    type: Object,
+    default: () => ({
+      spring_percent: 0,
+      summer_percent: 0,
+      autumn_percent: 0,
+      winter_percent: 0,
+      suitable_day: 0,
+      suitable_night: 0,
+      longevity_hours: 0,
+      sillage_range_m: '',
+    }),
+  },
+})
 
-const emit = defineEmits(['update:usageProfileData']);
+const emit = defineEmits(['update:usageProfileData'])
 
-const localUsageProfile = ref({ ...props.usageProfileData });
+// Local state để hiển thị trong input/slider
+const localUsageProfile = ref({ ...props.usageProfileData })
 
-// This watcher syncs the internal state with the prop from the parent, preventing infinite loops
-watch(() => props.usageProfileData, (newVal) => {
-    // Perform a deep comparison to only update if content truly differs
-    if (JSON.stringify(newVal) !== JSON.stringify(localUsageProfile.value)) {
-        localUsageProfile.value = { ...newVal };
-    }
-}, { deep: true });
+// Đồng bộ khi parent truyền dữ liệu mới (ví dụ khi ấn sửa sản phẩm)
+// watch(
+//   () => props.usageProfileData,
+//   (newVal) => {
+//     if (JSON.stringify(newVal) !== JSON.stringify(localUsageProfile.value)) {
+//       localUsageProfile.value = { ...newVal }
+//     }
+//   },
+//   { deep: true, immediate: true }
+// )
 
+watch(
+  () => props.usageProfileData,
+  (newVal) => {
+    console.log("Child nhận prop mới:", newVal)
+    localUsageProfile.value = { ...newVal }
+  },
+  { immediate: true, deep: true }
+)
+
+
+
+// Emit dữ liệu lên parent khi có thay đổi
 const emitUpdate = () => {
-    emit('update:usageProfileData', localUsageProfile.value);
-};
+  emit('update:usageProfileData', localUsageProfile.value)
+}
 
+// Config mùa (label + màu hiển thị)
 const seasons = ref({
-    spring_percent: { label: 'Xuân', color: '#8BC34A' }, // Light Green
-    summer_percent: { label: 'Hạ', color: '#FFEB3B' }, // Yellow
-    autumn_percent: { label: 'Thu', color: '#FF9800' }, // Orange
-    winter_percent: { label: 'Đông', color: '#2196F3' } // Blue
-});
+  spring_percent: { label: 'Xuân', color: '#8BC34A' }, // Light Green
+  summer_percent: { label: 'Hạ', color: '#FFEB3B' },   // Yellow
+  autumn_percent: { label: 'Thu', color: '#FF9800' },  // Orange
+  winter_percent: { label: 'Đông', color: '#2196F3' }, // Blue
+})
 </script>

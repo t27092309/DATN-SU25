@@ -126,6 +126,8 @@
                     </span>
                   </button>
                 </div>
+
+
               </div>
             </div>
             <div
@@ -471,6 +473,10 @@ const groupedAttributes = computed(() => {
     ...attrGroup,
     values: Array.from(attrGroup.values.values()),
   }));
+});
+//////////////////////////////
+const activeVariants = computed(() => {
+  return product.value.variants.filter(v => v.active === 1);
 });
 
 const selectAttributeValue = (attributeSlug, attributeValue) => {

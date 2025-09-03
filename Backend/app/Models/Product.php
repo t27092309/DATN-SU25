@@ -22,7 +22,8 @@ class Product extends Model
         'category_id',
         'has_variants',
         'brand_id',
-        'views'
+        'views',
+        'stock'
     ];
     public function category()
     {

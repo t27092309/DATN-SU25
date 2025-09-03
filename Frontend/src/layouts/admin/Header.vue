@@ -16,7 +16,7 @@
 
         <div class="flex items-center space-x-3">
 
-            <!-- <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
+            <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
                        border border-gray-200 hover:border-gray-300 transition-all duration-300 
                        focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Tìm kiếm">
                 <svg class="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" fill="none"
@@ -24,15 +24,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-            </button> -->
-<!-- 
+            </button>
+
             <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
                    border border-gray-200 hover:border-gray-300 transition-all duration-300 
                    focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Cài đặt">
                 <div class="transition-all duration-300 group-hover:rotate-90">
                     <i class="fas fa-cog w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors"></i>
                 </div>
-            </button> -->
+            </button>
 
             <div class="relative">
                 <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 

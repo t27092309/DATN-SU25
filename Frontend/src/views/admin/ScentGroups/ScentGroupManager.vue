@@ -183,7 +183,7 @@
                   <i class="fas fa-times mr-2"></i> Hủy
                 </button>
               </div>
-            </form>
+              </form>
           </div>
         </div>
       </div>
@@ -200,7 +200,7 @@ import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
+const toast = useToast(); // Khởi tạo instance của toast
 
 const scentGroup = ref({
   id: null,
@@ -208,6 +208,7 @@ const scentGroup = ref({
   color_code: "#000000",
 });
 const scentGroups = ref([]);
+// Bỏ addMessage, addMessageClass, listMessage, listMessageClass vì dùng toast
 const isEditing = ref(false);
 
 const fetchScentGroups = async () => {
@@ -219,19 +220,16 @@ const fetchScentGroups = async () => {
       ? response.data
       : response.data.data || [];
     await destroyAndReinitializeDataTable();
-    if (scentGroups.value.length === 0) {
-      toast.info("Không có nhóm hương nào.");
-    }
   } catch (error) {
+    // toast.error(error.response?.data?.message || "Có lỗi khi tải danh sách nhóm hương!");
     console.error("Lỗi khi tải danh sách:", error);
     await destroyAndReinitializeDataTable();
-    toast.error("Có lỗi khi tải danh sách nhóm hương!");
   }
 };
 
 const addScentGroup = async () => {
   if (!scentGroup.value.name || !scentGroup.value.color_code) {
-    toast.error("Vui lòng nhập tên nhóm hương và chọn màu!");
+    toast.error("Vui lòng nhập tên nhóm hương và chọn màu!"); // Thay thế addMessage
     return;
   }
   try {
@@ -243,14 +241,14 @@ const addScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    toast.success(response.data.message || "Thêm nhóm hương thành công!");
+    toast.success(response.data.message || "Thêm nhóm hương thành công!"); // Thay thế addMessage
     resetForm();
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
     if (errors) {
-      toast.error(Object.values(errors).flat().join(" "));
+      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
     } else {
       toast.error(
         error.response?.data?.message || "Có lỗi khi thêm nhóm hương!"
@@ -283,14 +281,14 @@ const updateScentGroup = async () => {
       },
       { validateStatus: (status) => status >= 200 && status < 300 }
     );
-    toast.success(response.data.message || "Cập nhật nhóm hương thành công!");
+    toast.success(response.data.message || "Cập nhật nhóm hương thành công!"); // Thay thế addMessage
     resetForm();
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi từ API:", error.response);
     const errors = error.response?.data?.errors;
     if (errors) {
-      toast.error(Object.values(errors).flat().join(" "));
+      toast.error(Object.values(errors).flat().join(" ")); // Thay thế addMessage
     } else {
       toast.error(
         error.response?.data?.message || "Có lỗi khi cập nhật nhóm hương!"
@@ -313,6 +311,7 @@ const toggleScentGroup = async (id) => {
     );
   }
 };
+
 
 const cancelEdit = () => {
   resetForm();
@@ -360,7 +359,6 @@ const confirmSoftDeleteWithSwal = async (id) => {
 
 let dataTableInstance = null;
 const destroyAndReinitializeDataTable = async () => {
-  // Always destroy if an instance exists
   if (dataTableInstance) {
     dataTableInstance.destroy();
     dataTableInstance = null;
@@ -433,6 +431,7 @@ onMounted(async () => {
     await fetchScentGroups();
   } catch (error) {
     console.error("Lỗi khi tải tài nguyên:", error.message, error.stack);
+    // Có thể hiển thị một toast thông báo lỗi tải tài nguyên ở đây
     toast.error("Không thể tải đầy đủ tài nguyên cần thiết. Vui lòng thử lại.");
   }
 });
