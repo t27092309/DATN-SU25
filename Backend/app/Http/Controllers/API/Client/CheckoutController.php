@@ -196,7 +196,7 @@ class CheckoutController extends Controller
                 'product' => [ // Trả về thông tin product đầy đủ hơn cho frontend
                     'id' => $variant->product->id ?? null,
                     'name' => $variant->product->name ?? 'Sản phẩm không rõ',
-                    'image' => $thumbnail_url ?? 'https://via.placeholder.com/64',
+                    'image' => $thumbnailUrl ?? 'https://via.placeholder.com/64',
                 ],
                 'price' => $variant->price,
                 'stock' => $variant->stock,
@@ -354,6 +354,7 @@ class CheckoutController extends Controller
             Log::info('Tổng tiền cuối cùng trước khi tạo Order (finalTotal): ' . $finalTotal);
 
 
+
             $order = Order::create([
                 'user_id' => $user->id,
                 'total_price' => $finalTotal,
@@ -390,6 +391,7 @@ class CheckoutController extends Controller
 
                 OrderItem::create([
                     'order_id' => $order->id,
+                    'product_name' => $variant->product->name,
                     'product_variant_id' => $variant->id,
                     'quantity' => $item->quantity,
                     'price_each' => $variant->price,
@@ -401,15 +403,6 @@ class CheckoutController extends Controller
 
                 $variant->decrement('stock', $item->quantity);
                 $variant->increment('sold', $item->quantity);
-
-                //lưu vào inventory_logs
-                //                 InventoryLog::create([
-                //                     'product_variant_id' => $variant->id,
-                //                     'user_id' => $user->id,
-                //                     'type' => 'import',
-                //                     'quantity_change' => $item->quantity,
-                //                     'note' => 'Hoàn tồn khi hủy đơn - Order #' . $order->id,
-                //                 ]);
 
                 // LOG 13: Cập nhật tồn kho cho mỗi item
 
@@ -583,6 +576,7 @@ class CheckoutController extends Controller
 
             OrderItem::create([
                 'order_id' => $order->id,
+                'product_name' => $variant->product->name,
                 'product_variant_id' => $variant->id,
                 'quantity' => $validated['quantity'],
                 'price_each' => $variant->price,
@@ -596,17 +590,6 @@ class CheckoutController extends Controller
 
             $variant->decrement('stock', $validated['quantity']);
             $variant->increment('sold', $validated['quantity']);
-
-            //lưu vào inventory_logs
-            // InventoryLog::create([
-            //     'product_variant_id' => $variant->id,
-            //     'user_id' => $user->id,
-            //     'warehouse_id' => null, // nếu chưa dùng đa kho
-            //     'type' => 'export', // xuất kho vì người dùng mua hàng
-            //     'quantity_change' => -$validated['quantity'],
-            //     'note' => 'Mua ngay - Đơn hàng ID #' . $order->id,
-            // ]);
-
 
             if ($coupon) {
                 $coupon->increment('used_count');
@@ -923,9 +906,11 @@ class CheckoutController extends Controller
         ) {
             // Validate required fields for new address if they are provided
             // (already handled by the main validation, but good to be explicit)
-            if (!($validatedData['recipient_name'] && $validatedData['phone_number'] &&
-                $validatedData['address_line'] && $validatedData['ward'] &&
-                $validatedData['district'] && $validatedData['province'])) {
+            if (
+                !($validatedData['recipient_name'] && $validatedData['phone_number'] &&
+                    $validatedData['address_line'] && $validatedData['ward'] &&
+                    $validatedData['district'] && $validatedData['province'])
+            ) {
                 return response()->json(['message' => 'Vui lòng điền đầy đủ thông tin địa chỉ mới.'], Response::HTTP_BAD_REQUEST);
             }
             return [

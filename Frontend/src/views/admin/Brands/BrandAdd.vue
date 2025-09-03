@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class=" mx-auto px-4 py-8 max-w-full">
     <div class="page-inner">
       <div class="mb-6 flex justify-between items-center">
         <h3 class="text-3xl font-bold mb-3">
@@ -75,15 +75,14 @@
             <div class="mb-6">
               <label for="brandDescription" class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
               <Editor v-model="brand.description" :init="{
-                height: 300,
+                height: 1000,
                 menubar: true,
-                base_url: '/tinymce', // Đường dẫn gốc đến thư mục tinymce
-                suffix: '.min', // Sử dụng file nén
-                external_plugins: null, // Vô hiệu hóa plugin từ CDN
-                plugins:
-                  'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
-                toolbar:
-                  'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                base_url: '/tinymce',
+                suffix: '.min',
+                external_plugins: null,
+                plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+                toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                content_style: 'body { max-width: 1200px; margin: 0 auto; transform: scale(0.9); transform-origin: top left;}'
               }" />
               <div v-if="errors.description" class="text-red-500 text-xs mt-1">
                 {{ errors.description[0] }}

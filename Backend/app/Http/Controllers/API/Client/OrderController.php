@@ -147,7 +147,7 @@ class OrderController extends Controller
             };
             return [
                 'id' => $item->id,
-                'product_name' => $item->productVariant->product->name ?? 'N/A',
+                'product_name' => $item->product_name ?? ($item->productVariant->product->name ?? 'N/A'),
                 'product_image' => $productImage, // Tên biến thể đã được định dạng
                 'slug' => $slug,
                 'variant_name' => $displayVariantName,
@@ -346,7 +346,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Đơn hàng đã được hủy thành công.'], Response::HTTP_OK);
         } catch (\Exception $e) {
             DB::rollBack(); // Hoàn tác Transaction nếu có lỗi
-            \Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
+            Log::error('Lỗi khi hủy đơn hàng: ' . $e->getMessage(), ['order_id' => $order->id, 'user_id' => $user->id]);
             return response()->json(['message' => 'Không thể hủy đơn hàng. Vui lòng thử lại.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

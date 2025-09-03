@@ -34,8 +34,9 @@ use App\Http\Controllers\API\Client\UserController;
 use App\Http\Controllers\API\BannerController as ClientBannerController;
 
 // Payment API (public, no auth required)
-Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 Route::get('/payment/vnpay-callback', [PaymentController::class, 'handleVnpayCallback']);
+// route thanh toán cho Client
+Route::post('/payment/vnpay/create', [PaymentController::class, 'createVnpayPayment']);
 Route::post('/payment/momo-callback', [PaymentController::class, 'handleMomoCallback']);
 Route::post('/payment/momo/ipn', [PaymentController::class, 'handleMomoIpn']);
 Route::middleware([CorsMiddleware::class])->group(function () {
@@ -58,6 +59,7 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         Route::get('product-variants/{id}', [ProductVariantController::class, 'show']);
 
 
+        Route::post('/payment/create', [PaymentController::class, 'createPayment']);
 
         // Route đăng xuất
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -98,13 +100,34 @@ Route::middleware([CorsMiddleware::class])->group(function () {
         //Tra cứu đơn hàng bằng số điện thoại
         Route::post('/orders/lookup', [OrderLookupController::class, 'lookupByPhone']);
 
-        // Thay đổi thông tin cá nhân
-        Route::get('/user/profile', [UserController::class, 'getProfile']);
-        Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
-        Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
-        Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
-        // Route admin (yêu cầu quyền admin:full-access)
-        Route::middleware('ability:admin:full-access')->prefix('admin')->group(function () {
+        // Thay đổi thông tin cá nhân (chỉ user thường)
+        Route::middleware('user.role')->group(function () {
+            Route::get('/user/profile', [UserController::class, 'getProfile']);
+            Route::post('/user/update-profile', [UserController::class, 'updateProfile']);
+            Route::post('/user/change-password', [UserController::class, 'requestChangePassword']);
+            Route::get('/user/confirm-change-password/{token}', [UserController::class, 'confirmChangePassword']);
+        });
+        // Route admin (yêu cầu quyền admin:full-access và role admin/staff)
+        Route::middleware(['ability:admin:full-access', 'admin.role'])->prefix('admin')->group(function () {
+            // Quản lý roles và permissions
+            Route::get('/user/permissions', function () {
+                $user = \Illuminate\Support\Facades\Auth::user();
+                if (!$user) {
+                    return response()->json(['permissions' => []]);
+                }
+                return response()->json(['permissions' => $user->getAllPermissions()]);
+            });
+
+            Route::apiResource('roles', \App\Http\Controllers\API\Admin\RoleController::class);
+            Route::get('roles/permissions', [\App\Http\Controllers\API\Admin\RoleController::class, 'getAvailablePermissions']);
+            Route::post('roles/assign', [\App\Http\Controllers\API\Admin\RoleController::class, 'assignToUser']);
+            Route::post('roles/remove', [\App\Http\Controllers\API\Admin\RoleController::class, 'removeFromUser']);
+
+            // Quản lý users
+            Route::apiResource('users', \App\Http\Controllers\API\Admin\UserController::class);
+            Route::patch('users/{user}/role', [\App\Http\Controllers\API\Admin\UserController::class, 'updateRole']);
+            Route::get('users/by-role', [\App\Http\Controllers\API\Admin\UserController::class, 'getUsersByRole']);
+            Route::get('users/stats', [\App\Http\Controllers\API\Admin\UserController::class, 'getUsersStats']);
             //route quản lí đơn hàng bên admin
             Route::prefix('orders')->controller(OrderController::class)->group(function () {
                 Route::get('/', 'index');
@@ -150,10 +173,10 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::apiResource('coupons', AdminCouponController::class);
 
             // brands
-            Route::apiResource('brands', AdminBrandController::class);
             Route::get('brands/trashed', [AdminBrandController::class, 'trashed']);
             Route::post('brands/{id}/restore', [AdminBrandController::class, 'restore']);
             Route::delete('brands/{id}/force', [AdminBrandController::class, 'forceDelete']);
+            Route::apiResource('brands', AdminBrandController::class);
             Route::post('upload-image', [AdminBrandController::class, 'uploadImage']);
 
             // Soft Delete product
@@ -188,6 +211,8 @@ Route::middleware([CorsMiddleware::class])->group(function () {
             Route::put('scent-groups/{id}/restore', [AdminScentGroupController::class, 'restore']);
             Route::delete('scent-groups/{id}/force', [AdminScentGroupController::class, 'forceDelete']);
             Route::apiResource('scent-groups', AdminScentGroupController::class);
+            Route::put('scent-groups/{id}/toggle', [AdminScentGroupController::class, 'toggle']);
+
             // Nhóm banner
             Route::apiResource('banners', BannerController::class);
         });
@@ -195,7 +220,9 @@ Route::middleware([CorsMiddleware::class])->group(function () {
 
 
     Route::get('banners', [ClientBannerController::class, 'index']);
-    Route::get('client/brands', [ClientBrandController::class, 'index']);
+    Route::get('brands', [ClientBrandController::class, 'index']);
+    Route::get('brands/{slug}/products', [ClientBrandController::class, 'getProductsByBrandSlug']);
+    Route::get('brands/{slug}', [ClientBrandController::class, 'showBySlug']);
 
     //Route xác thực
     Route::post('/register', [AuthController::class, 'register']);

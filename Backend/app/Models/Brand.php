@@ -10,4 +10,10 @@ class Brand extends Model
 {
     use HasFactory, SoftDeletes;
     protected $fillable = ['name', 'slug', 'logo', 'description'];
+
+    public function products()
+{
+    return $this->hasMany(Product::class);
+}
+
 }

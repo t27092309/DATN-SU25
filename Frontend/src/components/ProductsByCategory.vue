@@ -36,7 +36,7 @@
                         {{ new Intl.NumberFormat('vi-VN').format(product.old_price) }} ₫
                     </p>
                     <p class="text-md font-bold text-red-600">
-                        {{ new Intl.NumberFormat('vi-VN').format(product.price) }} ₫
+                        {{ new Intl.NumberFormat('vi-VN').format(product.price) }} VNĐ
                     </p>
                 </router-link>
             </div>

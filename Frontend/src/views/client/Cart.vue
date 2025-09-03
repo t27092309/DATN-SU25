@@ -34,9 +34,7 @@
                             </div>
                             <div class="flex-1">
                                 <p class="text-gray-800 font-medium text-base">{{ item.product_name }}</p>
-
-                                <div v-if="item.available_variants && item.available_variants.length > 0"
-                                    class="flex items-center text-gray-500 text-sm mt-1">
+                                <div v-if="item.has_variants" class="flex items-center text-gray-500 text-sm mt-1">
                                     <span>Phân Loại Hàng:</span>
                                     <div class="relative flex-grow min-w-0">
                                         <select
@@ -64,7 +62,6 @@
                                     </div>
                                 </div>
                                 <div v-else class="text-gray-500 text-sm mt-1">
-                                    <span>Không có phân loại</span>
                                 </div>
                             </div>
                         </div>

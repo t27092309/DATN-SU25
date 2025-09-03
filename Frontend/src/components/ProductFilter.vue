@@ -16,7 +16,7 @@
                 </svg>
             </button>
 
-            <div v-if="isDropdownOpen"
+            <!-- <div v-if="isDropdownOpen"
                 class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
                 role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-1" role="none">
@@ -30,10 +30,10 @@
                         {{ aroma }}
                     </a>
                 </div>
-            </div>
+            </div> -->
         </div>
 
-        <button
+        <!-- <button
             v-if="selectedAromas.length > 0"
             @click="clearAromaSelection"
             class=" py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200"
@@ -43,7 +43,7 @@
             }"
         >
             Hủy chọn nhóm hương ({{ selectedAromas.length }})
-        </button>
+        </button> -->
 
         <div class="flex flex-wrap gap-2 sm:space-x-2 w-full sm:w-auto items-center">
             <button v-for="priceRange in priceRanges" :key="priceRange.value"
@@ -136,8 +136,3 @@ export default {
     }
 };
 </script>
-
-<style scoped>
-@import '@/assets/tailwind.css';
-/* Không cần thay đổi phần style */
-</style>
