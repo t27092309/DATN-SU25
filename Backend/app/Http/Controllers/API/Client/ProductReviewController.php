@@ -11,7 +11,7 @@ class ProductReviewController extends Controller
     public function index($slug)
     {
         // 1. Tìm sản phẩm dựa trên slug, nếu không tìm thấy thì báo lỗi
-        $product = Product::where('slug', $slug)->first();
+        $product = Product::withTrashed()->where('slug', $slug)->first();
 
         if (!$product) {
             return response()->json(['message' => 'Sản phẩm không tồn tại.'], 404);

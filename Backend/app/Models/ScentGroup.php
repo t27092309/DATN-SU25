@@ -12,7 +12,8 @@ class ScentGroup extends Model
 
     protected $fillable = [
         'name',
-        'color_code'
+        'color_code',
+        'is_active',
     ];
 
     protected $dates = ['deleted_at'];
@@ -25,8 +26,16 @@ class ScentGroup extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class, 'product_scent_profiles')
-                    ->withPivot('strength')
-                    ->withTimestamps();
+            ->where('scent_groups.is_active', 1) // chỉ lấy active
+            ->withPivot('strength')
+            ->withTimestamps();
     }
-}
+    public function scentProfiles()
+    {
+        return $this->hasMany(ProductScentProfile::class)
+            ->whereHas('scentGroup', function ($q) {
+                $q->where('is_active', 1); // chỉ lấy nhóm hương đang bật
+            });
+    }
 
+}

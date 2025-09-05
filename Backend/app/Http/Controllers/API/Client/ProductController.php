@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductDetailResource;
+use App\Http\Resources\ProductRelatedResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
@@ -79,18 +80,40 @@ class ProductController extends Controller
 
     public function showBySlug($slug)
     {
-        //http://localhost:8000/api/detailproducts/đường dẫn slug
-        $product = Product::with([
+        $product = Product::withTrashed()->with([
             'brand',
             'category',
             'usageProfile',
+            'scentProfiles' => function ($q) {
+                $q->whereHas('scentGroup', function ($sq) {
+                    $sq->where('is_active', 1);
+                });
+            },
             'scentProfiles.scentGroup',
             'variants.attributeValues.attribute',
             'images',
+            'reviews'
         ])->where('slug', $slug)->firstOrFail();
 
-        return new ProductDetailResource($product);
+        // Lấy danh sách ID nhóm hương của sản phẩm này
+        $scentGroupIds = $product->scentProfiles->pluck('scent_group_id')->toArray();
+
+        // Lấy sản phẩm liên quan có chung nhóm hương
+        $relatedProducts = Product::whereHas('scentProfiles', function ($q) use ($scentGroupIds) {
+            $q->whereIn('scent_group_id', $scentGroupIds)
+                ->whereHas('scentGroup', fn($sq) => $sq->where('is_active', 1));
+        })
+            ->where('id', '!=', $product->id)
+            ->with(['brand', 'images', 'variants', 'category'])
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'product' => new ProductDetailResource($product),
+            'related' => ProductRelatedResource::collection($relatedProducts),
+        ]);
     }
+
 
     public function search(Request $request)
     {

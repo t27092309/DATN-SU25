@@ -52,7 +52,10 @@ class UserController extends Controller
 
             $user->update($data);
 
-            return response()->json(['message' => 'Cập nhật thông tin thành công']);
+            return response()->json([
+                'message' => 'Cập nhật thông tin thành công',
+                'user' => $user->fresh(),
+            ]);
         } catch (\Exception $e) {
             \Log::error('Lỗi cập nhật profile: ' . $e->getMessage());
             return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật'], 500);

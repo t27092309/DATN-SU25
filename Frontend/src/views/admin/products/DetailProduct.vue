@@ -74,11 +74,23 @@
                                     <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed" id="slug" placeholder="Slug sản phẩm"
                                         disabled v-model="product.slug" />
                                 </div>
-                                <div class="mb-4">
+                                <!-- <div class="mb-4">
                                     <label for="brandSelect" class="block text-gray-700 text-sm font-bold mb-2">Thương hiệu</label>
                                     <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed" id="brandSelect" disabled
                                         :value="getBrandName(product.brand_id)" />
+                                </div> -->
+
+                                <div class="mb-4">
+                                <label for="brandSelect" class="block text-gray-700 text-sm font-bold mb-2">Thương hiệu</label>
+                                <input
+                                    type="text"
+                                    id="brandSelect"
+                                    disabled
+                                    :value="product.brand ? product.brand.name : 'Đang tải...'"
+                                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100 cursor-not-allowed"
+                                />
                                 </div>
+
                             </div>
 
                             <div v-if="product.image" class="md:col-span-2 lg:col-span-1">
@@ -233,13 +245,15 @@
                                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
                                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Đã bán</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã vạch</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mô tả</th>
+                                            <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã vạch</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mô tả</th> -->
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thuộc tính</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr v-for="variant in product.variants" :key="variant.id">
+                                        <tr v-for="variant in activeVariants" :key="variant.id">
+
+
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <img v-if="variant.image_url" :src="variant.image_url" alt="Variant Image" class="w-12 h-12 object-cover rounded-sm" />
                                                 <span v-else class="text-gray-500">N/A</span>
@@ -249,8 +263,8 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ variant.stock }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{ variant.sold }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.status }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.barcode || 'N/A' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.description || 'N/A' }}</td>
+                                            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.barcode || 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ variant.description || 'N/A' }}</td> -->
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 <span v-if="variant.attributes && variant.attributes.length > 0">
                                                     <ul class="list-none p-0 m-0">
@@ -330,6 +344,10 @@ const product = ref({
     usage_profile: null, // Directly the usage_profile object
     scent_profiles: [], // Directly the array of scent profile objects
     variants: [],
+});
+
+const activeVariants = computed(() => {
+  return product.value.variants.filter(v => Number(v.active) === 1);
 });
 
 // A computed property to infer if the product has variants

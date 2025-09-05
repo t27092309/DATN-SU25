@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-start sm:items-center">
         <div class="relative inline-block text-left w-full sm:w-auto">
-            <button @click="toggleDropdown"
+            <!-- <button @click="toggleDropdown"
                 class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 id="menu-button" aria-expanded="true" aria-haspopup="true">
                 Nhóm Hương
@@ -14,9 +14,9 @@
                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                         clip-rule="evenodd" />
                 </svg>
-            </button>
+            </button> -->
 
-            <div v-if="isDropdownOpen"
+            <!-- <div v-if="isDropdownOpen"
                 class="origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
                 role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-1" role="none">
@@ -30,10 +30,10 @@
                         {{ aroma }}
                     </a>
                 </div>
-            </div>
+            </div> -->
         </div>
 
-        <button
+        <!-- <button
             v-if="selectedAromas.length > 0"
             @click="clearAromaSelection"
             class=" py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200"
@@ -43,7 +43,7 @@
             }"
         >
             Hủy chọn nhóm hương ({{ selectedAromas.length }})
-        </button>
+        </button> -->
 
         <div class="flex flex-wrap gap-2 sm:space-x-2 w-full sm:w-auto items-center">
             <button v-for="priceRange in priceRanges" :key="priceRange.value"
@@ -136,8 +136,3 @@ export default {
     }
 };
 </script>
-
-<style scoped>
-@import '@/assets/tailwind.css';
-/* Không cần thay đổi phần style */
-</style>

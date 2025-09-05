@@ -11,6 +11,11 @@ class ProductScentProfile extends Model
     
      protected $table = 'product_scent_profiles'; // Ensure this matches your migration table name
 
+     protected $fillable = [
+        'product_id',
+        'scent_group_id',
+        'strength',
+    ];
     // Relationship to ScentGroup
     public function scentGroup()
     {

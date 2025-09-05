@@ -101,6 +101,7 @@ class UserProfileController extends Controller
 
         $validated = $request->validate([
         'name' => 'required|string|max:255',
+        'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
         'phone_number' => 'nullable|string|max:20',
         'gender' => 'nullable|in:male,female,other',
         'birthday' => 'nullable|date',
@@ -109,6 +110,11 @@ class UserProfileController extends Controller
         'name.required' => 'Tên là bắt buộc.',
         'name.string' => 'Tên phải là chuỗi ký tự.',
         'name.max' => 'Tên không được vượt quá 255 ký tự.',
+
+        'email.required' => 'Email là bắt buộc.',
+        'email.email' => 'Email không đúng định dạng.',
+        'email.max' => 'Email không được vượt quá 255 ký tự.',
+        'email.unique' => 'Email đã tồn tại.',
 
         'phone_number.string' => 'Số điện thoại phải là chuỗi ký tự.',
         'phone_number.max' => 'Số điện thoại không được vượt quá 20 ký tự.',
@@ -123,6 +129,7 @@ class UserProfileController extends Controller
     ]);
 
         $user->name = $validated['name'];
+        $user->email = $validated['email']; 
         $user->phone_number = $validated['phone_number'] ?? null;
         $user->gender = $validated['gender'] ?? null;
         $user->birthday = $validated['birthday'] ?? null;

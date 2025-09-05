@@ -16,7 +16,7 @@
 
         <div class="flex items-center space-x-3">
 
-            <!-- <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
+            <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
                        border border-gray-200 hover:border-gray-300 transition-all duration-300 
                        focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Tìm kiếm">
                 <svg class="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors duration-300" fill="none"
@@ -24,17 +24,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-            </button> -->
-<!-- 
+            </button>
+
             <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
                    border border-gray-200 hover:border-gray-300 transition-all duration-300 
                    focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md" title="Cài đặt">
                 <div class="transition-all duration-300 group-hover:rotate-90">
                     <i class="fas fa-cog w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors"></i>
                 </div>
-            </button> -->
+            </button>
 
-            <!-- <div class="relative">
+            <div class="relative">
                 <button class="group relative p-3 rounded-xl bg-gray-100 hover:bg-gray-200 
                            border border-gray-200 hover:border-gray-300 transition-all duration-300 
                            focus:outline-none focus:ring-2 focus:ring-blue-500/50 hover:shadow-md"
@@ -90,22 +90,34 @@
                         </div>
                     </div>
                 </Transition>
-            </div> -->
+            </div>
+            <div class="border-t border-gray-200">
+                <a href="#" @click.prevent="logout" class="group flex items-center px-4 py-3 text-sm text-gray-700 hover:text-red-600 
+                                      hover:bg-red-50 transition-all duration-200">
+                    <i
+                        class="fas fa-sign-out-alt w-4 h-4 mr-3 text-gray-400 group-hover:text-red-600 transition-colors"></i>
+                    Đăng xuất
+                </a>
+            </div>
 
             <div class="relative">
                 <div class="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl 
                             hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all duration-300"
                     @click="toggleUserMenu">
                     <div class="relative">
-                        <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
-                            src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                        <!-- <img class="h-9 w-9 rounded-full object-cover border-2 border-gray-300 group-hover:border-blue-500 transition-colors duration-300"
+                            src="" alt="User Avatar" /> -->
+                           <div class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-xl">
+                                👤
+                            </div>
                         <div
                             class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white">
                         </div>
                     </div>
                     <div class="hidden sm:block">
-                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">John Doe</span>
-                        <p class="text-xs text-gray-500">Administrator</p>
+                        <span class="text-gray-800 font-medium group-hover:text-black transition-colors">{{
+                            authStore.user?.name || 'User' }}</span>
+                        <p class="text-xs text-gray-500">{{ getRoleDisplayName(authStore.user?.role) }}</p>
                     </div>
                     <svg class="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-all duration-300"
                         :class="{ 'rotate-180 text-blue-600': showUserMenu }" fill="none" stroke="currentColor"
@@ -120,11 +132,12 @@
 
                         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                             <div class="flex items-center space-x-3">
-                                <img class="h-10 w-10 rounded-full object-cover border border-gray-200"
-                                    src="https://via.placeholder.com/150/E5E7EB/4B5563?text=JD" alt="User Avatar" />
+                                <img class="h-10 w-10 rounded-full object-cover border border-gray-200" src=""
+                                    alt="User Avatar" />
                                 <div>
-                                    <p class="font-medium text-gray-800">John Doe</p>
-                                    <p class="text-xs text-gray-500">john@florea.com</p>
+                                    <p class="font-medium text-gray-800">{{ authStore.user?.name || 'User' }}</p>
+                                    <p class="text-xs text-gray-500">{{ authStore.user?.email || 'user@example.com' }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -167,14 +180,31 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 // --- State cho User Menu ---
 const showUserMenu = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
 
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value;
     showNotifications.value = false;
+};
+
+const logout = () => {
+    authStore.logout();
+    router.push('/dang-nhap');
+};
+
+const getRoleDisplayName = (role) => {
+    const roleNames = {
+        'admin': 'Administrator',
+        'staff': 'Staff',
+        'user': 'Customer'
+    };
+    return roleNames[role] || 'User';
 };
 
 // --- State cho Notifications ---
@@ -247,16 +277,13 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-const logout = () => {
-    alert('Đăng xuất...');
-    showUserMenu.value = false;
-};
 
 const route = useRoute();
 const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 </script>
 
 <style scoped>
+
 /* Transition animations */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
@@ -287,6 +314,4 @@ const currentRouteTitle = computed(() => route.meta.title || 'Dashboard');
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #2563eb, #7c3aed);
 }
-
-
 </style>

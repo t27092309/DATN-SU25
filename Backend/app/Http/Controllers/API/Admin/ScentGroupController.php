@@ -87,4 +87,19 @@ class ScentGroupController extends Controller
             'message' => 'Xóa vĩnh viễn Scent Group thành công',
         ], 200);
     }
+
+    // PUT // http://localhost:8000/api/admin/scent-groups/{id}/toggle
+    public function toggle(string $id)
+    {
+        $scentGroup = ScentGroup::findOrFail($id);
+        $scentGroup->is_active = !$scentGroup->is_active;
+        $scentGroup->save();
+
+        return response()->json([
+            'message' => $scentGroup->is_active
+                ? 'Đã bật hiển thị nhóm hương'
+                : 'Đã ẩn nhóm hương',
+            'scent_group' => $scentGroup,
+        ], 200);
+    }
 }

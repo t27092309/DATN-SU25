@@ -40,7 +40,7 @@ class Order extends Model
         'notes',
         'coupon_id',
         // 'payment_method', // <-- Đã xóa khỏi fillable
-        'shipping_fee',
+        'shipping_fee', 
     ];
 
     protected $casts = [

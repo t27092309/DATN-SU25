@@ -1,26 +1,33 @@
 <template>
   <div class="container mx-auto p-4 max-w-[1200px]">
+    <p class="font-bold text-3xl text-black">Thương hiệu</p>
+    <nav class="text-sm text-gray-500 mb-6">
+      <ul class="flex items-center space-x-1">
+        <li class="flex items-center">
+          <router-link to="/" class="text-base hover:text-gray-700 transition-colors duration-200">Trang
+            chủ</router-link>
+        </li>
+        <li class="flex items-center">
+          <span class="mx-2 text-gray-400">/</span>
+          <router-link to="nuoc-hoa" class="text-base hover:text-gray-700 transition-colors duration-200">Nước
+            hoa</router-link>
+        </li>
+        <li class="flex items-center">
+          <span class="mx-2 text-gray-400">/</span>
+          <span class="text-gray-900 font-bold text-base">{{ categoryName }}</span>
+        </li>
+      </ul>
+    </nav>
     <div class="flex flex-col md:flex-row gap-8 mt-5">
-      <BrandList 
-        :brands="brands" 
-        :selected-brand="selectedBrand" 
-        :loading-brands="loadingBrands"
-        :brands-error="brandsError"
-        @select-brand="handleSelectBrand" 
-      />
+      <BrandList :brands="brands" :selected-brand="selectedBrand" :loading-brands="loadingBrands"
+        :brands-error="brandsError" @select-brand="handleSelectBrand" />
       <div class="flex-1">
         <div class="mb-8">
-          <ProductFilters 
-            :priceRanges="priceRanges" 
-            :selectedPriceRange="selectedPriceRange"
-            :aromaOptions="aromaOptions" 
-            :selectedAromas="selectedAromas" 
-            @select-price-range="handleSelectPriceRange"
-            @select-aroma="handleSelectAroma" 
-            ref="productFilters" 
-          />
+          <ProductFilters :priceRanges="priceRanges" :selectedPriceRange="selectedPriceRange"
+            :aromaOptions="aromaOptions" :selectedAromas="selectedAromas" @select-price-range="handleSelectPriceRange"
+            @select-aroma="handleSelectAroma" ref="productFilters" />
         </div>
-        <div class="bg-gray-100 p-6 rounded-lg min-h-[300px]">
+        <div class=" p-6 rounded-lg min-h-[300px]">
           <p v-if="selectedBrand" class="mb-2">
             Hãng đã chọn: <strong>{{ selectedBrand }}</strong>
           </p>
@@ -28,26 +35,24 @@
           <div v-if="selectedAromas.length > 0" class="mb-2">
             <p class="font-medium">Nhóm Hương:</p>
             <div class="flex flex-wrap gap-2 mt-1">
-              <span v-for="aroma in selectedAromas" :key="aroma" 
-                    class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+              <span v-for="aroma in selectedAromas" :key="aroma"
+                class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
                 {{ aroma }}
               </span>
             </div>
           </div>
           <div v-if="loading" class="text-center py-4">Đang tải sản phẩm...</div>
           <div v-else-if="error" class="error text-red-600 text-center py-4">{{ error }}</div>
-          <div v-else-if="filteredProducts.length" 
-               class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            <router-link 
-              v-for="product in filteredProducts" 
-              :key="product.slug || product.id"
+          <div v-else-if="filteredProducts.length"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+            <router-link v-for="product in filteredProducts" :key="product.slug || product.id"
               :to="{ name: 'ProductDetail', params: { slug: product.slug || product.id } }"
-              class="block p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-            >
+              class="block p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
               <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
               <h5 class="text-md font-semibold mt-2">{{ product.name }}</h5>
               <p class="text-gray-700">{{ product.brand }}</p>
-              <p class="text-lg font-bold text-red-600">{{ product.price }} VNĐ</p>
+              <p class="text-lg font-bold text-red-600">{{ new Intl.NumberFormat('vi-VN').format(product.price) }} VNĐ
+              </p>
             </router-link>
           </div>
           <p v-else class="text-center py-4">Không có sản phẩm nào phù hợp với bộ lọc.</p>
@@ -75,6 +80,7 @@ const loadingBrands = ref(false); // Trạng thái tải thương hiệu
 const error = ref(null); // Lỗi khi tải sản phẩm
 const brandsError = ref(null); // Lỗi khi tải thương hiệu
 const router = useRouter();
+const categoryName = ref('Danh mục')
 
 const priceRanges = ref([
   { label: 'Dưới 2 Triệu', value: 'under_2' },
@@ -95,7 +101,7 @@ const fetchBrands = async () => {
   brandsError.value = null;
 
   try {
-    const response = await axios.get('http://localhost:8000/api/client/brands');
+    const response = await axios.get('http://localhost:8000/api/brands');
     if (Array.isArray(response.data)) {
       // Ánh xạ dữ liệu từ API thành định dạng { name, imageUrl }
       brands.value = response.data
@@ -109,7 +115,7 @@ const fetchBrands = async () => {
       throw new Error('Dữ liệu thương hiệu từ API không hợp lệ');
     }
   } catch (err) {
-    brandsError.value = `Không thể tải danh sách thương hiệu: ${err.response?.status === 404 ? 'API /api/client/brands không tồn tại.' : err.message}`;
+    brandsError.value = `Không thể tải danh sách thương hiệu: ${err.response?.status === 404 ? 'API /api/brands không tồn tại.' : err.message}`;
     brands.value = [];
     console.error('Error fetching brands:', err);
   } finally {
@@ -131,6 +137,7 @@ const fetchProducts = async () => {
       const category = response.data.data.find(item => item.category_slug === props.categorySlug);
       if (category) {
         products.value = category.products || [];
+        categoryName.value = category.category_name;
         console.log('Fetched products:', products.value);
         console.log('Available brands in products:', [...new Set(products.value.map(p => p.brand))]);
       } else {
@@ -164,7 +171,7 @@ const filteredProducts = computed(() => {
   let result = [...products.value];
 
   if (selectedBrand.value) {
-    result = result.filter(product => 
+    result = result.filter(product =>
       product.brand && product.brand.toLowerCase() === selectedBrand.value.toLowerCase()
     );
   }
@@ -179,7 +186,7 @@ const filteredProducts = computed(() => {
   }
 
   if (selectedAromas.value.length > 0) {
-    result = result.filter(product => 
+    result = result.filter(product =>
       product.aroma && selectedAromas.value.includes(product.aroma)
     );
   }
@@ -219,8 +226,6 @@ watch(() => props.categorySlug, () => {
 </script>
 
 <style scoped>
-@import '@/assets/tailwind.css';
-
 .error {
   color: red;
 }

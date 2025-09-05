@@ -20,13 +20,17 @@ class ProductDetailResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'is_deleted' => $this->trashed(),
             'image' => $this->image ? config('app.url') . '/' . ltrim(Storage::url($this->image), '/') : 'https://via.placeholder.com/600x600.png',
             'gender' => $this->gender,
             'price' => $this->price,
             'view' => $this->views,
             'description' => $this->description,
             'has_variants' => $this->has_variants,
-
+            'stock' => $this->has_variants ? null : $this->stock,
+            'brand_id' => $this->brand_id,
+            'has_variants_computed' => $this->variants->isNotEmpty(),
+            'active' => $this->active,
             // Include brand_name when the 'brand' relationship is loaded
             'brand' => $this->whenLoaded('brand', function () {
                 return [
@@ -60,16 +64,43 @@ class ProductDetailResource extends JsonResource
                 ];
             }),
 
+            // 'scent_profiles' => $this->whenLoaded('scentProfiles', function () {
+            //     return $this->scentProfiles->map(function ($item) {
+            //         return [
+            //             'scent_group_id' => $item->scent_group_id,
+            //             'scent_group_name' => $item->scentGroup->name,
+            //             'scent_group_color_code' => $item->scentGroup->color_code,
+            //             'strength' => $item->strength,
+            //         ];
+            //     });
+            // }),
+
             'scent_profiles' => $this->whenLoaded('scentProfiles', function () {
-                return $this->scentProfiles->map(function ($item) {
+                return $this->scentProfiles->map(function ($profile) {
                     return [
-                        'scent_group_id' => $item->scent_group_id,
-                        'scent_group_name' => $item->scentGroup->name,
-                        'scent_group_color_code' => $item->scentGroup->color_code,
-                        'strength' => $item->strength,
+                        'id' => $profile->id,
+                        'scent_group_id' => $profile->scent_group_id,
+                        'strength' => $profile->strength,
+                        'scent_group' => [
+                            'id' => $profile->scentGroup->id,
+                            'name' => $profile->scentGroup->name,
+                            'color_code' => $profile->scentGroup->color_code,
+                        ],
                     ];
                 });
             }),
+
+            'scent_groups' => $this->whenLoaded('scentGroups', function () {
+                return $this->scentGroups->map(function ($g) {
+                    return [
+                        'id' => $g->id,
+                        'name' => $g->name,
+                        'strength' => $g->pivot->strength ?? 50,
+                    ];
+                });
+            }),
+
+
 
             'variants' => $this->whenLoaded('variants', function () {
                 return $this->variants->map(function ($variant) {
@@ -80,6 +111,9 @@ class ProductDetailResource extends JsonResource
                         'stock' => $variant->stock,
                         'sold' => $variant->sold,
                         'status' => $variant->status,
+                        // 'active' => $variant->active,
+                        'active' => (int) $variant->active,
+                        
                         'barcode' => $variant->barcode,
                         'description' => $variant->description,
                         'attributes' => $variant->relationLoaded('attributeValues') ?
@@ -98,7 +132,7 @@ class ProductDetailResource extends JsonResource
                 });
             }),
 
-           'images' => $this->whenLoaded('images', function () {
+            'images' => $this->whenLoaded('images', function () {
                 return $this->images->map(function ($img) {
                     // Check if the path exists before trying to generate a URL
                     if ($img->path) {
