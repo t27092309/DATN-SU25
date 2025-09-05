@@ -84,6 +84,7 @@ class ProductDetailResource extends JsonResource
                         'scent_group' => [
                             'id' => $profile->scentGroup->id,
                             'name' => $profile->scentGroup->name,
+                            'color_code' => $profile->scentGroup->color_code,
                         ],
                     ];
                 });
