@@ -58,8 +58,7 @@
                             <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
                             <h5 class="text-md font-semibold mt-2">{{ product.name }}</h5>
                             <p class="text-gray-700">{{ product.brand ? product.brand.name : 'N/A' }}</p>
-                            <p class="text-lg font-bold text-red-600">{{ new
-                                Intl.NumberFormat('vi-VN').format(product.price) }} VNĐ
+                            <p class="text-lg font-bold text-red-600">{{ new Intl.NumberFormat('vi-VN').format(product.price) }} VNĐ
                             </p>
                         </router-link>
                     </div>

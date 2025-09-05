@@ -456,6 +456,26 @@ class ProductController extends Controller
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new \Exception('Dữ liệu biến thể không phải là JSON hợp lệ.');
             }
+
+            // ✅ Validate từng variant sau khi decode
+            $variantValidator = Validator::make(
+    ['variants' => $submittedVariantsData],
+    [
+        'variants.*.sku'   => 'required|string|max:255',
+        'variants.*.price' => 'required|numeric|min:0',
+        'variants.*.stock' => 'required|integer|min:0',
+    ],
+    [
+        'variants.*.sku.required'   => 'Mỗi biến thể phải có SKU, không được bỏ trống.',
+        'variants.*.sku.string'     => 'SKU của biến thể phải là chuỗi.',
+        'variants.*.sku.max'        => 'SKU của biến thể không được vượt quá 255 ký tự.',
+        'variants.*.price.required' => 'Giá của biến thể không được bỏ trống.',
+        'variants.*.stock.required' => 'Số lượng tồn kho của biến thể không được bỏ trống.',
+    ]
+);
+            if ($variantValidator->fails()) {
+                throw new ValidationException($variantValidator);
+            }
         }
 
         $existingVariants = $product->variants()->get();
@@ -585,6 +605,7 @@ class ProductController extends Controller
         return response()->json(['message' => 'Có lỗi xảy ra khi cập nhật sản phẩm.', 'error' => $e->getMessage()], 500);
     }
 }
+
 
 
 
