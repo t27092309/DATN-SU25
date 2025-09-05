@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductDetailResource;
+use App\Http\Resources\ProductResource;
 use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -60,6 +61,6 @@ class ClientBrandController extends Controller
             ->get();
 
         // Trả về một collection của ProductDetailResource
-        return ProductDetailResource::collection($products);
+        return ProductResource::collection($products);
     }
 }

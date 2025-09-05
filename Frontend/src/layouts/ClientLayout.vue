@@ -82,7 +82,7 @@
               </router-link>
 
               <div class="group h-full flex items-center flex-shrink-0">
-                <router-link
+                <!-- <router-link
                   to="/nuoc-hoa"
                   class="cursor-pointer text-sm font-semibold hover:text-red-600 text-gray-900 flex items-center py-2 px-3"
                 >
@@ -101,7 +101,7 @@
                       d="M19 9l-7 7-7-7"
                     ></path>
                   </svg>
-                </router-link>
+                </router-link> -->
                 <div
                   class="absolute left-1/2 -translate-x-1/2 top-[58px] bg-white rounded-b-lg shadow-xl p-8 w-[1200px] z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:scale-100 transform scale-95 transition-all duration-300 ease-out origin-top"
                   style="max-height: calc(100vh - 70px); overflow-y: auto"

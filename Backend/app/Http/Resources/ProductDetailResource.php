@@ -20,6 +20,7 @@ class ProductDetailResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'is_deleted' => $this->trashed(),
             'image' => $this->image ? config('app.url') . '/' . ltrim(Storage::url($this->image), '/') : 'https://via.placeholder.com/600x600.png',
             'gender' => $this->gender,
             'price' => $this->price,
@@ -83,6 +84,7 @@ class ProductDetailResource extends JsonResource
                         'scent_group' => [
                             'id' => $profile->scentGroup->id,
                             'name' => $profile->scentGroup->name,
+                            'color_code' => $profile->scentGroup->color_code,
                         ],
                     ];
                 });

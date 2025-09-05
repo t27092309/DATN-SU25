@@ -9,28 +9,15 @@
             <h1 class="text-3xl font-semibold mb-2">{{ product.name }}</h1>
             <div class="flex items-center mb-4">
               <div class="flex text-yellow-400 mr-2">
-                <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span
-                ><span>&#9733;</span><span>&#9734;</span>
+                <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9734;</span>
               </div>
-              <span class="text-sm text-gray-600"
-                >({{ totalReviews }} đánh giá)</span
-              >
+              <span class="text-sm text-gray-600">({{ totalReviews }} đánh giá)</span>
               <span class="mx-2 text-gray-300">|</span>
-              <span
-                class="text-sm text-gray-600"
-                v-if="selectedVariantSold !== 'N/A'"
-                >Đã bán {{ selectedVariantSold }}</span
-              >
-              <span
-                class="mx-2 text-gray-300"
-                v-if="selectedVariantStock !== 'N/A'"
-                >|</span
-              >
-              <span
-                class="text-sm text-gray-600"
-                v-if="selectedVariantStock !== 'N/A'"
-                >Tồn kho: {{ selectedVariantStock }}</span
-              >
+              <span class="text-sm text-gray-600" v-if="selectedVariantSold !== 'N/A'">Đã bán {{ selectedVariantSold
+                }}</span>
+              <span class="mx-2 text-gray-300" v-if="selectedVariantStock !== 'N/A'">|</span>
+              <span class="text-sm text-gray-600" v-if="selectedVariantStock !== 'N/A'">Tồn kho: {{ selectedVariantStock
+                }}</span>
             </div>
             <p class="text-gray-700 mb-6">{{ product.description }}</p>
 
@@ -42,33 +29,24 @@
             </div>
             <div class="mb-4">
               <span class="font-semibold text-gray-600">Loại sản phẩm:</span>
-              <router-link
-                :to="{
-                  name: 'CategoryProducts',
-                  params: { categorySlug: product.category_slug },
-                }"
-                class="text-blue-600 hover:underline ml-2"
-              >
+              <router-link :to="{
+                name: 'CategoryProducts',
+                params: { categorySlug: product.category_slug },
+              }" class="text-blue-600 hover:underline ml-2">
                 {{ product.category_name }}
               </router-link>
             </div>
             <div class="mb-6">
               <span class="font-semibold text-gray-600">Tình trạng:</span>
-              <span
-                v-if="selectedVariantStatus === 'pending_selection'"
-                class="font-bold ml-2 text-gray-500"
-              >
+              <span v-if="selectedVariantStatus === 'pending_selection'" class="font-bold ml-2 text-gray-500">
                 Vui lòng chọn thuộc tính sản phẩm
               </span>
-              <span
-                v-else
-                :class="[
-                  'font-bold ml-2',
-                  selectedVariantStatus === 'available'
-                    ? 'text-green-600'
-                    : 'text-red-600',
-                ]"
-              >
+              <span v-else :class="[
+                'font-bold ml-2',
+                selectedVariantStatus === 'available'
+                  ? 'text-green-600'
+                  : 'text-red-600',
+              ]">
                 {{
                   selectedVariantStatus === "available"
                     ? "Còn hàng"
@@ -81,26 +59,16 @@
               {{ formatPrice(selectedVariantPrice) }}
             </div>
             <div v-if="groupedAttributes.length > 0" class="mb-8">
-              <div
-                v-for="attrGroup in groupedAttributes"
-                :key="attrGroup.name"
-                class="mb-6"
-              >
+              <div v-for="attrGroup in groupedAttributes" :key="attrGroup.name" class="mb-6">
                 <h3 class="font-semibold text-gray-700 mb-3">
                   {{ attrGroup.name }}:
-                  <span
-                    v-if="selectedAttributes[attrGroup.slug]"
-                    class="text-gray-500"
-                  >
+                  <span v-if="selectedAttributes[attrGroup.slug]" class="text-gray-500">
                     {{ selectedAttributes[attrGroup.slug].value_name }}
                   </span>
                 </h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <button
-                    v-for="attrValue in attrGroup.values"
-                    :key="attrValue.value_id"
-                    @click="selectAttributeValue(attrGroup.slug, attrValue)"
-                    :class="[
+                  <button v-for="attrValue in attrGroup.values" :key="attrValue.value_id"
+                    @click="selectAttributeValue(attrGroup.slug, attrValue)" :class="[
                       'flex flex-col items-center p-2 border rounded-lg cursor-pointer',
                       'transition-all duration-200 ease-in-out',
                       isSelectedAttribute(attrGroup.slug, attrValue)
@@ -109,19 +77,14 @@
                       !isAttributeValueAvailable(attrGroup.slug, attrValue)
                         ? 'opacity-50 cursor-not-allowed border-gray-200'
                         : '',
-                    ]"
-                    :disabled="
-                      !isAttributeValueAvailable(attrGroup.slug, attrValue)
-                    "
-                  >
-                    <span
-                      :class="[
-                        'text-sm',
-                        isSelectedAttribute(attrGroup.slug, attrValue)
-                          ? 'font-semibold text-pink-700'
-                          : '',
-                      ]"
-                    >
+                    ]" :disabled="!isAttributeValueAvailable(attrGroup.slug, attrValue)
+                      ">
+                    <span :class="[
+                      'text-sm',
+                      isSelectedAttribute(attrGroup.slug, attrValue)
+                        ? 'font-semibold text-pink-700'
+                        : '',
+                    ]">
                       {{ attrValue.value_name }}
                     </span>
                   </button>
@@ -130,10 +93,7 @@
 
               </div>
             </div>
-            <div
-              v-else-if="!product.variants || product.variants.length === 0"
-              class="mb-8 text-gray-600"
-            >
+            <div v-else-if="!product.variants || product.variants.length === 0" class="mb-8 text-gray-600">
               Sản phẩm này không có biến thể.
             </div>
 
@@ -145,22 +105,13 @@
             <div class="flex items-center mb-6">
               <span class="font-semibold text-gray-700 mr-4">Số lượng:</span>
               <div class="flex items-center border border-gray-300 rounded-md">
-                <button
-                  class="px-3 py-1 bg-gray-100 text-gray-700 rounded-l-md hover:bg-gray-200"
-                  @click="quantity = Math.max(1, quantity - 1)"
-                >
+                <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-l-md hover:bg-gray-200"
+                  @click="quantity = Math.max(1, quantity - 1)">
                   -
                 </button>
-                <input
-                  type="number"
-                  v-model.number="quantity"
-                  min="1"
-                  class="w-16 text-center border-l border-r border-gray-200 focus:outline-none focus:border-blue-300"
-                />
-                <button
-                  class="px-3 py-1 bg-gray-100 text-gray-700 rounded-r-md hover:bg-gray-200"
-                  @click="quantity++"
-                >
+                <input type="number" v-model.number="quantity" min="1"
+                  class="w-16 text-center border-l border-r border-gray-200 focus:outline-none focus:border-blue-300" />
+                <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-r-md hover:bg-gray-200" @click="quantity++">
                   +
                 </button>
               </div>
@@ -168,45 +119,36 @@
             <div class="flex gap-4 mt-6">
               <button
                 class="flex-1 py-3 px-6 border border-red-500 text-red-500 rounded-lg font-bold hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                :disabled="
-                  selectedVariantStatus === 'unavailable' ||
+                :disabled="selectedVariantStatus === 'unavailable' ||
                   selectedVariantStock === 0 ||
-                  !foundVariant
-                "
-                @click="addToCart"
-              >
+                  !foundVariant ||
+                  (product && product.is_deleted)
+                  " @click="addToCart">
                 Thêm vào giỏ hàng
               </button>
-              <button
-                :class="[
-                  'flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors duration-200 text-center flex items-center justify-center', // Added flex/items-center/justify-center for better text centering
-                  {
-                    'opacity-50 cursor-not-allowed':
-                      selectedVariantStatus === 'unavailable' ||
-                      selectedVariantStock === 0 ||
-                      !foundVariant,
-                  }, // Thêm !foundVariant vào điều kiện làm mờ
-                ]"
-                @click="handleBuyNowClick"
-                :disabled="
-                  selectedVariantStatus === 'unavailable' ||
+              <button :class="[
+                'flex-1 py-3 px-6 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors duration-200 text-center flex items-center justify-center', // Added flex/items-center/justify-center for better text centering
+                {
+                  'opacity-50 cursor-not-allowed':
+                    selectedVariantStatus === 'unavailable' ||
+                    selectedVariantStock === 0 ||
+                    !foundVariant,
+                }, // Thêm !foundVariant vào điều kiện làm mờ
+              ]" :disabled="selectedVariantStatus === 'unavailable' ||
                   selectedVariantStock === 0 ||
-                  !foundVariant
-                "
-              >
+                  !foundVariant ||
+                  (product && product.is_deleted)
+                  " @click="handleBuyNowClick">
                 Mua ngay
               </button>
             </div>
 
-            <div
-              v-if="cartMessage"
-              :class="[
-                'mt-4 p-3 rounded-md text-sm',
-                cartError
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-green-100 text-green-700',
-              ]"
-            >
+            <div v-if="cartMessage" :class="[
+              'mt-4 p-3 rounded-md text-sm',
+              cartError
+                ? 'bg-red-100 text-red-700'
+                : 'bg-green-100 text-green-700',
+            ]">
               {{ cartMessage }}
             </div>
           </div>
@@ -216,11 +158,7 @@
       <div class="w-full lg:w-[310px] lg:flex-shrink-0">
         <div class="p-4 border border-gray-200 rounded-lg shadow-sm">
           <div v-if="product.brand" class="mb-6 flex justify-center">
-            <img
-              :src="product.brand.logo"
-              :alt="product.brand.name + ' logo'"
-              class="max-h-[60px] w-auto"
-            />
+            <img :src="product.brand.logo" :alt="product.brand.name + ' logo'" class="max-h-[60px] w-auto" />
           </div>
           <h3 class="text-center font-bold text-gray-800 mb-4">
             MÙI HƯƠNG CHÍNH (ACCORDS)
@@ -228,31 +166,21 @@
           <p class="text-center text-gray-500 text-xs italic mb-6">
             (*click tên nhóm hương để tìm hiểu chi tiết)
           </p>
-          <div
-            class="space-y-3 mb-8"
-            v-if="product.scent_profiles && product.scent_profiles.length > 0"
-          >
-            <div
-              v-for="(scent, index) in sortedScentProfiles"
-              :key="index"
-              class="relative h-7 rounded-full bg-gray-200 overflow-hidden"
-            >
-              <div
-                class="absolute top-0 left-0 h-full rounded-full text-xs font-medium flex items-center pl-3"
-                :style="{
-                  width: `${scent.strength}%`,
-                  backgroundColor: scent.scent_group_color_code,
-                }"
-                :class="[
+          <div class="space-y-3 mb-8" v-if="product.scent_profiles && product.scent_profiles.length > 0">
+            <div v-for="(scent, index) in sortedScentProfiles" :key="index"
+              class="relative h-7 rounded-full bg-gray-200 overflow-hidden">
+              <div class="absolute top-0 left-0 h-full rounded-full text-xs font-medium flex items-center pl-3" :style="{
+                width: `${scent.strength}%`,
+                backgroundColor: scent.scent_group.color_code,
+              }" :class="[
                   'text-white',
                   {
-                    'text-white': isDarkColor(scent.scent_group_color_code),
-                    'text-gray-800': !isDarkColor(scent.scent_group_color_code),
+                    'text-white': isDarkColor(scent.scent_group.color_code),
+                    'text-gray-800': !isDarkColor(scent.scent_group.color_code),
                   },
-                ]"
-              >
+                ]">
                 {{
-                  scent.scent_group_name || `Group ID: ${scent.scent_group_id}`
+                  scent.scent_group.name || `Group ID: ${scent.scent_group_id}`
                 }}
               </div>
             </div>
@@ -264,73 +192,56 @@
           <div class="text-center mb-6">
             <img
               src="https://images.squarespace-cdn.com/content/v1/66cd2d1126334f6c9a85c86c/cdb4a6fd-e771-4696-aaf7-8a08210bf7d5/fragrantica-logo-svg.png"
-              alt="Fragrantica Logo"
-              class="mx-auto h-8 mb-2"
-            />
+              alt="Fragrantica Logo" class="mx-auto h-8 mb-2" />
           </div>
 
-          <div
-            class="grid grid-cols-4 gap-4 text-center"
-            v-if="product.usage_profile"
-          >
+          <div class="grid grid-cols-4 gap-4 text-center" v-if="product.usage_profile">
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#10052;</div>
               <div class="text-sm font-semibold text-gray-700">Đông</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-blue-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.winter_percent}%` }"
-                ></div>
+                <div class="h-full bg-blue-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.winter_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127807;</div>
               <div class="text-sm font-semibold text-gray-700">Xuân</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-green-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.spring_percent}%` }"
-                ></div>
+                <div class="h-full bg-green-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.spring_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#9728;</div>
               <div class="text-sm font-semibold text-gray-700">Hè</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-red-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.summer_percent}%` }"
-                ></div>
+                <div class="h-full bg-red-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.summer_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127809;</div>
               <div class="text-sm font-semibold text-gray-700">Thu</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-orange-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.autumn_percent}%` }"
-                ></div>
+                <div class="h-full bg-orange-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.autumn_percent}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#9728;</div>
               <div class="text-sm font-semibold text-gray-700">Ngày</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-yellow-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.suitable_day}%` }"
-                ></div>
+                <div class="h-full bg-yellow-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.suitable_day}%` }"></div>
               </div>
             </div>
             <div>
               <div class="text-gray-400 text-2xl mb-1">&#127769;</div>
               <div class="text-sm font-semibold text-gray-700">Đêm</div>
               <div class="h-2 bg-gray-200 rounded-full mt-1">
-                <div
-                  class="h-full bg-gray-500 rounded-full"
-                  :style="{ width: `${product.usage_profile.suitable_night}%` }"
-                ></div>
+                <div class="h-full bg-gray-500 rounded-full"
+                  :style="{ width: `${product.usage_profile.suitable_night}%` }"></div>
               </div>
             </div>
             <div>
@@ -358,7 +269,7 @@
       Đang tải thông tin sản phẩm...
     </div>
 
-    <ProductDescription v-if="product" :description="product.description" />
+    <!-- <ProductDescription v-if="product" :description="product.description" /> -->
     <ProductReview />
     <RelatedProduct :related-products="relatedProducts" />
   </div>
@@ -392,8 +303,8 @@ const selectedVariantPrice = computed(() =>
   foundVariant.value
     ? foundVariant.value.price
     : product.value
-    ? product.value.price
-    : "0"
+      ? product.value.price
+      : "0"
 );
 const selectedVariantStock = computed(() =>
   foundVariant.value ? foundVariant.value.stock : "N/A"
@@ -403,6 +314,9 @@ const selectedVariantSold = computed(() =>
 );
 
 const selectedVariantStatus = computed(() => {
+  if (product.value && product.value.is_deleted) {
+    return "unavailable";
+  }
   if (!foundVariant.value) {
     return "pending_selection";
   }
@@ -518,7 +432,7 @@ const isAttributeValueAvailable = (
   )
     .filter(([slug]) => slug !== currentAttributeSlug)
     .map(([, value]) => value);
-  return product.value.variants.some((variant) => {
+   return activeVariants.value.some((variant) =>{
     const hasCurrentValue = variant.attributes.some(
       (attr) =>
         attr.attribute_slug === currentAttributeSlug &&
@@ -685,9 +599,8 @@ const addToCart = async () => {
         "Sản phẩm đã được thêm vào giỏ hàng thành công!";
       cartError.value = false;
     } else {
-      cartMessage.value = `Có lỗi xảy ra: ${
-        response.data.message || "Lỗi không xác định"
-      }`;
+      cartMessage.value = `Có lỗi xảy ra: ${response.data.message || "Lỗi không xác định"
+        }`;
       cartError.value = true;
     }
   } catch (error) {
