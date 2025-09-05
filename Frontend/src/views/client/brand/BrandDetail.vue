@@ -1,50 +1,69 @@
 <template>
-  <div class="container mx-auto p-4 max-w-[1200px]">
-    <div v-if="loadingBrand" class="text-center text-gray-500 text-lg">Đang tải thông tin thương hiệu...</div>
-    <div v-else-if="error" class="text-center text-red-500 text-lg">{{ error }}</div>
+    <div class="container mx-auto p-4 max-w-[1200px]">
+        <div v-if="loadingBrand" class="text-center text-gray-500 text-lg">Đang tải thông tin thương hiệu...</div>
+        <div v-else-if="error" class="text-center text-red-500 text-lg">{{ error }}</div>
 
-    <div v-else-if="brand">
-      <p class="font-bold text-3xl text-black">Nước hoa {{ brand.name }}</p>
-      <nav class="text-sm text-gray-500 mb-6">
-        <ul class="flex items-center space-x-1">
-          <li class="flex items-center">
-            <router-link to="/" class="text-base hover:text-gray-700 transition-colors duration-200">Trang
-              chủ</router-link>
-          </li>
-          <li class="flex items-center">
-            <span class="mx-2 text-gray-400">/</span>
-            <router-link to="/nuoc-hoa"
-              class="text-base hover:text-gray-700 transition-colors duration-200">Nước hoa</router-link>
-          </li>
-          <li class="flex items-center">
-            <span class="mx-2 text-gray-400">/</span>
-            <router-link to="/thuong-hieu"
-              class="text-base hover:text-gray-700 transition-colors duration-200">Thương hiệu nước
-              hoa</router-link>
-          </li>
-          <li class="flex items-center">
-            <span class="mx-2 text-gray-400">/</span>
-            <span class="text-gray-900 font-bold text-base">Nước hoa {{ brand.name }}</span>
-          </li>
-        </ul>
-      </nav>
+        <div v-else-if="brand">
+            <p class="font-bold text-3xl text-black">Nước hoa {{ brand.name }}</p>
+            <nav class="text-sm text-gray-500 mb-6">
+                <ul class="flex items-center space-x-1">
+                    <li class="flex items-center">
+                        <router-link to="/" class="text-base hover:text-gray-700 transition-colors duration-200">Trang
+                            chủ</router-link>
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mx-2 text-gray-400">/</span>
+                        <router-link to="nuoc-hoa"
+                            class="text-base hover:text-gray-700 transition-colors duration-200">Nước hoa</router-link>
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mx-2 text-gray-400">/</span>
+                        <router-link to="/thuong-hieu"
+                            class="text-base hover:text-gray-700 transition-colors duration-200">Thương hiệu nước
+                            hoa</router-link>
+                    </li>
+                    <li class="flex items-center">
+                        <span class="mx-2 text-gray-400">/</span>
+                        <span class="text-gray-900 font-bold text-base">Nước hoa {{ brand.name }}</span>
+                    </li>
+                </ul>
+            </nav>
 
-      <div class="flex flex-col gap-8 mt-5">
-        <div class="mb-8">
-          <ProductFilters :priceRanges="priceRanges" :selectedPriceRange="selectedPriceRange"
-            :aromaOptions="aromaOptions" :selectedAromas="selectedAromas" @select-price-range="handleSelectPriceRange"
-            @select-aroma="handleSelectAroma" />
-        </div>
-        <div class="p-6 rounded-lg min-h-[300px]">
-          <p v-if="selectedPriceRange" class="mb-2">Phạm vi giá đã chọn: <strong>{{ selectedPriceRange
-          }}</strong></p>
-          <div v-if="selectedAromas.length > 0" class="mb-2">
-            <p class="font-medium">Nhóm Hương:</p>
-            <div class="flex flex-wrap gap-2 mt-1">
-              <span v-for="aroma in selectedAromas" :key="aroma"
-                class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-                {{ aroma }}
-              </span>
+            <div class="flex flex-col gap-8 mt-5">
+                <div class="mb-8">
+                    <ProductFilters :priceRanges="priceRanges" :selectedPriceRange="selectedPriceRange"
+                        :aromaOptions="aromaOptions" :selectedAromas="selectedAromas"
+                        @select-price-range="handleSelectPriceRange" @select-aroma="handleSelectAroma" />
+                </div>
+                <div class="p-6 rounded-lg min-h-[300px]">
+                    <p v-if="selectedPriceRange" class="mb-2">Phạm vi giá đã chọn: <strong>{{ selectedPriceRange
+                            }}</strong></p>
+                    <div v-if="selectedAromas.length > 0" class="mb-2">
+                        <p class="font-medium">Nhóm Hương:</p>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            <span v-for="aroma in selectedAromas" :key="aroma"
+                                class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+                                {{ aroma }}
+                            </span>
+                        </div>
+                    </div>
+                    <div v-if="loadingProducts" class="text-center py-4">Đang tải sản phẩm...</div>
+                    <div v-else-if="errorProducts" class="error text-red-600 text-center py-4">{{ errorProducts }}</div>
+
+                    <div v-else-if="filteredProducts.length"
+                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                        <router-link v-for="product in filteredProducts" :key="product.slug || product.id"
+                            :to="{ name: 'ProductDetail', params: { slug: product.slug || product.id } }"
+                            class="block p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
+                            <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover rounded-t-lg">
+                            <h5 class="text-md font-semibold mt-2">{{ product.name }}</h5>
+                            <p class="text-gray-700">{{ product.brand ? product.brand.name : 'N/A' }}</p>
+                            <p class="text-lg font-bold text-red-600">{{ new Intl.NumberFormat('vi-VN').format(product.price) }} VNĐ
+                            </p>
+                        </router-link>
+                    </div>
+                    <p v-else class="text-center py-4">Không có sản phẩm nào phù hợp với bộ lọc.</p>
+                </div>
             </div>
           </div>
           <div v-if="loadingProducts" class="text-center py-4">Đang tải sản phẩm...</div>
