@@ -269,7 +269,7 @@
       Đang tải thông tin sản phẩm...
     </div>
 
-    <ProductDescription v-if="product" :description="product.description" />
+    <!-- <ProductDescription v-if="product" :description="product.description" /> -->
     <ProductReview />
     <RelatedProduct :related-products="relatedProducts" />
   </div>
@@ -432,7 +432,7 @@ const isAttributeValueAvailable = (
   )
     .filter(([slug]) => slug !== currentAttributeSlug)
     .map(([, value]) => value);
-  return product.value.variants.some((variant) => {
+   return activeVariants.value.some((variant) =>{
     const hasCurrentValue = variant.attributes.some(
       (attr) =>
         attr.attribute_slug === currentAttributeSlug &&
